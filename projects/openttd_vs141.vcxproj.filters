@@ -100,6 +100,12 @@
     <Filter Include="Threading">
       <UniqueIdentifier>{c76ff9f1-1e62-46d8-8d55-000000000032}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Anomaly Detection">
+      <UniqueIdentifier>{69b2c89f-b7f8-4354-a7e2-39124e958192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Anomaly Detection\Detectors">
+      <UniqueIdentifier>{4b90b78c-f0f4-4d38-8540-9155909a0d9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\airport.cpp">
@@ -3090,9 +3096,41 @@
     <ClCompile Include="..\src\thread\thread_win32.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
+    <ClCompile Include="AnomalyDetector.cpp">
+      <Filter>Anomaly Detection</Filter>
+    </ClCompile>
+    <ClCompile Include="knn.cpp">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClCompile>
+    <ClCompile Include="som.cpp">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClCompile>
+    <ClCompile Include="lof.cpp">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClCompile>
+    <ClCompile Include="loci.cpp">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />
     <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AnomalyDetector.h">
+      <Filter>Anomaly Detection</Filter>
+    </ClInclude>
+    <ClInclude Include="knn.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="som.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="lof.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="loci.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
