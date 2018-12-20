@@ -3132,5 +3132,11 @@
     <ClInclude Include="loci.h">
       <Filter>Anomaly Detection\Detectors</Filter>
     </ClInclude>
+    <ClInclude Include="Detector.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>Anomaly Detection</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include "knn.h"
 #include "loci.h"
 #include "som.h"
+#include "Vector2.h"
 
 AnomalyDetector* AnomalyDetector::instance;
 
@@ -18,5 +19,4 @@ AnomalyDetector::~AnomalyDetector()
 /// <param name="_data">Used to indicate status.</param>
 void AnomalyDetector::LogData(float _data)
 {
-
 }

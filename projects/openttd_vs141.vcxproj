@@ -1350,10 +1350,12 @@
     <ClCompile Include="..\src\sound\xaudio2_s.cpp" />
     <ClCompile Include="..\src\os\windows\crashlog_win.cpp" />
     <ClInclude Include="AnomalyDetector.h" />
+    <ClInclude Include="Detector.h" />
     <ClInclude Include="knn.h" />
     <ClInclude Include="loci.h" />
     <ClInclude Include="lof.h" />
     <ClInclude Include="som.h" />
+    <ClInclude Include="Vector2.h" />
     <ResourceCompile Include="..\src\os\windows\ottdres.rc" />
     <ClCompile Include="..\src\os\windows\string_uniscribe.cpp" />
     <ClCompile Include="..\src\os\windows\win32.cpp" />
