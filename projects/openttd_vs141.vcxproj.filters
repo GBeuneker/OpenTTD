@@ -3096,19 +3096,19 @@
     <ClCompile Include="..\src\thread\thread_win32.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
-    <ClCompile Include="AnomalyDetector.cpp">
+    <ClCompile Include="..\src\anomaly detection\AnomalyDetector.cpp">
       <Filter>Anomaly Detection</Filter>
     </ClCompile>
-    <ClCompile Include="knn.cpp">
+    <ClCompile Include="..\src\anomaly detection\knn.cpp">
       <Filter>Anomaly Detection\Detectors</Filter>
     </ClCompile>
-    <ClCompile Include="som.cpp">
+    <ClCompile Include="..\src\anomaly detection\loci.cpp">
       <Filter>Anomaly Detection\Detectors</Filter>
     </ClCompile>
-    <ClCompile Include="lof.cpp">
+    <ClCompile Include="..\src\anomaly detection\lof.cpp">
       <Filter>Anomaly Detection\Detectors</Filter>
     </ClCompile>
-    <ClCompile Include="loci.cpp">
+    <ClCompile Include="..\src\anomaly detection\som.cpp">
       <Filter>Anomaly Detection\Detectors</Filter>
     </ClCompile>
   </ItemGroup>
@@ -3117,26 +3117,26 @@
     <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AnomalyDetector.h">
+    <ClInclude Include="..\src\anomaly detection\AnomalyDetector.h">
       <Filter>Anomaly Detection</Filter>
     </ClInclude>
-    <ClInclude Include="knn.h">
-      <Filter>Anomaly Detection\Detectors</Filter>
-    </ClInclude>
-    <ClInclude Include="som.h">
-      <Filter>Anomaly Detection\Detectors</Filter>
-    </ClInclude>
-    <ClInclude Include="lof.h">
-      <Filter>Anomaly Detection\Detectors</Filter>
-    </ClInclude>
-    <ClInclude Include="loci.h">
-      <Filter>Anomaly Detection\Detectors</Filter>
-    </ClInclude>
-    <ClInclude Include="Detector.h">
-      <Filter>Anomaly Detection\Detectors</Filter>
-    </ClInclude>
-    <ClInclude Include="Vector2.h">
+    <ClInclude Include="..\src\anomaly detection\Vector2.h">
       <Filter>Anomaly Detection</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\knn.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\loci.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\lof.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\som.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\Detector.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

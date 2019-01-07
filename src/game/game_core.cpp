@@ -20,6 +20,7 @@
 #include "game_config.hpp"
 #include "game_instance.hpp"
 #include "game_info.hpp"
+#include "../anomaly detection/AnomalyDetector.h"
 
 #include "../safeguards.h"
 

@@ -47,6 +47,8 @@
 
 #include "safeguards.h"
 
+#include "anomaly detection\AnomalyDetector.h"
+
 static int _rename_id = 1;
 static int _rename_what = -1;
 
@@ -255,6 +257,8 @@ struct MainWindow : Window
 
 	virtual void OnTick()
 	{
+		AnomalyDetector::GetInstance()->LogData(1);
+
 		if (--this->refresh > 0) return;
 
 		this->refresh = LINKGRAPH_REFRESH_PERIOD;
@@ -266,6 +270,7 @@ struct MainWindow : Window
 
 		this->viewport->overlay->RebuildCache();
 		this->GetWidget<NWidgetBase>(WID_M_VIEWPORT)->SetDirty(this);
+
 	}
 
 	virtual void OnPaint()

@@ -355,6 +355,11 @@
   <ItemGroup>
     <ClCompile Include="..\src\airport.cpp" />
     <ClCompile Include="..\src\animated_tile.cpp" />
+    <ClCompile Include="..\src\anomaly detection\AnomalyDetector.cpp" />
+    <ClCompile Include="..\src\anomaly detection\knn.cpp" />
+    <ClCompile Include="..\src\anomaly detection\loci.cpp" />
+    <ClCompile Include="..\src\anomaly detection\lof.cpp" />
+    <ClCompile Include="..\src\anomaly detection\som.cpp" />
     <ClCompile Include="..\src\articulated_vehicles.cpp" />
     <ClCompile Include="..\src\autoreplace.cpp" />
     <ClCompile Include="..\src\bmp.cpp" />
@@ -452,14 +457,16 @@
     <ClCompile Include="..\src\waypoint.cpp" />
     <ClCompile Include="..\src\widget.cpp" />
     <ClCompile Include="..\src\window.cpp" />
-    <ClCompile Include="AnomalyDetector.cpp" />
-    <ClCompile Include="knn.cpp" />
-    <ClCompile Include="loci.cpp" />
-    <ClCompile Include="lof.cpp" />
-    <ClCompile Include="som.cpp" />
     <ClInclude Include="..\src\aircraft.h" />
     <ClInclude Include="..\src\airport.h" />
     <ClInclude Include="..\src\animated_tile_func.h" />
+    <ClInclude Include="..\src\anomaly detection\AnomalyDetector.h" />
+    <ClInclude Include="..\src\anomaly detection\Detector.h" />
+    <ClInclude Include="..\src\anomaly detection\knn.h" />
+    <ClInclude Include="..\src\anomaly detection\loci.h" />
+    <ClInclude Include="..\src\anomaly detection\lof.h" />
+    <ClInclude Include="..\src\anomaly detection\som.h" />
+    <ClInclude Include="..\src\anomaly detection\Vector2.h" />
     <ClInclude Include="..\src\articulated_vehicles.h" />
     <ClInclude Include="..\src\autoreplace_base.h" />
     <ClInclude Include="..\src\autoreplace_func.h" />
@@ -1349,13 +1356,6 @@
     <ClCompile Include="..\src\sound\win32_s.cpp" />
     <ClCompile Include="..\src\sound\xaudio2_s.cpp" />
     <ClCompile Include="..\src\os\windows\crashlog_win.cpp" />
-    <ClInclude Include="AnomalyDetector.h" />
-    <ClInclude Include="Detector.h" />
-    <ClInclude Include="knn.h" />
-    <ClInclude Include="loci.h" />
-    <ClInclude Include="lof.h" />
-    <ClInclude Include="som.h" />
-    <ClInclude Include="Vector2.h" />
     <ResourceCompile Include="..\src\os\windows\ottdres.rc" />
     <ClCompile Include="..\src\os\windows\string_uniscribe.cpp" />
     <ClCompile Include="..\src\os\windows\win32.cpp" />

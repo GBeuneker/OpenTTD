@@ -19,4 +19,15 @@ AnomalyDetector::~AnomalyDetector()
 /// <param name="_data">Used to indicate status.</param>
 void AnomalyDetector::LogData(float _data)
 {
+	for (int i = 0; i < m_variables.size(); ++i)
+	{
+		int value = *m_variables[i];
+		printf("%i\n", value);
+	}
+
+}
+
+void AnomalyDetector::TrackPointer(size_t* _var)
+{
+	m_variables.push_back(_var);
 }

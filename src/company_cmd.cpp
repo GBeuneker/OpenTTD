@@ -36,6 +36,7 @@
 #include "game/game.hpp"
 #include "goal_base.h"
 #include "story_base.h"
+#include "anomaly detection/AnomalyDetector.h"
 
 #include "table/strings.h"
 
@@ -69,6 +70,8 @@ Company::Company(uint16 name_1, bool is_ai)
 
 	for (uint j = 0; j < 4; j++) this->share_owners[j] = COMPANY_SPECTATOR;
 	InvalidateWindowData(WC_PERFORMANCE_DETAIL, 0, INVALID_COMPANY);
+
+	AnomalyDetector::GetInstance()->TrackPointer((size_t*)&money);
 }
 
 /** Destructor. */
