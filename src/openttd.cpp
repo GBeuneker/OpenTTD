@@ -70,6 +70,7 @@
 #include <stdarg.h>
 
 #include "safeguards.h"
+#include "anomaly detection\AnomalyDetector.h"
 
 void CallLandscapeTick();
 void IncreaseDate();
@@ -539,6 +540,8 @@ static const OptionData _options[] = {
  */
 int openttd_main(int argc, char *argv[])
 {
+	AnomalyDetector::GetInstance();
+
 	char *musicdriver = NULL;
 	char *sounddriver = NULL;
 	char *videodriver = NULL;

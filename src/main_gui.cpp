@@ -257,8 +257,6 @@ struct MainWindow : Window
 
 	virtual void OnTick()
 	{
-		AnomalyDetector::GetInstance()->LogData(1);
-
 		if (--this->refresh > 0) return;
 
 		this->refresh = LINKGRAPH_REFRESH_PERIOD;

@@ -12,10 +12,7 @@ public:
 	}
 	AnomalyDetector();
 	~AnomalyDetector();
-	void LogData(float _data);
-	void TrackVariable(int &_var);
-	void TrackVariable(float &_var);
-	void TrackVariable(bool &_var);
+	void LogData();
 	void TrackPointer(size_t * _var);
 private:
 	static AnomalyDetector* instance;
