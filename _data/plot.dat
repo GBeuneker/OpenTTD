@@ -1,0 +1,12 @@
+set xlabel "X"
+set ylabel "Y"
+set autoscale
+
+do for [i=0:1] {
+    set title "Anomaly Detection ".i
+    set term wxt i
+    plot "data".i.".dat"
+}
+
+pause 1
+reread
