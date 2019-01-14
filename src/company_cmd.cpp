@@ -7,7 +7,7 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file company_cmd.cpp Handling of companies. */
+ /** @file company_cmd.cpp Handling of companies. */
 
 #include "stdafx.h"
 #include "company_base.h"
@@ -59,14 +59,14 @@ INSTANTIATE_POOL_METHODS(Company)
  * @param name_1 Name of the company.
  * @param is_ai  A computer program is running for this company.
  */
-Company::Company(uint16 name_1, bool is_ai)
+	Company::Company(uint16 name_1, bool is_ai)
 {
 	this->name_1 = name_1;
 	this->location_of_HQ = INVALID_TILE;
 	this->is_ai = is_ai;
 	this->terraform_limit = _settings_game.construction.terraform_frame_burst << 16;
-	this->clear_limit     = _settings_game.construction.clear_frame_burst << 16;
-	this->tree_limit      = _settings_game.construction.tree_frame_burst << 16;
+	this->clear_limit = _settings_game.construction.clear_frame_burst << 16;
+	this->tree_limit = _settings_game.construction.tree_frame_burst << 16;
 
 	for (uint j = 0; j < 4; j++) this->share_owners[j] = COMPANY_SPECTATOR;
 	InvalidateWindowData(WC_PERFORMANCE_DETAIL, 0, INVALID_COMPANY);
@@ -156,20 +156,20 @@ static bool IsValidCompanyManagerFace(CompanyManagerFace cmf)
 {
 	if (!AreCompanyManagerFaceBitsValid(cmf, CMFV_GEN_ETHN, GE_WM)) return false;
 
-	GenderEthnicity ge   = (GenderEthnicity)GetCompanyManagerFaceBits(cmf, CMFV_GEN_ETHN, GE_WM);
-	bool has_moustache   = !HasBit(ge, GENDER_FEMALE) && GetCompanyManagerFaceBits(cmf, CMFV_HAS_MOUSTACHE,   ge) != 0;
+	GenderEthnicity ge = (GenderEthnicity)GetCompanyManagerFaceBits(cmf, CMFV_GEN_ETHN, GE_WM);
+	bool has_moustache = !HasBit(ge, GENDER_FEMALE) && GetCompanyManagerFaceBits(cmf, CMFV_HAS_MOUSTACHE, ge) != 0;
 	bool has_tie_earring = !HasBit(ge, GENDER_FEMALE) || GetCompanyManagerFaceBits(cmf, CMFV_HAS_TIE_EARRING, ge) != 0;
-	bool has_glasses     = GetCompanyManagerFaceBits(cmf, CMFV_HAS_GLASSES, ge) != 0;
+	bool has_glasses = GetCompanyManagerFaceBits(cmf, CMFV_HAS_GLASSES, ge) != 0;
 
 	if (!AreCompanyManagerFaceBitsValid(cmf, CMFV_EYE_COLOUR, ge)) return false;
 	for (CompanyManagerFaceVariable cmfv = CMFV_CHEEKS; cmfv < CMFV_END; cmfv++) {
 		switch (cmfv) {
-			case CMFV_MOUSTACHE:   if (!has_moustache)   continue; break;
-			case CMFV_LIPS:
-			case CMFV_NOSE:        if (has_moustache)    continue; break;
-			case CMFV_TIE_EARRING: if (!has_tie_earring) continue; break;
-			case CMFV_GLASSES:     if (!has_glasses)     continue; break;
-			default: break;
+		case CMFV_MOUSTACHE:   if (!has_moustache)   continue; break;
+		case CMFV_LIPS:
+		case CMFV_NOSE:        if (has_moustache)    continue; break;
+		case CMFV_TIE_EARRING: if (!has_tie_earring) continue; break;
+		case CMFV_GLASSES:     if (!has_glasses)     continue; break;
+		default: break;
 		}
 		if (!AreCompanyManagerFaceBitsValid(cmf, cmfv, ge)) return false;
 	}
@@ -220,17 +220,18 @@ static void SubtractMoneyFromAnyCompany(Company *c, CommandCost cost)
 	c->money -= cost.GetCost();
 	c->yearly_expenses[0][cost.GetExpensesType()] += cost.GetCost();
 
-	if (HasBit(1 << EXPENSES_TRAIN_INC    |
-	           1 << EXPENSES_ROADVEH_INC  |
-	           1 << EXPENSES_AIRCRAFT_INC |
-	           1 << EXPENSES_SHIP_INC, cost.GetExpensesType())) {
+	if (HasBit(1 << EXPENSES_TRAIN_INC |
+		1 << EXPENSES_ROADVEH_INC |
+		1 << EXPENSES_AIRCRAFT_INC |
+		1 << EXPENSES_SHIP_INC, cost.GetExpensesType())) {
 		c->cur_economy.income -= cost.GetCost();
-	} else if (HasBit(1 << EXPENSES_TRAIN_RUN    |
-	                  1 << EXPENSES_ROADVEH_RUN  |
-	                  1 << EXPENSES_AIRCRAFT_RUN |
-	                  1 << EXPENSES_SHIP_RUN     |
-	                  1 << EXPENSES_PROPERTY     |
-	                  1 << EXPENSES_LOAN_INT, cost.GetExpensesType())) {
+	}
+	else if (HasBit(1 << EXPENSES_TRAIN_RUN |
+		1 << EXPENSES_ROADVEH_RUN |
+		1 << EXPENSES_AIRCRAFT_RUN |
+		1 << EXPENSES_SHIP_RUN |
+		1 << EXPENSES_PROPERTY |
+		1 << EXPENSES_LOAN_INT, cost.GetExpensesType())) {
 		c->cur_economy.expenses -= cost.GetCost();
 	}
 
@@ -270,8 +271,8 @@ void UpdateLandscapingLimits()
 	Company *c;
 	FOR_ALL_COMPANIES(c) {
 		c->terraform_limit = min(c->terraform_limit + _settings_game.construction.terraform_per_64k_frames, (uint32)_settings_game.construction.terraform_frame_burst << 16);
-		c->clear_limit     = min(c->clear_limit     + _settings_game.construction.clear_per_64k_frames,     (uint32)_settings_game.construction.clear_frame_burst << 16);
-		c->tree_limit      = min(c->tree_limit      + _settings_game.construction.tree_per_64k_frames,      (uint32)_settings_game.construction.tree_frame_burst << 16);
+		c->clear_limit = min(c->clear_limit + _settings_game.construction.clear_per_64k_frames, (uint32)_settings_game.construction.clear_frame_burst << 16);
+		c->tree_limit = min(c->tree_limit + _settings_game.construction.tree_per_64k_frames, (uint32)_settings_game.construction.tree_frame_burst << 16);
 	}
 }
 
@@ -288,11 +289,13 @@ void GetNameOfOwner(Owner owner, TileIndex tile)
 	if (owner != OWNER_TOWN) {
 		if (!Company::IsValidID(owner)) {
 			SetDParam(0, STR_COMPANY_SOMEONE);
-		} else {
+		}
+		else {
 			SetDParam(0, STR_COMPANY_NAME);
 			SetDParam(1, owner);
 		}
-	} else {
+	}
+	else {
 		assert(tile != 0);
 		const Town *t = ClosestTownFromTile(tile, UINT_MAX);
 
@@ -362,7 +365,7 @@ static void GenerateCompanyName(Company *c)
 		str = t->townnametype - SPECSTR_TOWNNAME_START + SPECSTR_COMPANY_NAME_START;
 		strp = t->townnameparts;
 
-verify_name:;
+	verify_name:;
 		/* No companies must have this name already */
 		Company *cc;
 		FOR_ALL_COMPANIES(cc) {
@@ -372,7 +375,7 @@ verify_name:;
 		GetString(buffer, str, lastof(buffer));
 		if (Utf8StringLength(buffer) >= MAX_LENGTH_COMPANY_NAME_CHARS) goto bad_town_name;
 
-set_name:;
+	set_name:;
 		c->name_1 = str;
 		c->name_2 = strp;
 
@@ -395,7 +398,8 @@ bad_town_name:;
 		str = SPECSTR_ANDCO_NAME;
 		strp = c->president_name_2;
 		goto set_name;
-	} else {
+	}
+	else {
 		str = SPECSTR_ANDCO_NAME;
 		strp = Random();
 		goto verify_name;
@@ -403,7 +407,7 @@ bad_town_name:;
 }
 
 /** Sorting weights for the company colours. */
-static const byte _colour_sort[COLOUR_END] = {2, 2, 3, 2, 3, 2, 3, 2, 3, 2, 2, 2, 3, 1, 1, 1};
+static const byte _colour_sort[COLOUR_END] = { 2, 2, 3, 2, 3, 2, 3, 2, 3, 2, 2, 2, 3, 1, 1, 1 };
 /** Similar colours, so we can try to prevent same coloured companies. */
 static const Colours _similar_colour[COLOUR_END][2] = {
 	{ COLOUR_BLUE,       COLOUR_LIGHT_BLUE }, // COLOUR_DARK_BLUE
@@ -487,7 +491,7 @@ static Colours GenerateCompanyColour()
 static void GeneratePresidentName(Company *c)
 {
 	for (;;) {
-restart:;
+	restart:;
 		c->president_name_2 = Random();
 		c->president_name_1 = SPECSTR_PRESIDENT_NAME;
 
@@ -520,7 +524,7 @@ restart:;
 void ResetCompanyLivery(Company *c)
 {
 	for (LiveryScheme scheme = LS_BEGIN; scheme < LS_END; scheme++) {
-		c->livery[scheme].in_use  = false;
+		c->livery[scheme].in_use = false;
 		c->livery[scheme].colour1 = c->colour;
 		c->livery[scheme].colour2 = c->colour;
 	}
@@ -543,7 +547,8 @@ Company *DoStartupNewCompany(bool is_ai, CompanyID company = INVALID_COMPANY)
 	Company *c;
 	if (company == INVALID_COMPANY) {
 		c = new Company(STR_SV_UNNAMED, is_ai);
-	} else {
+	}
+	else {
 		if (Company::IsValidID(company)) return NULL;
 		c = new (company) Company(STR_SV_UNNAMED, is_ai);
 	}
@@ -629,8 +634,8 @@ bool MayCompanyTakeOver(CompanyID cbig, CompanyID csmall)
 
 	/* Do the combined vehicle counts stay within the limits? */
 	return c1->group_all[VEH_TRAIN].num_vehicle + c2->group_all[VEH_TRAIN].num_vehicle <= _settings_game.vehicle.max_trains &&
-		c1->group_all[VEH_ROAD].num_vehicle     + c2->group_all[VEH_ROAD].num_vehicle     <= _settings_game.vehicle.max_roadveh &&
-		c1->group_all[VEH_SHIP].num_vehicle     + c2->group_all[VEH_SHIP].num_vehicle     <= _settings_game.vehicle.max_ships &&
+		c1->group_all[VEH_ROAD].num_vehicle + c2->group_all[VEH_ROAD].num_vehicle <= _settings_game.vehicle.max_roadveh &&
+		c1->group_all[VEH_SHIP].num_vehicle + c2->group_all[VEH_SHIP].num_vehicle <= _settings_game.vehicle.max_ships &&
 		c1->group_all[VEH_AIRCRAFT].num_vehicle + c2->group_all[VEH_AIRCRAFT].num_vehicle <= _settings_game.vehicle.max_aircraft;
 }
 
@@ -672,9 +677,9 @@ static void HandleBankruptcyTakeover(Company *c)
 	/* Ask the company with the highest performance history first */
 	FOR_ALL_COMPANIES(c2) {
 		if (c2->bankrupt_asked == 0 && // Don't ask companies going bankrupt themselves
-				!HasBit(c->bankrupt_asked, c2->index) &&
-				best_performance < c2->old_economy[1].performance_history &&
-				MayCompanyTakeOver(c2->index, c->index)) {
+			!HasBit(c->bankrupt_asked, c2->index) &&
+			best_performance < c2->old_economy[1].performance_history &&
+			MayCompanyTakeOver(c2->index, c->index)) {
 			best_performance = c2->old_economy[1].performance_history;
 			best = c2;
 		}
@@ -691,7 +696,8 @@ static void HandleBankruptcyTakeover(Company *c)
 	c->bankrupt_timeout = TAKE_OVER_TIMEOUT;
 	if (best->is_ai) {
 		AI::NewEvent(best->index, new ScriptEventCompanyAskMerger(c->index, ClampToI32(c->bankrupt_value)));
-	} else if (IsInteractiveCompany(best->index)) {
+	}
+	else if (IsInteractiveCompany(best->index)) {
 		ShowBuyCompanyDialog(c->index);
 	}
 }
@@ -711,7 +717,7 @@ void OnTick_Companies()
 		_next_competitor_start = AI::GetStartNextTime() * DAY_TICKS;
 	}
 
-	if (AI::CanStartNew() && _game_mode != GM_MENU && --_next_competitor_start == 0) {
+	if (AI::CanStartNew() && _game_mode != GM_MENU) {
 		MaybeStartNewCompany();
 	}
 
@@ -738,7 +744,8 @@ void CompaniesYearlyLoop()
 		c = Company::Get(_local_company);
 		if (c->num_valid_stat_ent > 5 && c->old_economy[0].performance_history < c->old_economy[4].performance_history) {
 			if (_settings_client.sound.new_year) SndPlayFx(SND_01_BAD_YEAR);
-		} else {
+		}
+		else {
 			if (_settings_client.sound.new_year) SndPlayFx(SND_00_GOOD_YEAR);
 		}
 	}
@@ -756,7 +763,8 @@ void CompanyNewsInformation::FillData(const Company *c, const Company *other)
 
 	if (other == NULL) {
 		*this->other_company_name = '\0';
-	} else {
+	}
+	else {
 		SetDParam(0, other->index);
 		GetString(this->other_company_name, STR_COMPANY_NAME, lastof(this->other_company_name));
 		c = other;
@@ -816,102 +824,102 @@ CommandCost CmdCompanyCtrl(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 #endif /* ENABLE_NETWORK */
 
 	switch (GB(p1, 0, 16)) {
-		case 0: { // Create a new company
-			/* This command is only executed in a multiplayer game */
-			if (!_networking) return CMD_ERROR;
+	case 0: { // Create a new company
+		/* This command is only executed in a multiplayer game */
+		if (!_networking) return CMD_ERROR;
 
 #ifdef ENABLE_NETWORK
-			/* Has the network client a correct ClientIndex? */
-			if (!(flags & DC_EXEC)) return CommandCost();
-			NetworkClientInfo *ci = NetworkClientInfo::GetByClientID(client_id);
+		/* Has the network client a correct ClientIndex? */
+		if (!(flags & DC_EXEC)) return CommandCost();
+		NetworkClientInfo *ci = NetworkClientInfo::GetByClientID(client_id);
 #ifndef DEBUG_DUMP_COMMANDS
-			/* When replaying the client ID is not a valid client; there
-			 * are actually no clients at all. However, the company has to
-			 * be created, otherwise we cannot rerun the game properly.
-			 * So only allow a NULL client info in that case. */
-			if (ci == NULL) return CommandCost();
+		/* When replaying the client ID is not a valid client; there
+		 * are actually no clients at all. However, the company has to
+		 * be created, otherwise we cannot rerun the game properly.
+		 * So only allow a NULL client info in that case. */
+		if (ci == NULL) return CommandCost();
 #endif /* NOT DEBUG_DUMP_COMMANDS */
 
-			/* Delete multiplayer progress bar */
-			DeleteWindowById(WC_NETWORK_STATUS_WINDOW, WN_NETWORK_STATUS_WINDOW_JOIN);
+		/* Delete multiplayer progress bar */
+		DeleteWindowById(WC_NETWORK_STATUS_WINDOW, WN_NETWORK_STATUS_WINDOW_JOIN);
 
-			Company *c = DoStartupNewCompany(false);
+		Company *c = DoStartupNewCompany(false);
 
-			/* A new company could not be created, revert to being a spectator */
-			if (c == NULL) {
-				if (_network_server) {
-					ci->client_playas = COMPANY_SPECTATOR;
-					NetworkUpdateClientInfo(ci->client_id);
-				}
-				break;
+		/* A new company could not be created, revert to being a spectator */
+		if (c == NULL) {
+			if (_network_server) {
+				ci->client_playas = COMPANY_SPECTATOR;
+				NetworkUpdateClientInfo(ci->client_id);
 			}
-
-			/* This is the client (or non-dedicated server) who wants a new company */
-			if (client_id == _network_own_client_id) {
-				assert(_local_company == COMPANY_SPECTATOR);
-				SetLocalCompany(c->index);
-				if (!StrEmpty(_settings_client.network.default_company_pass)) {
-					NetworkChangeCompanyPassword(_local_company, _settings_client.network.default_company_pass);
-				}
-
-				/* Now that we have a new company, broadcast our company settings to
-				 * all clients so everything is in sync */
-				SyncCompanySettings();
-
-				MarkWholeScreenDirty();
-			}
-
-			NetworkServerNewCompany(c, ci);
-#endif /* ENABLE_NETWORK */
 			break;
 		}
 
-		case 1: { // Make a new AI company
-			if (!(flags & DC_EXEC)) return CommandCost();
+		/* This is the client (or non-dedicated server) who wants a new company */
+		if (client_id == _network_own_client_id) {
+			assert(_local_company == COMPANY_SPECTATOR);
+			SetLocalCompany(c->index);
+			if (!StrEmpty(_settings_client.network.default_company_pass)) {
+				NetworkChangeCompanyPassword(_local_company, _settings_client.network.default_company_pass);
+			}
 
-			if (company_id != INVALID_COMPANY && (company_id >= MAX_COMPANIES || Company::IsValidID(company_id))) return CMD_ERROR;
-			Company *c = DoStartupNewCompany(true, company_id);
+			/* Now that we have a new company, broadcast our company settings to
+			 * all clients so everything is in sync */
+			SyncCompanySettings();
+
+			MarkWholeScreenDirty();
+		}
+
+		NetworkServerNewCompany(c, ci);
+#endif /* ENABLE_NETWORK */
+		break;
+	}
+
+	case 1: { // Make a new AI company
+		if (!(flags & DC_EXEC)) return CommandCost();
+
+		if (company_id != INVALID_COMPANY && (company_id >= MAX_COMPANIES || Company::IsValidID(company_id))) return CMD_ERROR;
+		Company *c = DoStartupNewCompany(true, company_id);
 #ifdef ENABLE_NETWORK
-			if (c != NULL) NetworkServerNewCompany(c, NULL);
+		if (c != NULL) NetworkServerNewCompany(c, NULL);
 #endif /* ENABLE_NETWORK */
-			break;
-		}
+		break;
+	}
 
-		case 2: { // Delete a company
-			CompanyRemoveReason reason = (CompanyRemoveReason)GB(p2, 0, 2);
-			if (reason >= CRR_END) return CMD_ERROR;
+	case 2: { // Delete a company
+		CompanyRemoveReason reason = (CompanyRemoveReason)GB(p2, 0, 2);
+		if (reason >= CRR_END) return CMD_ERROR;
 
-			Company *c = Company::GetIfValid(company_id);
-			if (c == NULL) return CMD_ERROR;
+		Company *c = Company::GetIfValid(company_id);
+		if (c == NULL) return CMD_ERROR;
 
-			if (!(flags & DC_EXEC)) return CommandCost();
+		if (!(flags & DC_EXEC)) return CommandCost();
 
-			/* Delete any open window of the company */
-			DeleteCompanyWindows(c->index);
-			CompanyNewsInformation *cni = MallocT<CompanyNewsInformation>(1);
-			cni->FillData(c);
+		/* Delete any open window of the company */
+		DeleteCompanyWindows(c->index);
+		CompanyNewsInformation *cni = MallocT<CompanyNewsInformation>(1);
+		cni->FillData(c);
 
-			/* Show the bankrupt news */
-			SetDParam(0, STR_NEWS_COMPANY_BANKRUPT_TITLE);
-			SetDParam(1, STR_NEWS_COMPANY_BANKRUPT_DESCRIPTION);
-			SetDParamStr(2, cni->company_name);
-			AddCompanyNewsItem(STR_MESSAGE_NEWS_FORMAT, cni);
+		/* Show the bankrupt news */
+		SetDParam(0, STR_NEWS_COMPANY_BANKRUPT_TITLE);
+		SetDParam(1, STR_NEWS_COMPANY_BANKRUPT_DESCRIPTION);
+		SetDParamStr(2, cni->company_name);
+		AddCompanyNewsItem(STR_MESSAGE_NEWS_FORMAT, cni);
 
-			/* Remove the company */
-			ChangeOwnershipOfCompanyItems(c->index, INVALID_OWNER);
-			if (c->is_ai) AI::Stop(c->index);
+		/* Remove the company */
+		ChangeOwnershipOfCompanyItems(c->index, INVALID_OWNER);
+		if (c->is_ai) AI::Stop(c->index);
 
-			CompanyID c_index = c->index;
-			delete c;
-			AI::BroadcastNewEvent(new ScriptEventCompanyBankrupt(c_index));
-			Game::NewEvent(new ScriptEventCompanyBankrupt(c_index));
-			CompanyAdminRemove(c_index, (CompanyRemoveReason)reason);
+		CompanyID c_index = c->index;
+		delete c;
+		AI::BroadcastNewEvent(new ScriptEventCompanyBankrupt(c_index));
+		Game::NewEvent(new ScriptEventCompanyBankrupt(c_index));
+		CompanyAdminRemove(c_index, (CompanyRemoveReason)reason);
 
-			if (StoryPage::GetNumItems() == 0 || Goal::GetNumItems() == 0) InvalidateWindowData(WC_MAIN_TOOLBAR, 0);
-			break;
-		}
+		if (StoryPage::GetNumItems() == 0 || Goal::GetNumItems() == 0) InvalidateWindowData(WC_MAIN_TOOLBAR, 0);
+		break;
+	}
 
-		default: return CMD_ERROR;
+	default: return CMD_ERROR;
 	}
 
 	InvalidateWindowClassesData(WC_GAME_OPTIONS);
@@ -974,50 +982,50 @@ CommandCost CmdSetCompanyColour(TileIndex tile, DoCommandFlag flags, uint32 p1, 
 
 	if (flags & DC_EXEC) {
 		switch (state) {
-			case 0:
-				c->livery[scheme].colour1 = colour;
+		case 0:
+			c->livery[scheme].colour1 = colour;
 
-				/* If setting the first colour of the default scheme, adjust the
-				 * original and cached company colours too. */
-				if (scheme == LS_DEFAULT) {
-					_company_colours[_current_company] = colour;
-					c->colour = colour;
-					CompanyAdminUpdate(c);
-				}
+			/* If setting the first colour of the default scheme, adjust the
+			 * original and cached company colours too. */
+			if (scheme == LS_DEFAULT) {
+				_company_colours[_current_company] = colour;
+				c->colour = colour;
+				CompanyAdminUpdate(c);
+			}
+			break;
+
+		case 1:
+			c->livery[scheme].colour2 = colour;
+			break;
+
+		case 2:
+			c->livery[scheme].in_use = colour != 0;
+
+			/* Now handle setting the default scheme's in_use flag.
+			 * This is different to the other schemes, as it signifies if any
+			 * scheme is active at all. If this flag is not set, then no
+			 * processing of vehicle types occurs at all, and only the default
+			 * colours will be used. */
+
+			 /* If enabling a scheme, set the default scheme to be in use too */
+			if (colour != 0) {
+				c->livery[LS_DEFAULT].in_use = true;
 				break;
+			}
 
-			case 1:
-				c->livery[scheme].colour2 = colour;
-				break;
-
-			case 2:
-				c->livery[scheme].in_use = colour != 0;
-
-				/* Now handle setting the default scheme's in_use flag.
-				 * This is different to the other schemes, as it signifies if any
-				 * scheme is active at all. If this flag is not set, then no
-				 * processing of vehicle types occurs at all, and only the default
-				 * colours will be used. */
-
-				/* If enabling a scheme, set the default scheme to be in use too */
-				if (colour != 0) {
+			/* Else loop through all schemes to see if any are left enabled.
+			 * If not, disable the default scheme too. */
+			c->livery[LS_DEFAULT].in_use = false;
+			for (scheme = LS_DEFAULT; scheme < LS_END; scheme++) {
+				if (c->livery[scheme].in_use) {
 					c->livery[LS_DEFAULT].in_use = true;
 					break;
 				}
+			}
+			break;
 
-				/* Else loop through all schemes to see if any are left enabled.
-				 * If not, disable the default scheme too. */
-				c->livery[LS_DEFAULT].in_use = false;
-				for (scheme = LS_DEFAULT; scheme < LS_END; scheme++) {
-					if (c->livery[scheme].in_use) {
-						c->livery[LS_DEFAULT].in_use = true;
-						break;
-					}
-				}
-				break;
-
-			default:
-				break;
+		default:
+			break;
 		}
 		ResetVehicleColourMap();
 		MarkWholeScreenDirty();
@@ -1130,7 +1138,8 @@ CommandCost CmdRenamePresident(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 
 		if (reset) {
 			c->president_name = NULL;
-		} else {
+		}
+		else {
 			c->president_name = stredup(text);
 
 			if (c->name_1 == STR_SV_UNNAMED && c->name == NULL) {
@@ -1158,10 +1167,10 @@ int CompanyServiceInterval(const Company *c, VehicleType type)
 {
 	const VehicleDefaultSettings *vds = (c == NULL) ? &_settings_client.company.vehicle : &c->settings.vehicle;
 	switch (type) {
-		default: NOT_REACHED();
-		case VEH_TRAIN:    return vds->servint_trains;
-		case VEH_ROAD:     return vds->servint_roadveh;
-		case VEH_AIRCRAFT: return vds->servint_aircraft;
-		case VEH_SHIP:     return vds->servint_ships;
+	default: NOT_REACHED();
+	case VEH_TRAIN:    return vds->servint_trains;
+	case VEH_ROAD:     return vds->servint_roadveh;
+	case VEH_AIRCRAFT: return vds->servint_aircraft;
+	case VEH_SHIP:     return vds->servint_ships;
 	}
 }
