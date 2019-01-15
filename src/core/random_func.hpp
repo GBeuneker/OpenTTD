@@ -7,14 +7,14 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file random_func.hpp Pseudo random number generator. */
+ /** @file random_func.hpp Pseudo random number generator. */
 
 #ifndef RANDOM_FUNC_HPP
 #define RANDOM_FUNC_HPP
 
 #if defined(__APPLE__)
 	/* Apple already has Random declared */
-	#define Random OTTD_Random
+#define Random OTTD_Random
 #endif /* __APPLE__ */
 
 /**
@@ -59,31 +59,31 @@ static inline void RestoreRandomSeeds(const SavedRandomSeeds &storage)
 
 void SetRandomSeed(uint32 seed);
 #ifdef RANDOM_DEBUG
-	#ifdef __APPLE__
-		#define OTTD_Random() DoRandom(__LINE__, __FILE__)
-	#else
-		#define Random() DoRandom(__LINE__, __FILE__)
-	#endif
-	uint32 DoRandom(int line, const char *file);
-	#define RandomRange(limit) DoRandomRange(limit, __LINE__, __FILE__)
-	uint32 DoRandomRange(uint32 limit, int line, const char *file);
+#ifdef __APPLE__
+#define OTTD_Random() DoRandom(__LINE__, __FILE__)
 #else
-	static inline uint32 Random()
-	{
-		return _random.Next();
-	}
+#define Random() DoRandom(__LINE__, __FILE__)
+#endif
+uint32 DoRandom(int line, const char *file);
+#define RandomRange(limit) DoRandomRange(limit, __LINE__, __FILE__)
+uint32 DoRandomRange(uint32 limit, int line, const char *file);
+#else
+static inline uint32 Random()
+{
+	return _random.Next();
+}
 
-	/**
-	 * Pick a random number between 0 and \a limit - 1, inclusive. That means 0
-	 * can be returned and \a limit - 1 can be returned, but \a limit can not be
-	 * returned.
-	 * @param limit Limit for the range to be picked from.
-	 * @return A random number in [0,\a limit).
-	 */
-	static inline uint32 RandomRange(uint32 limit)
-	{
-		return _random.Next(limit);
-	}
+/**
+ * Pick a random number between 0 and \a limit - 1, inclusive. That means 0
+ * can be returned and \a limit - 1 can be returned, but \a limit can not be
+ * returned.
+ * @param limit Limit for the range to be picked from.
+ * @return A random number in [0,\a limit).
+ */
+static inline uint32 RandomRange(uint32 limit)
+{
+	return _random.Next(limit);
+}
 #endif
 
 static inline uint32 InteractiveRandom()
@@ -128,7 +128,7 @@ static inline bool Chance16I(const uint a, const uint b, const uint32 r)
  * @return True with (a/b) probability
  */
 #ifdef RANDOM_DEBUG
-	#define Chance16(a, b) Chance16I(a, b, DoRandom(__LINE__, __FILE__))
+#define Chance16(a, b) Chance16I(a, b, DoRandom(__LINE__, __FILE__))
 #else
 static inline bool Chance16(const uint a, const uint b)
 {
@@ -152,7 +152,7 @@ static inline bool Chance16(const uint a, const uint b)
  * @return True in (a/b) percent
  */
 #ifdef RANDOM_DEBUG
-	#define Chance16R(a, b, r) (r = DoRandom(__LINE__, __FILE__), Chance16I(a, b, r))
+#define Chance16R(a, b, r) (r = DoRandom(__LINE__, __FILE__), Chance16I(a, b, r))
 #else
 static inline bool Chance16R(const uint a, const uint b, uint32 &r)
 {

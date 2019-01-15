@@ -71,7 +71,8 @@ INSTANTIATE_POOL_METHODS(Company)
 	for (uint j = 0; j < 4; j++) this->share_owners[j] = COMPANY_SPECTATOR;
 	InvalidateWindowData(WC_PERFORMANCE_DETAIL, 0, INVALID_COMPANY);
 
-	AnomalyDetector::GetInstance()->TrackPointer((size_t*)&money);
+	if (_game_mode != GM_MENU)
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&money);
 }
 
 /** Destructor. */
@@ -705,7 +706,7 @@ static void HandleBankruptcyTakeover(Company *c)
 /** Called every tick for updating some company info. */
 void OnTick_Companies()
 {
-	if (_game_mode == GM_EDITOR) return;
+	if (_game_mode == GM_EDITOR || _game_mode == GM_MENU) return;
 
 	Company *c = Company::GetIfValid(_cur_company_tick_index);
 	if (c != NULL) {
@@ -717,7 +718,7 @@ void OnTick_Companies()
 		_next_competitor_start = AI::GetStartNextTime() * DAY_TICKS;
 	}
 
-	if (AI::CanStartNew() && _game_mode != GM_MENU) {
+	if (AI::CanStartNew()) {
 		MaybeStartNewCompany();
 	}
 

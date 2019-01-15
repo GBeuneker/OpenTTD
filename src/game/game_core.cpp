@@ -7,7 +7,7 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file game_core.cpp Implementation of Game. */
+ /** @file game_core.cpp Implementation of Game. */
 
 #include "../stdafx.h"
 #include "../core/backup_type.hpp"
@@ -100,7 +100,8 @@
 
 	if (keepConfig) {
 		Rescan();
-	} else {
+	}
+	else {
 		delete Game::scanner_info;
 		delete Game::scanner_library;
 		Game::scanner_info = NULL;
@@ -129,7 +130,7 @@
 
 /* static */ bool Game::IsPaused()
 {
-	return Game::instance != NULL? Game::instance->IsPaused() : false;
+	return Game::instance != NULL ? Game::instance->IsPaused() : false;
 }
 
 /* static */ void Game::NewEvent(ScriptEvent *event)
@@ -170,7 +171,8 @@
 				Game::instance = NULL;
 				Game::info = NULL;
 			}
-		} else if (Game::instance != NULL) {
+		}
+		else if (Game::instance != NULL) {
 			Game::info = _settings_game.game_config->GetInfo();
 		}
 	}
@@ -202,7 +204,8 @@
 		Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
 		Game::instance->Save();
 		cur_company.Restore();
-	} else {
+	}
+	else {
 		GameInstance::SaveEmpty();
 	}
 }
@@ -213,7 +216,8 @@
 		Backup<CompanyByte> cur_company(_current_company, OWNER_DEITY, FILE_LINE);
 		Game::instance->Load(version);
 		cur_company.Restore();
-	} else {
+	}
+	else {
 		/* Read, but ignore, the load data */
 		GameInstance::LoadEmpty();
 	}
@@ -226,7 +230,7 @@
 
 /* static */ char *Game::GetConsoleLibraryList(char *p, const char *last)
 {
-	 return Game::scanner_library->GetConsoleList(p, last, true);
+	return Game::scanner_library->GetConsoleList(p, last, true);
 }
 
 /* static */ const ScriptInfoList *Game::GetInfoList()

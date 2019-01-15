@@ -7,7 +7,7 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file openttd.cpp Functions related to starting OpenTTD. */
+ /** @file openttd.cpp Functions related to starting OpenTTD. */
 
 #include "stdafx.h"
 
@@ -273,7 +273,7 @@ static void ParseResolution(Dimension *res, const char *s)
 		return;
 	}
 
-	res->width  = max(strtoul(s, NULL, 0), 64UL);
+	res->width = max(strtoul(s, NULL, 0), 64UL);
 	res->height = max(strtoul(t + 1, NULL, 0), 64UL);
 }
 
@@ -334,7 +334,8 @@ static void LoadIntroGame(bool load_newgrfs = true)
 		GenerateWorld(GWM_EMPTY, 64, 64); // if failed loading, make empty world.
 		WaitTillGeneratedWorld();
 		SetLocalCompany(COMPANY_SPECTATOR);
-	} else {
+	}
+	else {
 		SetLocalCompany(COMPANY_FIRST);
 	}
 
@@ -404,10 +405,10 @@ struct AfterNewGRFScan : NewGRFScanCallback {
 	 *                        decides whether to save of exit or not.
 	 */
 	AfterNewGRFScan(bool *save_config_ptr) :
-			startyear(INVALID_YEAR), generation_seed(GENERATE_NEW_SEED),
-			dedicated_host(NULL), dedicated_port(0), network_conn(NULL),
-			join_server_password(NULL), join_company_password(NULL),
-			save_config_ptr(save_config_ptr), save_config(true)
+		startyear(INVALID_YEAR), generation_seed(GENERATE_NEW_SEED),
+		dedicated_host(NULL), dedicated_port(0), network_conn(NULL),
+		join_server_password(NULL), join_company_password(NULL),
+		save_config_ptr(save_config_ptr), save_config(true)
 	{
 		/* Visual C++ 2015 fails compiling this line (AfterNewGRFScan::generation_seed undefined symbol)
 		 * if it's placed outside a member function, directly in the struct body. */
@@ -549,7 +550,7 @@ int openttd_main(int argc, char *argv[])
 	char *graphics_set = NULL;
 	char *sounds_set = NULL;
 	char *music_set = NULL;
-	Dimension resolution = {0, 0};
+	Dimension resolution = { 0, 0 };
 	/* AfterNewGRFScan sets save_config to true after scanning completed. */
 	bool save_config = false;
 	AfterNewGRFScan *scanner = new AfterNewGRFScan(&save_config);
@@ -618,11 +619,11 @@ int openttd_main(int argc, char *argv[])
 		case 't': scanner->startyear = atoi(mgo.opt); break;
 		case 'd': {
 #if defined(WIN32)
-				CreateConsole();
+			CreateConsole();
 #endif
-				if (mgo.opt != NULL) SetDebugString(mgo.opt);
-				break;
-			}
+			if (mgo.opt != NULL) SetDebugString(mgo.opt);
+			break;
+		}
 		case 'e': _switch_mode = (_switch_mode == SM_LOAD_GAME || _switch_mode == SM_LOAD_SCENARIO ? SM_LOAD_SCENARIO : SM_EDITOR); break;
 		case 'g':
 			if (mgo.opt != NULL) {
@@ -724,7 +725,7 @@ int openttd_main(int argc, char *argv[])
 	 * integer, even for 32 bpp video modes. This way all internal
 	 * drawing routines work correctly.
 	 */
-	_cur_resolution.width  = ClampU(_cur_resolution.width,  1, UINT16_MAX / 2);
+	_cur_resolution.width = ClampU(_cur_resolution.width, 1, UINT16_MAX / 2);
 	_cur_resolution.height = ClampU(_cur_resolution.height, 1, UINT16_MAX / 2);
 
 	/* Assume the cursor starts within the game as not all video drivers
@@ -768,8 +769,8 @@ int openttd_main(int argc, char *argv[])
 	 *  - Use 8bpp blitter otherwise.
 	 */
 	if (!_blitter_autodetected ||
-			(_support8bpp != S8BPP_NONE && (BaseGraphics::GetUsedSet() == NULL || BaseGraphics::GetUsedSet()->blitter == BLT_8BPP)) ||
-			BlitterFactory::SelectBlitter("32bpp-anim") == NULL) {
+		(_support8bpp != S8BPP_NONE && (BaseGraphics::GetUsedSet() == NULL || BaseGraphics::GetUsedSet()->blitter == BLT_8BPP)) ||
+		BlitterFactory::SelectBlitter("32bpp-anim") == NULL) {
 		if (BlitterFactory::SelectBlitter(blitter) == NULL) {
 			StrEmpty(blitter) ?
 				usererror("Failed to autoprobe blitter") :
@@ -820,7 +821,8 @@ int openttd_main(int argc, char *argv[])
 	if (!BaseSounds::SetSet(sounds_set)) {
 		if (StrEmpty(sounds_set) || !BaseSounds::SetSet(NULL)) {
 			usererror("Failed to find a sounds set. Please acquire a sounds set for OpenTTD. See section 4.1 of README.md.");
-		} else {
+		}
+		else {
 			ErrorMessageData msg(STR_CONFIG_ERROR, STR_CONFIG_ERROR_INVALID_BASE_SOUNDS_NOT_FOUND);
 			msg.SetDParamStr(0, sounds_set);
 			ScheduleErrorMessage(msg);
@@ -833,7 +835,8 @@ int openttd_main(int argc, char *argv[])
 	if (!BaseMusic::SetSet(music_set)) {
 		if (StrEmpty(music_set) || !BaseMusic::SetSet(NULL)) {
 			usererror("Failed to find a music set. Please acquire a music set for OpenTTD. See section 4.1 of README.md.");
-		} else {
+		}
+		else {
 			ErrorMessageData msg(STR_CONFIG_ERROR, STR_CONFIG_ERROR_INVALID_BASE_MUSIC_NOT_FOUND);
 			msg.SetDParamStr(0, music_set);
 			ScheduleErrorMessage(msg);
@@ -919,10 +922,12 @@ void HandleExitGameRequest()
 {
 	if (_game_mode == GM_MENU || _game_mode == GM_BOOTSTRAP) { // do not ask to quit on the main screen
 		_exit_game = true;
-	} else if (_settings_client.gui.autosave_on_exit) {
+	}
+	else if (_settings_client.gui.autosave_on_exit) {
 		DoExitSave();
 		_exit_game = true;
-	} else {
+	}
+	else {
 		AskExitGame();
 	}
 }
@@ -971,6 +976,7 @@ static void MakeNewGame(bool from_heightmap, bool reset_settings)
 	_game_mode = GM_NORMAL;
 
 	ResetGRFConfig(true);
+	AnomalyDetector::GetInstance()->Reset();
 
 	GenerateWorldSetCallback(&MakeNewGameDone);
 	GenerateWorld(from_heightmap ? GWM_HEIGHTMAP : GWM_NEWGAME, 1 << _settings_game.game_creation.map_x, 1 << _settings_game.game_creation.map_y, reset_settings);
@@ -1010,37 +1016,37 @@ bool SafeLoad(const char *filename, SaveLoadOperation fop, DetailedFileType dft,
 	_game_mode = newgm;
 
 	switch (lf == NULL ? SaveOrLoad(filename, fop, dft, subdir) : LoadWithFilter(lf)) {
-		case SL_OK: return true;
+	case SL_OK: return true;
 
-		case SL_REINIT:
+	case SL_REINIT:
 #ifdef ENABLE_NETWORK
-			if (_network_dedicated) {
-				/*
-				 * We need to reinit a network map...
-				 * We can't simply load the intro game here as that game has many
-				 * special cases which make clients desync immediately. So we fall
-				 * back to just generating a new game with the current settings.
-				 */
-				DEBUG(net, 0, "Loading game failed, so a new (random) game will be started!");
-				MakeNewGame(false, true);
-				return false;
-			}
-			if (_network_server) {
-				/* We can't load the intro game as server, so disconnect first. */
-				NetworkDisconnect();
-			}
+		if (_network_dedicated) {
+			/*
+			 * We need to reinit a network map...
+			 * We can't simply load the intro game here as that game has many
+			 * special cases which make clients desync immediately. So we fall
+			 * back to just generating a new game with the current settings.
+			 */
+			DEBUG(net, 0, "Loading game failed, so a new (random) game will be started!");
+			MakeNewGame(false, true);
+			return false;
+		}
+		if (_network_server) {
+			/* We can't load the intro game as server, so disconnect first. */
+			NetworkDisconnect();
+		}
 #endif /* ENABLE_NETWORK */
 
-			switch (ogm) {
-				default:
-				case GM_MENU:   LoadIntroGame();      break;
-				case GM_EDITOR: MakeNewEditorWorld(); break;
-			}
-			return false;
-
+		switch (ogm) {
 		default:
-			_game_mode = ogm;
-			return false;
+		case GM_MENU:   LoadIntroGame();      break;
+		case GM_EDITOR: MakeNewEditorWorld(); break;
+		}
+		return false;
+
+	default:
+		_game_mode = ogm;
+		return false;
 	}
 }
 
@@ -1053,7 +1059,8 @@ void SwitchToMode(SwitchMode new_mode)
 		if (_networking) {
 			if (_network_server && (new_mode == SM_LOAD_GAME || new_mode == SM_NEWGAME || new_mode == SM_RESTARTGAME)) {
 				NetworkReboot();
-			} else {
+			}
+			else {
 				NetworkDisconnect();
 			}
 		}
@@ -1069,7 +1076,8 @@ void SwitchToMode(SwitchMode new_mode)
 					ResetGRFConfig(false);
 				}
 				NetworkServerStart();
-			} else {
+			}
+			else {
 				/* This client no longer wants to be a network-server */
 				_is_network_server = false;
 			}
@@ -1080,108 +1088,111 @@ void SwitchToMode(SwitchMode new_mode)
 	if (new_mode != SM_SAVE_GAME) AI::KillAll();
 
 	switch (new_mode) {
-		case SM_EDITOR: // Switch to scenario editor
-			MakeNewEditorWorld();
-			break;
+	case SM_EDITOR: // Switch to scenario editor
+		MakeNewEditorWorld();
+		break;
 
-		case SM_RESTARTGAME: // Restart --> 'Random game' with current settings
-		case SM_NEWGAME: // New Game --> 'Random game'
+	case SM_RESTARTGAME: // Restart --> 'Random game' with current settings
+	case SM_NEWGAME: // New Game --> 'Random game'
 #ifdef ENABLE_NETWORK
-			if (_network_server) {
-				seprintf(_network_game_info.map_name, lastof(_network_game_info.map_name), "Random Map");
-			}
-#endif /* ENABLE_NETWORK */
-			MakeNewGame(false, new_mode == SM_NEWGAME);
-			break;
-
-		case SM_LOAD_GAME: { // Load game, Play Scenario
-			ResetGRFConfig(true);
-			ResetWindowSystem();
-
-			if (!SafeLoad(_file_to_saveload.name, _file_to_saveload.file_op, _file_to_saveload.detail_ftype, GM_NORMAL, NO_DIRECTORY)) {
-				SetDParamStr(0, GetSaveLoadErrorString());
-				ShowErrorMessage(STR_JUST_RAW_STRING, INVALID_STRING_ID, WL_ERROR);
-			} else {
-				if (_file_to_saveload.abstract_ftype == FT_SCENARIO) {
-					/* Reset engine pool to simplify changing engine NewGRFs in scenario editor. */
-					EngineOverrideManager::ResetToCurrentNewGRFConfig();
-				}
-				/* Update the local company for a loaded game. It is either always
-				 * company #1 (eg 0) or in the case of a dedicated server a spectator */
-				SetLocalCompany(_network_dedicated ? COMPANY_SPECTATOR : COMPANY_FIRST);
-				/* Execute the game-start script */
-				IConsoleCmdExec("exec scripts/game_start.scr 0");
-				/* Decrease pause counter (was increased from opening load dialog) */
-				DoCommandP(0, PM_PAUSED_SAVELOAD, 0, CMD_PAUSE);
-#ifdef ENABLE_NETWORK
-				if (_network_server) {
-					seprintf(_network_game_info.map_name, lastof(_network_game_info.map_name), "%s (Loaded game)", _file_to_saveload.title);
-				}
-#endif /* ENABLE_NETWORK */
-			}
-			break;
+		if (_network_server) {
+			seprintf(_network_game_info.map_name, lastof(_network_game_info.map_name), "Random Map");
 		}
+#endif /* ENABLE_NETWORK */
+		MakeNewGame(false, new_mode == SM_NEWGAME);
+		break;
 
-		case SM_START_HEIGHTMAP: // Load a heightmap and start a new game from it
+	case SM_LOAD_GAME: { // Load game, Play Scenario
+		ResetGRFConfig(true);
+		ResetWindowSystem();
+
+		if (!SafeLoad(_file_to_saveload.name, _file_to_saveload.file_op, _file_to_saveload.detail_ftype, GM_NORMAL, NO_DIRECTORY)) {
+			SetDParamStr(0, GetSaveLoadErrorString());
+			ShowErrorMessage(STR_JUST_RAW_STRING, INVALID_STRING_ID, WL_ERROR);
+		}
+		else {
+			if (_file_to_saveload.abstract_ftype == FT_SCENARIO) {
+				/* Reset engine pool to simplify changing engine NewGRFs in scenario editor. */
+				EngineOverrideManager::ResetToCurrentNewGRFConfig();
+			}
+			/* Update the local company for a loaded game. It is either always
+			 * company #1 (eg 0) or in the case of a dedicated server a spectator */
+			SetLocalCompany(_network_dedicated ? COMPANY_SPECTATOR : COMPANY_FIRST);
+			/* Execute the game-start script */
+			IConsoleCmdExec("exec scripts/game_start.scr 0");
+			/* Decrease pause counter (was increased from opening load dialog) */
+			DoCommandP(0, PM_PAUSED_SAVELOAD, 0, CMD_PAUSE);
 #ifdef ENABLE_NETWORK
 			if (_network_server) {
-				seprintf(_network_game_info.map_name, lastof(_network_game_info.map_name), "%s (Heightmap)", _file_to_saveload.title);
+				seprintf(_network_game_info.map_name, lastof(_network_game_info.map_name), "%s (Loaded game)", _file_to_saveload.title);
 			}
 #endif /* ENABLE_NETWORK */
-			MakeNewGame(true, true);
-			break;
+		}
+		break;
+	}
 
-		case SM_LOAD_HEIGHTMAP: // Load heightmap from scenario editor
+	case SM_START_HEIGHTMAP: // Load a heightmap and start a new game from it
+#ifdef ENABLE_NETWORK
+		if (_network_server) {
+			seprintf(_network_game_info.map_name, lastof(_network_game_info.map_name), "%s (Heightmap)", _file_to_saveload.title);
+		}
+#endif /* ENABLE_NETWORK */
+		MakeNewGame(true, true);
+		break;
+
+	case SM_LOAD_HEIGHTMAP: // Load heightmap from scenario editor
+		SetLocalCompany(OWNER_NONE);
+
+		GenerateWorld(GWM_HEIGHTMAP, 1 << _settings_game.game_creation.map_x, 1 << _settings_game.game_creation.map_y);
+		MarkWholeScreenDirty();
+		break;
+
+	case SM_LOAD_SCENARIO: { // Load scenario from scenario editor
+		if (SafeLoad(_file_to_saveload.name, _file_to_saveload.file_op, _file_to_saveload.detail_ftype, GM_EDITOR, NO_DIRECTORY)) {
 			SetLocalCompany(OWNER_NONE);
-
-			GenerateWorld(GWM_HEIGHTMAP, 1 << _settings_game.game_creation.map_x, 1 << _settings_game.game_creation.map_y);
-			MarkWholeScreenDirty();
-			break;
-
-		case SM_LOAD_SCENARIO: { // Load scenario from scenario editor
-			if (SafeLoad(_file_to_saveload.name, _file_to_saveload.file_op, _file_to_saveload.detail_ftype, GM_EDITOR, NO_DIRECTORY)) {
-				SetLocalCompany(OWNER_NONE);
-				_settings_newgame.game_creation.starting_year = _cur_year;
-				/* Cancel the saveload pausing */
-				DoCommandP(0, PM_PAUSED_SAVELOAD, 0, CMD_PAUSE);
-			} else {
-				SetDParamStr(0, GetSaveLoadErrorString());
-				ShowErrorMessage(STR_JUST_RAW_STRING, INVALID_STRING_ID, WL_ERROR);
-			}
-			break;
+			_settings_newgame.game_creation.starting_year = _cur_year;
+			/* Cancel the saveload pausing */
+			DoCommandP(0, PM_PAUSED_SAVELOAD, 0, CMD_PAUSE);
 		}
+		else {
+			SetDParamStr(0, GetSaveLoadErrorString());
+			ShowErrorMessage(STR_JUST_RAW_STRING, INVALID_STRING_ID, WL_ERROR);
+		}
+		break;
+	}
 
-		case SM_MENU: // Switch to game intro menu
-			LoadIntroGame();
-			if (BaseSounds::ini_set == NULL && BaseSounds::GetUsedSet()->fallback) {
-				ShowErrorMessage(STR_WARNING_FALLBACK_SOUNDSET, INVALID_STRING_ID, WL_CRITICAL);
-				BaseSounds::ini_set = stredup(BaseSounds::GetUsedSet()->name);
-			}
-			break;
+	case SM_MENU: // Switch to game intro menu
+		LoadIntroGame();
+		if (BaseSounds::ini_set == NULL && BaseSounds::GetUsedSet()->fallback) {
+			ShowErrorMessage(STR_WARNING_FALLBACK_SOUNDSET, INVALID_STRING_ID, WL_CRITICAL);
+			BaseSounds::ini_set = stredup(BaseSounds::GetUsedSet()->name);
+		}
+		break;
 
-		case SM_SAVE_GAME: // Save game.
-			/* Make network saved games on pause compatible to singleplayer */
-			if (SaveOrLoad(_file_to_saveload.name, SLO_SAVE, DFT_GAME_FILE, NO_DIRECTORY) != SL_OK) {
-				SetDParamStr(0, GetSaveLoadErrorString());
-				ShowErrorMessage(STR_JUST_RAW_STRING, INVALID_STRING_ID, WL_ERROR);
-			} else {
-				DeleteWindowById(WC_SAVELOAD, 0);
-			}
-			break;
-
-		case SM_SAVE_HEIGHTMAP: // Save heightmap.
-			MakeHeightmapScreenshot(_file_to_saveload.name);
+	case SM_SAVE_GAME: // Save game.
+		/* Make network saved games on pause compatible to singleplayer */
+		if (SaveOrLoad(_file_to_saveload.name, SLO_SAVE, DFT_GAME_FILE, NO_DIRECTORY) != SL_OK) {
+			SetDParamStr(0, GetSaveLoadErrorString());
+			ShowErrorMessage(STR_JUST_RAW_STRING, INVALID_STRING_ID, WL_ERROR);
+		}
+		else {
 			DeleteWindowById(WC_SAVELOAD, 0);
-			break;
+		}
+		break;
 
-		case SM_GENRANDLAND: // Generate random land within scenario editor
-			SetLocalCompany(OWNER_NONE);
-			GenerateWorld(GWM_RANDOM, 1 << _settings_game.game_creation.map_x, 1 << _settings_game.game_creation.map_y);
-			/* XXX: set date */
-			MarkWholeScreenDirty();
-			break;
+	case SM_SAVE_HEIGHTMAP: // Save heightmap.
+		MakeHeightmapScreenshot(_file_to_saveload.name);
+		DeleteWindowById(WC_SAVELOAD, 0);
+		break;
 
-		default: NOT_REACHED();
+	case SM_GENRANDLAND: // Generate random land within scenario editor
+		SetLocalCompany(OWNER_NONE);
+		GenerateWorld(GWM_RANDOM, 1 << _settings_game.game_creation.map_x, 1 << _settings_game.game_creation.map_y);
+		/* XXX: set date */
+		MarkWholeScreenDirty();
+		break;
+
+	default: NOT_REACHED();
 	}
 }
 
@@ -1262,25 +1273,25 @@ static void CheckCaches()
 			grf_cache[length] = u->grf_cache;
 			veh_cache[length] = u->vcache;
 			switch (u->type) {
-				case VEH_TRAIN:
-					gro_cache[length] = Train::From(u)->gcache;
-					tra_cache[length] = Train::From(u)->tcache;
-					break;
-				case VEH_ROAD:
-					gro_cache[length] = RoadVehicle::From(u)->gcache;
-					break;
-				default:
-					break;
+			case VEH_TRAIN:
+				gro_cache[length] = Train::From(u)->gcache;
+				tra_cache[length] = Train::From(u)->tcache;
+				break;
+			case VEH_ROAD:
+				gro_cache[length] = RoadVehicle::From(u)->gcache;
+				break;
+			default:
+				break;
 			}
 			length++;
 		}
 
 		switch (v->type) {
-			case VEH_TRAIN:    Train::From(v)->ConsistChanged(CCF_TRACK); break;
-			case VEH_ROAD:     RoadVehUpdateCache(RoadVehicle::From(v)); break;
-			case VEH_AIRCRAFT: UpdateAircraftCache(Aircraft::From(v));   break;
-			case VEH_SHIP:     Ship::From(v)->UpdateCache();             break;
-			default: break;
+		case VEH_TRAIN:    Train::From(v)->ConsistChanged(CCF_TRACK); break;
+		case VEH_ROAD:     RoadVehUpdateCache(RoadVehicle::From(v)); break;
+		case VEH_AIRCRAFT: UpdateAircraftCache(Aircraft::From(v));   break;
+		case VEH_SHIP:     Ship::From(v)->UpdateCache();             break;
+		default: break;
 		}
 
 		length = 0;
@@ -1293,21 +1304,21 @@ static void CheckCaches()
 				DEBUG(desync, 2, "vehicle cache mismatch: type %i, vehicle %i, company %i, unit number %i, wagon %i", (int)v->type, v->index, (int)v->owner, v->unitnumber, length);
 			}
 			switch (u->type) {
-				case VEH_TRAIN:
-					if (memcmp(&gro_cache[length], &Train::From(u)->gcache, sizeof(GroundVehicleCache)) != 0) {
-						DEBUG(desync, 2, "train ground vehicle cache mismatch: vehicle %i, company %i, unit number %i, wagon %i", v->index, (int)v->owner, v->unitnumber, length);
-					}
-					if (memcmp(&tra_cache[length], &Train::From(u)->tcache, sizeof(TrainCache)) != 0) {
-						DEBUG(desync, 2, "train cache mismatch: vehicle %i, company %i, unit number %i, wagon %i", v->index, (int)v->owner, v->unitnumber, length);
-					}
-					break;
-				case VEH_ROAD:
-					if (memcmp(&gro_cache[length], &RoadVehicle::From(u)->gcache, sizeof(GroundVehicleCache)) != 0) {
-						DEBUG(desync, 2, "road vehicle ground vehicle cache mismatch: vehicle %i, company %i, unit number %i, wagon %i", v->index, (int)v->owner, v->unitnumber, length);
-					}
-					break;
-				default:
-					break;
+			case VEH_TRAIN:
+				if (memcmp(&gro_cache[length], &Train::From(u)->gcache, sizeof(GroundVehicleCache)) != 0) {
+					DEBUG(desync, 2, "train ground vehicle cache mismatch: vehicle %i, company %i, unit number %i, wagon %i", v->index, (int)v->owner, v->unitnumber, length);
+				}
+				if (memcmp(&tra_cache[length], &Train::From(u)->tcache, sizeof(TrainCache)) != 0) {
+					DEBUG(desync, 2, "train cache mismatch: vehicle %i, company %i, unit number %i, wagon %i", v->index, (int)v->owner, v->unitnumber, length);
+				}
+				break;
+			case VEH_ROAD:
+				if (memcmp(&gro_cache[length], &RoadVehicle::From(u)->gcache, sizeof(GroundVehicleCache)) != 0) {
+					DEBUG(desync, 2, "road vehicle ground vehicle cache mismatch: vehicle %i, company %i, unit number %i, wagon %i", v->index, (int)v->owner, v->unitnumber, length);
+				}
+				break;
+			default:
+				break;
 			}
 			length++;
 		}
@@ -1378,7 +1389,8 @@ void StateGameLoop()
 
 		CallWindowTickEvent();
 		NewsLoop();
-	} else {
+	}
+	else {
 		if (_debug_desync_level > 2 && _date_fract == 0 && (_date & 0x1F) == 0) {
 			/* Save the desync savegame if needed. */
 			char name[MAX_PATH];
@@ -1409,6 +1421,10 @@ void StateGameLoop()
 		CallWindowTickEvent();
 		NewsLoop();
 		cur_company.Restore();
+
+		// ANOMALY DETECTION: Logging the data every frame
+		if (_game_mode != GM_MENU)
+			AnomalyDetector::GetInstance()->LogData();
 	}
 
 	assert(IsLocalCompany());
@@ -1425,7 +1441,8 @@ static void DoAutosave()
 	if (_settings_client.gui.keep_all_autosave) {
 		GenerateDefaultSaveName(buf, lastof(buf));
 		strecat(buf, ".sav", lastof(buf));
-	} else {
+	}
+	else {
 		static int _autosave_ctr = 0;
 
 		/* generate a savegame name and number according to _settings_client.gui.max_num_autosaves */
@@ -1480,7 +1497,8 @@ void GameLoop()
 	if (_networking && !HasModalProgress()) {
 		/* Multiplayer */
 		NetworkGameLoop();
-	} else {
+	}
+	else {
 		if (_network_reconnect > 0 && --_network_reconnect == 0) {
 			/* This means that we want to reconnect to the last host
 			 * We do this here, because it means that the network is really closed */
@@ -1508,4 +1526,4 @@ void GameLoop()
 
 	SoundDriver::GetInstance()->MainLoop();
 	MusicLoop();
-}
+	}

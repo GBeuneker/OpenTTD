@@ -7,7 +7,7 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file random_func.cpp Implementation of the pseudo random generator. */
+ /** @file random_func.cpp Implementation of the pseudo random generator. */
 
 #include "../stdafx.h"
 #include "random_func.hpp"
@@ -23,6 +23,7 @@
 #endif /* RANDOM_DEBUG */
 
 #include "../safeguards.h"
+#include "../anomaly detection/AnomalyDetector.h"
 
 Randomizer _random, _interactive_random;
 
@@ -58,6 +59,8 @@ void Randomizer::SetSeed(uint32 seed)
 {
 	this->state[0] = seed;
 	this->state[1] = seed;
+
+	AnomalyDetector::GetInstance()->seed = seed;
 }
 
 /**
