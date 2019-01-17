@@ -39,6 +39,7 @@
 #include "engine_base.h"
 #include "game/game.hpp"
 #include "table/strings.h"
+#include "anomaly detection\AnomalyDetector.h"
 
 #include "safeguards.h"
 
@@ -186,6 +187,12 @@ DEF_CONSOLE_HOOK(ConHookNewGRFDeveloperTool)
 static void IConsoleHelp(const char *str)
 {
 	IConsolePrintF(CC_WARNING, "- %s", str);
+}
+
+DEF_CONSOLE_CMD(ConLogAnomalies)
+{
+	AnomalyDetector::GetInstance()->SerializeFull();
+	return true;
 }
 
 /**
@@ -1932,6 +1939,7 @@ DEF_CONSOLE_CMD(ConFramerateWindow)
 
 void IConsoleStdLibRegister()
 {
+	IConsoleCmdRegister("log_anomalies", ConLogAnomalies);
 	IConsoleCmdRegister("debug_level",  ConDebugLevel);
 	IConsoleCmdRegister("echo",         ConEcho);
 	IConsoleCmdRegister("echoc",        ConEchoC);

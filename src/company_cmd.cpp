@@ -37,6 +37,7 @@
 #include "goal_base.h"
 #include "story_base.h"
 #include "anomaly detection/AnomalyDetector.h"
+#include "script\api\script_infrastructure.hpp"
 
 #include "table/strings.h"
 
@@ -71,8 +72,16 @@ INSTANTIATE_POOL_METHODS(Company)
 	for (uint j = 0; j < 4; j++) this->share_owners[j] = COMPANY_SPECTATOR;
 	InvalidateWindowData(WC_PERFORMANCE_DETAIL, 0, INVALID_COMPANY);
 
-	if (_game_mode != GM_MENU)
-		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&money);
+	if (_game_mode != GM_MENU && this->is_ai)
+	{
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&money, "Money");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&cur_economy.company_value, "Company Value");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&current_loan, "Loan");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&roadAmount, "Roads");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&roadVehicleAmount, "Road Vehicles");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&railAmount, "Railways");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&railVehicleAmount, "Rail Vehicles");
+	}
 }
 
 /** Destructor. */
@@ -712,7 +721,18 @@ void OnTick_Companies()
 	if (c != NULL) {
 		if (c->name_1 != 0) GenerateCompanyName(c);
 		if (c->bankrupt_asked != 0) HandleBankruptcyTakeover(c);
+		// Store the company value
+		c->cur_economy.company_value = CalculateCompanyValue(c);
+
+		int rail_pieces = 0, road_pieces = 0;
+		for (uint i = 0; i < lengthof(c->infrastructure.rail); i++) rail_pieces += c->infrastructure.rail[i];
+		for (uint i = 0; i < lengthof(c->infrastructure.road); i++) road_pieces += c->infrastructure.road[i];
+		c->roadAmount = road_pieces;
+		c->roadVehicleAmount = c->group_all[VEH_ROAD].num_vehicle;
+		c->railAmount = rail_pieces;
+		c->railVehicleAmount = c->group_all[VEH_TRAIN].num_vehicle;
 	}
+
 
 	if (_next_competitor_start == 0) {
 		_next_competitor_start = AI::GetStartNextTime() * DAY_TICKS;

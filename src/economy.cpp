@@ -120,7 +120,6 @@ Money CalculateCompanyValue(const Company *c, bool including_loan)
 	FOR_ALL_STATIONS(st) {
 		if (st->owner == owner) num += CountBits((byte)st->facilities);
 	}
-
 	Money value = num * _price[PR_STATION_VALUE] * 25;
 
 	Vehicle *v;

@@ -1424,7 +1424,7 @@ void StateGameLoop()
 
 		// ANOMALY DETECTION: Logging the data every frame
 		if (_game_mode != GM_MENU)
-			AnomalyDetector::GetInstance()->LogData();
+			AnomalyDetector::GetInstance()->LogDataTick();
 	}
 
 	assert(IsLocalCompany());

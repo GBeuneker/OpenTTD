@@ -3111,6 +3111,9 @@
     <ClCompile Include="..\src\anomaly detection\som.cpp">
       <Filter>Anomaly Detection\Detectors</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\anomaly detection\DataChart.cpp">
+      <Filter>Anomaly Detection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />
@@ -3137,6 +3140,12 @@
     </ClInclude>
     <ClInclude Include="..\src\anomaly detection\Detector.h">
       <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\DataChart.h">
+      <Filter>Anomaly Detection</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\VariablePointer.h">
+      <Filter>Anomaly Detection</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

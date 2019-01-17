@@ -2271,6 +2271,7 @@ struct CompanyWindow : Window
 				break;
 
 			case WID_C_DESC_COMPANY_VALUE:
+				Company *c = Company::Get((CompanyID)this->window_number);
 				SetDParam(0, CalculateCompanyValue(Company::Get((CompanyID)this->window_number)));
 				break;
 		}

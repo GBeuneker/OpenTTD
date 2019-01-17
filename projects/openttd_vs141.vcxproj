@@ -356,6 +356,7 @@
     <ClCompile Include="..\src\airport.cpp" />
     <ClCompile Include="..\src\animated_tile.cpp" />
     <ClCompile Include="..\src\anomaly detection\AnomalyDetector.cpp" />
+    <ClCompile Include="..\src\anomaly detection\DataChart.cpp" />
     <ClCompile Include="..\src\anomaly detection\knn.cpp" />
     <ClCompile Include="..\src\anomaly detection\loci.cpp" />
     <ClCompile Include="..\src\anomaly detection\lof.cpp" />
@@ -461,11 +462,13 @@
     <ClInclude Include="..\src\airport.h" />
     <ClInclude Include="..\src\animated_tile_func.h" />
     <ClInclude Include="..\src\anomaly detection\AnomalyDetector.h" />
+    <ClInclude Include="..\src\anomaly detection\DataChart.h" />
     <ClInclude Include="..\src\anomaly detection\Detector.h" />
     <ClInclude Include="..\src\anomaly detection\knn.h" />
     <ClInclude Include="..\src\anomaly detection\loci.h" />
     <ClInclude Include="..\src\anomaly detection\lof.h" />
     <ClInclude Include="..\src\anomaly detection\som.h" />
+    <ClInclude Include="..\src\anomaly detection\VariablePointer.h" />
     <ClInclude Include="..\src\anomaly detection\Vector2.h" />
     <ClInclude Include="..\src\articulated_vehicles.h" />
     <ClInclude Include="..\src\autoreplace_base.h" />
