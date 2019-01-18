@@ -1,16 +1,19 @@
-set xlabel "X"
-set ylabel "Y"
 set autoscale
 
 list = system('dir /b data_*.dat')
 i=0
 
 do for [file in list] {
+    filename = "data_".i.".dat"
+    s = system("findstr /B \"#\" ".filename)
+    set xlabel word(s,2)
+    set ylabel word(s,3)
+
     set title "Anomaly Detection ".i
     set term wxt i
-    plot "data_".i.".dat"
+    plot filename
     i=i+1
 }
 
-pause 1
-reread
+#pause 1
+#reread
