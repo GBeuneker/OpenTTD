@@ -785,6 +785,7 @@ do_clear:;
 		Company *c = Company::GetIfValid(GetRoadOwner(tile, rt));
 		if (c != NULL) {
 			if (IsTileType(tile, MP_TUNNELBRIDGE)) num_pieces *= TUNNELBRIDGE_TRACKBIT_FACTOR;
+			// TODO: Insert Anomaly
 			c->infrastructure.road[rt] += num_pieces;
 			DirtyCompanyInfrastructureWindows(c->index);
 		}

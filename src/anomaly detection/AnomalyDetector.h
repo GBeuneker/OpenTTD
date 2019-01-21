@@ -9,6 +9,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <direct.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 class AnomalyDetector
 {

@@ -75,12 +75,12 @@ INSTANTIATE_POOL_METHODS(Company)
 	if (_game_mode != GM_MENU && this->is_ai)
 	{
 		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&money, "Money");
-		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&cur_economy.company_value, "Company Value");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&cur_economy.company_value, "CompanyValue");
 		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&current_loan, "Loan");
-		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&roadAmount, "Roads");
-		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&roadVehicleAmount, "Road Vehicles");
-		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&railAmount, "Railways");
-		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&railVehicleAmount, "Rail Vehicles");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_roadAmount, "deltaRoads");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_roadVehicleAmount, "deltaRoadVehicles");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_railAmount, "deltaRailways");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_railVehicleAmount, "deltaRailVehicles");
 	}
 }
 
@@ -227,6 +227,7 @@ static void SubtractMoneyFromAnyCompany(Company *c, CommandCost cost)
 	if (cost.GetCost() == 0) return;
 	assert(cost.GetExpensesType() != INVALID_EXPENSES);
 
+	// TODO: Insert anomaly
 	c->money -= cost.GetCost();
 	c->yearly_expenses[0][cost.GetExpensesType()] += cost.GetCost();
 
@@ -724,13 +725,23 @@ void OnTick_Companies()
 		// Store the company value
 		c->cur_economy.company_value = CalculateCompanyValue(c);
 
-		int rail_pieces = 0, road_pieces = 0;
-		for (uint i = 0; i < lengthof(c->infrastructure.rail); i++) rail_pieces += c->infrastructure.rail[i];
-		for (uint i = 0; i < lengthof(c->infrastructure.road); i++) road_pieces += c->infrastructure.road[i];
-		c->roadAmount = road_pieces;
-		c->roadVehicleAmount = c->group_all[VEH_ROAD].num_vehicle;
-		c->railAmount = rail_pieces;
-		c->railVehicleAmount = c->group_all[VEH_TRAIN].num_vehicle;
+		int railAmount = 0, roadAmount = 0;
+		for (uint i = 0; i < lengthof(c->infrastructure.rail); i++) railAmount += c->infrastructure.rail[i];
+		for (uint i = 0; i < lengthof(c->infrastructure.road); i++) roadAmount += c->infrastructure.road[i];
+		int railVehicleAmount = c->group_all[VEH_TRAIN].num_vehicle;
+		int roadVehicleAmount = c->group_all[VEH_ROAD].num_vehicle;
+
+		// Calculate the delta of the values
+		c->delta_roadAmount = roadAmount - c->prev_roadAmount;
+		c->delta_roadVehicleAmount = roadVehicleAmount - c->prev_roadVehicleAmount;
+		c->delta_railAmount = railAmount - c->prev_railAmount;
+		c->delta_railVehicleAmount = railVehicleAmount - c->prev_railVehicleAmount;
+
+		// Cache the previous values
+		c->prev_railAmount = railAmount;
+		c->prev_roadAmount = roadAmount;
+		c->prev_railVehicleAmount = railVehicleAmount;
+		c->prev_roadVehicleAmount = roadVehicleAmount;
 	}
 
 

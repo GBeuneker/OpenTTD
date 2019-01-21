@@ -41,13 +41,17 @@ void AnomalyDetector::LogDataTick()
 /// <summary>Serializes a single line.</summary>
 void AnomalyDetector::SerializeLine()
 {
-	ofstream datafile;
+	string spath = ".\\..\\_data\\seed_" + to_string(seed);
+	const char* path = spath.c_str();
+	if (mkdir(path) == 0)
+		printf("Directory: \'%s\' was successfully created", path);
 
+	ofstream datafile;
 	for (int i = 0; i < m_datacharts.size(); ++i)
 	{
 		// Open the file and start writing stream
 		char src[60];
-		sprintf(src, ".\\..\\_data\\seed_%i\\data_%i.dat", seed, i);
+		sprintf(src, "%s\\data_%i.dat", path, i);
 		datafile.open(src, ofstream::app);
 		if (ticks == 0)
 		{
@@ -65,13 +69,17 @@ void AnomalyDetector::SerializeLine()
 /// <summary>Serializes the entire data charts.</summary>
 void AnomalyDetector::SerializeFull()
 {
-	ofstream datafile;
+	string spath = ".\\..\\_data\\seed_" + to_string(seed);
+	const char* path = spath.c_str();
+	if (mkdir(path) == 0)
+		printf("Directory: \'%s\' was successfully created", path);
 
+	ofstream datafile;
 	for (int i = 0; i < m_datacharts.size(); ++i)
 	{
 		// Open the file and start writing stream
 		char src[60];
-		sprintf(src, ".\\..\\_data\\seed_%i\\data_%i.dat", seed, i);
+		sprintf(src, "%s\\data_%i.dat", path, i);
 		datafile.open(src, ofstream::trunc);
 
 		datafile << m_datacharts[i]->SerializeFull();

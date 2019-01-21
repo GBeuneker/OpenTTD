@@ -142,6 +142,7 @@ void GroupStatistics::Clear()
 	GroupStatistics &stats_all = GroupStatistics::GetAllGroup(v);
 	GroupStatistics &stats = GroupStatistics::Get(v);
 
+	//TODO: Insert anomaly
 	stats_all.num_vehicle += delta;
 	stats.num_vehicle += delta;
 

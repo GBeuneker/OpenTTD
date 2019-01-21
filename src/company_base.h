@@ -7,7 +7,7 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file company_base.h Definition of stuff that is very close to a company, like the company struct itself. */
+ /** @file company_base.h Definition of stuff that is very close to a company, like the company struct itself. */
 
 #ifndef COMPANY_BASE_H
 #define COMPANY_BASE_H
@@ -40,7 +40,7 @@ struct CompanyInfrastructure {
 	uint32 GetRailTotal() const
 	{
 		uint32 total = 0;
-		for (RailType rt =  RAILTYPE_BEGIN; rt < RAILTYPE_END; rt++) total += this->rail[rt];
+		for (RailType rt = RAILTYPE_BEGIN; rt < RAILTYPE_END; rt++) total += this->rail[rt];
 		return total;
 	}
 };
@@ -64,7 +64,8 @@ struct CompanyProperties {
 	Money money, deltaMoney;		 ///< Money owned by the company.
 	byte money_fraction;             ///< Fraction of money of the company, too small to represent in #money.
 	Money current_loan;              ///< Amount of money borrowed from the bank.
-	int roadAmount, roadVehicleAmount, railAmount, railVehicleAmount;
+	int prev_roadAmount, prev_roadVehicleAmount, prev_railAmount, prev_railVehicleAmount;
+	int delta_roadAmount, delta_roadVehicleAmount, delta_railAmount, delta_railVehicleAmount;
 
 	byte colour;                     ///< Company colour.
 
@@ -100,10 +101,10 @@ struct CompanyProperties {
 	// TODO: Change some of these member variables to use relevant INVALID_xxx constants
 	CompanyProperties()
 		: name_2(0), name_1(0), name(NULL), president_name_1(0), president_name_2(0), president_name(NULL),
-		  face(0), money(0), money_fraction(0), current_loan(0), colour(0), block_preview(0),
-		  location_of_HQ(0), last_build_coordinate(0), share_owners(), inaugurated_year(0),
-		  months_of_bankruptcy(0), bankrupt_asked(0), bankrupt_timeout(0), bankrupt_value(0),
-		  terraform_limit(0), clear_limit(0), tree_limit(0), is_ai(false) {}
+		face(0), money(0), money_fraction(0), current_loan(0), colour(0), block_preview(0),
+		location_of_HQ(0), last_build_coordinate(0), share_owners(), inaugurated_year(0),
+		months_of_bankruptcy(0), bankrupt_asked(0), bankrupt_timeout(0), bankrupt_value(0),
+		terraform_limit(0), clear_limit(0), tree_limit(0), is_ai(false) {}
 
 	~CompanyProperties()
 	{
