@@ -15,5 +15,6 @@ do for [file in list] {
     i=i+1
 }
 
+pause mouse close
 #pause 1
 #reread
