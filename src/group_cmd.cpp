@@ -7,7 +7,7 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file group_cmd.cpp Handling of the engine groups */
+ /** @file group_cmd.cpp Handling of the engine groups */
 
 #include "stdafx.h"
 #include "cmd_helper.h"
@@ -21,6 +21,7 @@
 #include "company_func.h"
 #include "core/pool_func.hpp"
 #include "order_backup.h"
+#include "anomaly detection/AnomalyDetector.h"
 
 #include "table/strings.h"
 
@@ -143,6 +144,9 @@ void GroupStatistics::Clear()
 	GroupStatistics &stats = GroupStatistics::Get(v);
 
 	//TODO: Insert anomaly
+	if (delta > 0 && AnomalyDetector::GetInstance()->TriggerVariableIncrease())
+		delta *= 10;
+
 	stats_all.num_vehicle += delta;
 	stats.num_vehicle += delta;
 
@@ -395,7 +399,8 @@ CommandCost CmdAlterGroup(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 			/* Assign the new one */
 			g->name = reset ? NULL : stredup(text);
 		}
-	} else {
+	}
+	else {
 		/* Set group parent */
 		const Group *pg = Group::GetIfValid(GB(p2, 0, 16));
 
@@ -432,17 +437,17 @@ static void AddVehicleToGroup(Vehicle *v, GroupID new_g)
 	GroupStatistics::CountVehicle(v, -1);
 
 	switch (v->type) {
-		default: NOT_REACHED();
-		case VEH_TRAIN:
-			SetTrainGroupID(Train::From(v), new_g);
-			break;
+	default: NOT_REACHED();
+	case VEH_TRAIN:
+		SetTrainGroupID(Train::From(v), new_g);
+		break;
 
-		case VEH_ROAD:
-		case VEH_SHIP:
-		case VEH_AIRCRAFT:
-			if (v->IsEngineCountable()) UpdateNumEngineGroup(v, v->group_id, new_g);
-			v->group_id = new_g;
-			break;
+	case VEH_ROAD:
+	case VEH_SHIP:
+	case VEH_AIRCRAFT:
+		if (v->IsEngineCountable()) UpdateNumEngineGroup(v, v->group_id, new_g);
+		v->group_id = new_g;
+		break;
 	}
 
 	GroupStatistics::CountVehicle(v, 1);
@@ -612,7 +617,8 @@ CommandCost CmdSetGroupReplaceProtection(TileIndex tile, DoCommandFlag flags, ui
 	if (flags & DC_EXEC) {
 		if (HasBit(p2, 1)) {
 			SetGroupReplaceProtection(g, HasBit(p2, 0));
-		} else {
+		}
+		else {
 			g->replace_protection = HasBit(p2, 0);
 		}
 

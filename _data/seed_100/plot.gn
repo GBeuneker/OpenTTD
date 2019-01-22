@@ -1,4 +1,5 @@
 set autoscale
+set offset graph 0.1, graph 0.1, graph 0.1, graph 0.1
 
 list = system('dir /b data_*.dat')
 i=0

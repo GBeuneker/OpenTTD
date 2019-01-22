@@ -5,6 +5,7 @@
 #include "som.h"
 #include "DataChart.h"
 #include "VariablePointer.h"
+#include "../core/random_func.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -28,9 +29,11 @@ public:
 	void LogDataTick();
 	void SerializeLine();
 	void SerializeFull();
+	bool TriggerVariableIncrease(int chance = 10);
+	bool TriggerVariableReset(int chance = 10);
+	bool TriggerFunctionFailure(int chance = 10);
 	void TrackPointer(size_t * var, char * name);
 	void Reset();
-	int seed;
 private:
 	static AnomalyDetector* instance;
 	std::vector<VariablePointer> m_variables;

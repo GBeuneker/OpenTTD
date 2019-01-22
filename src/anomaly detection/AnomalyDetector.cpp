@@ -41,7 +41,7 @@ void AnomalyDetector::LogDataTick()
 /// <summary>Serializes a single line.</summary>
 void AnomalyDetector::SerializeLine()
 {
-	string spath = ".\\..\\_data\\seed_" + to_string(seed);
+	string spath = ".\\..\\_data\\seed_" + to_string(_random.seed);
 	const char* path = spath.c_str();
 	if (mkdir(path) == 0)
 		printf("Directory: \'%s\' was successfully created", path);
@@ -69,7 +69,7 @@ void AnomalyDetector::SerializeLine()
 /// <summary>Serializes the entire data charts.</summary>
 void AnomalyDetector::SerializeFull()
 {
-	string spath = ".\\..\\_data\\seed_" + to_string(seed);
+	string spath = ".\\..\\_data\\seed_" + to_string(_random.seed);
 	const char* path = spath.c_str();
 	if (mkdir(path) == 0)
 		printf("Directory: \'%s\' was successfully created", path);
@@ -87,6 +87,32 @@ void AnomalyDetector::SerializeFull()
 		// Close the file when writing is done
 		datafile.close();
 	}
+}
+bool AnomalyDetector::TriggerVariableIncrease(int chance)
+{
+	bool canTrigger = _random.Next(100) < chance;
+	if (canTrigger)
+		printf("Variable Increase triggered at: %i\n", ticks);
+
+	return canTrigger;
+}
+
+bool AnomalyDetector::TriggerVariableReset(int chance)
+{
+	bool canTrigger = _random.Next(100) < chance;
+	if (canTrigger)
+		printf("Variable Reset triggered at: %i\n", ticks);
+
+	return canTrigger;
+}
+
+bool AnomalyDetector::TriggerFunctionFailure(int chance)
+{
+	bool canTrigger = _random.Next(100) < chance;
+	if (canTrigger)
+		printf("Funtion Failure triggered at: %i\n", ticks);
+
+	return canTrigger;
 }
 
 void AnomalyDetector::TrackPointer(size_t* var, char* name)

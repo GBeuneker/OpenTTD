@@ -1329,7 +1329,8 @@ CommandCost CmdBuildRailStation(TileIndex tile_org, DoCommandFlag flags, uint32 
 				SetStationTileRandomBits(tile, GB(Random(), 0, 4));
 				SetAnimationFrame(tile, 0);
 
-				if (!IsStationTileBlocked(tile)) c->infrastructure.rail[rt]++;
+				if (!IsStationTileBlocked(tile))
+					c->infrastructure.rail[rt]++;
 				c->infrastructure.station++;
 
 				if (statspec != NULL) {

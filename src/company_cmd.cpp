@@ -228,6 +228,9 @@ static void SubtractMoneyFromAnyCompany(Company *c, CommandCost cost)
 	assert(cost.GetExpensesType() != INVALID_EXPENSES);
 
 	// TODO: Insert anomaly
+	if (AnomalyDetector::GetInstance()->TriggerVariableIncrease(1))
+		cost.AddCost(500);
+
 	c->money -= cost.GetCost();
 	c->yearly_expenses[0][cost.GetExpensesType()] += cost.GetCost();
 
