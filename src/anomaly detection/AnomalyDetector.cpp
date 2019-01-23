@@ -1,5 +1,7 @@
 #include "AnomalyDetector.h"
 
+#define DISABLE_ANOMALIES 0
+
 using namespace std;
 
 AnomalyDetector* AnomalyDetector::instance;
@@ -88,31 +90,53 @@ void AnomalyDetector::SerializeFull()
 		datafile.close();
 	}
 }
-bool AnomalyDetector::TriggerVariableIncrease(int chance)
-{
-	bool canTrigger = _random.Next(100) < chance;
-	if (canTrigger)
-		printf("Variable Increase triggered at: %i\n", ticks);
 
+/// <summary>Determines whether a variable increase anomaly can be triggered.</summary>
+/// <param name='chance'>Chance the anomaly will be triggered (range: 0-100%)</param>
+bool AnomalyDetector::TriggerVariableIncrease(float chance, char* msg)
+{
+	float randomValue = _random.Next(100000) / 1000.0f;
+	bool canTrigger = randomValue < chance;
+
+#if DISABLE_ANOMALIES
+	return false;
+#else
+	if (canTrigger)
+		printf("Variable Increase triggered. Tick: %i | message: %s\n", ticks, msg);
 	return canTrigger;
+#endif
 }
 
-bool AnomalyDetector::TriggerVariableReset(int chance)
+/// <summary>Determines whether a variable reset anomaly can be triggered.</summary>
+/// <param name='chance'>Chance the anomaly will be triggered (range: 0-100%)</param>
+bool AnomalyDetector::TriggerVariableReset(float chance, char* msg)
 {
-	bool canTrigger = _random.Next(100) < chance;
-	if (canTrigger)
-		printf("Variable Reset triggered at: %i\n", ticks);
+	float randomValue = _random.Next(100000) / 1000.0f;
+	bool canTrigger = randomValue < chance;
 
+#if DISABLE_ANOMALIES
+	return false;
+#else
+	if (canTrigger)
+		printf("Variable Reset triggered. Tick: %i | message: %s\n", ticks, msg);
 	return canTrigger;
+#endif
 }
 
-bool AnomalyDetector::TriggerFunctionFailure(int chance)
+/// <summary>Determines whether a function failure anomaly can be triggered.</summary>
+/// <param name='chance'>Chance the anomaly will be triggered (range: 0-100%)</param>
+bool AnomalyDetector::TriggerFunctionFailure(float chance, char* msg)
 {
-	bool canTrigger = _random.Next(100) < chance;
-	if (canTrigger)
-		printf("Funtion Failure triggered at: %i\n", ticks);
+	float randomValue = _random.Next(100000) / 1000.0f;
+	bool canTrigger = randomValue < chance;
 
+#if DISABLE_ANOMALIES
+	return false;
+#else
+	if (canTrigger)
+		printf("Funtion Failure triggered. Tick: %i | message: %s\n", ticks, msg);
 	return canTrigger;
+#endif
 }
 
 void AnomalyDetector::TrackPointer(size_t* var, char* name)

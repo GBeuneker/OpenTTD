@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include "VariablePointer.h"
+#include "Vector2.h"
 
 class DataChart
 {
@@ -14,6 +15,6 @@ public:
 	~DataChart();
 private:
 	VariablePointer m_varA, m_varB;
-	std::vector<int> xAxis, yAxis;
+	std::vector<Vector2> values;
 };
 

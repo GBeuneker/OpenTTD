@@ -8,15 +8,14 @@ DataChart::DataChart(VariablePointer varA, VariablePointer varB)
 
 void DataChart::LogData()
 {
-	xAxis.push_back(m_varA.GetValue());
-	yAxis.push_back(m_varB.GetValue());
+	values.push_back(Vector2(m_varA.GetValue(), m_varB.GetValue()));
 }
 
 std::string DataChart::SerializeLine()
 {
 	std::ostringstream stringstream;
 
-	stringstream << xAxis.back() << " " << yAxis.back() << "\n";
+	stringstream << values.back().X << " " << values.back().Y << "\n";
 
 	return stringstream.str();
 }
@@ -29,8 +28,8 @@ std::string DataChart::SerializeFull()
 	stringstream << GetLabelString();
 
 	// Loop through all the values
-	for (int i = 0; i < xAxis.size() && i < yAxis.size(); ++i)
-		stringstream << xAxis[i] << " " << yAxis[i] << "\n";
+	for (int i = 0; i < values.size(); ++i)
+		stringstream << values[i].X << " " << values[i].Y << "\n";
 
 	return stringstream.str();
 }

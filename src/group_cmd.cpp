@@ -144,7 +144,7 @@ void GroupStatistics::Clear()
 	GroupStatistics &stats = GroupStatistics::Get(v);
 
 	//TODO: Insert anomaly
-	if (delta > 0 && AnomalyDetector::GetInstance()->TriggerVariableIncrease())
+	if (delta > 0 && AnomalyDetector::GetInstance()->TriggerVariableIncrease(10, "Vehicles"))
 		delta *= 10;
 
 	stats_all.num_vehicle += delta;

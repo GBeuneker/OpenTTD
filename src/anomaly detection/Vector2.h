@@ -37,9 +37,6 @@ public:
 	//Boolean Equals Operators
 	bool		operator==(const Vector2& vector) const;
 	bool		operator!=(const Vector2& vector) const;
-	//Static Predefines
-	static const Vector2 Zero;
-	static const Vector2 One;
 	//Print out
 	friend std::ostream& operator<< (std::ostream& ofs, const Vector2& vector);
 };
@@ -150,11 +147,6 @@ inline bool Vector2::operator!=(const Vector2& vector) const
 {
 	return X != vector.X || Y != vector.Y;
 }
-//-----------------------------------------------------------------------------------
-//Fast Static members
-//-----------------------------------------------------------------------------
-const Vector2 Vector2::Zero = Vector2(0, 0);
-const Vector2 Vector2::One = Vector2(1, 1);
 //Subtractes the two Vector2 objects
 inline const Vector2 operator-(Vector2 const&lhs, Vector2 const&rhs) {
 	return Vector2(lhs.X - rhs.X, lhs.Y - rhs.Y);

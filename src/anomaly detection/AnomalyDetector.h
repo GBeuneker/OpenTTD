@@ -29,16 +29,16 @@ public:
 	void LogDataTick();
 	void SerializeLine();
 	void SerializeFull();
-	bool TriggerVariableIncrease(int chance = 10);
-	bool TriggerVariableReset(int chance = 10);
-	bool TriggerFunctionFailure(int chance = 10);
+	bool TriggerVariableIncrease(float chance = 10, char* msg = "");
+	bool TriggerVariableReset(float chance = 10, char* msg = "");
+	bool TriggerFunctionFailure(float chance = 10, char* msg = "");
 	void TrackPointer(size_t * var, char * name);
 	void Reset();
 private:
 	static AnomalyDetector* instance;
 	std::vector<VariablePointer> m_variables;
 	std::vector<DataChart*> m_datacharts;
-	int ticks = 0;
+	uint32_t ticks = 0;
 	bool chartsBuilt = false;
 };
 
