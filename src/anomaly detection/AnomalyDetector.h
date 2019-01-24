@@ -40,5 +40,11 @@ private:
 	std::vector<DataChart*> m_datacharts;
 	uint32_t ticks = 0;
 	bool chartsBuilt = false;
+
+	// Anomaly Detectors
+	KNN *knn;
+	LOF *lof;
+	LOCI *loci;
+	SOM *som;
 };
 

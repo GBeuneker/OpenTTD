@@ -2,11 +2,11 @@
 
 
 
-loci::loci()
+LOCI::LOCI()
 {
 }
 
 
-loci::~loci()
+LOCI::~LOCI()
 {
 }

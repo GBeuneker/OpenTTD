@@ -2,11 +2,11 @@
 
 
 
-som::som()
+SOM::SOM()
 {
 }
 
 
-som::~som()
+SOM::~SOM()
 {
 }

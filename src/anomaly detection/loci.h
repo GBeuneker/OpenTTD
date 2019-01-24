@@ -1,8 +1,8 @@
 #pragma once
-class loci
+class LOCI
 {
 public:
-    loci();
-    ~loci();
+    LOCI();
+    ~LOCI();
 };
 

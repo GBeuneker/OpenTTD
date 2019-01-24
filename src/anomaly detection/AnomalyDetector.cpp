@@ -9,6 +9,7 @@ AnomalyDetector* AnomalyDetector::instance;
 AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
+	this->knn = new KNN(5);
 }
 
 AnomalyDetector::~AnomalyDetector()
@@ -24,6 +25,8 @@ void AnomalyDetector::BuildCharts()
 			m_datacharts.push_back(new DataChart(m_variables[i], m_variables[j]));
 		}
 
+	// Add the data to the knn algorithm
+	knn->AddData(m_datacharts);
 	chartsBuilt = true;
 }
 
@@ -36,6 +39,7 @@ void AnomalyDetector::LogDataTick()
 
 	for (int i = 0; i < m_datacharts.size(); ++i)
 		m_datacharts[i]->LogData();
+	knn->Run();
 
 	ticks++;
 }

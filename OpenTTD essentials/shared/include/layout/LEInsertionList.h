@@ -1,6 +1,6 @@
 /*
  **********************************************************************
- *   Copyright (C) 1998-2014, International Business Machines
+ *   Copyright (C) 1998-2011, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  **********************************************************************
  */
@@ -126,14 +126,14 @@ public:
     /**
      * ICU "poor man's RTTI", returns a UClassID for the actual class.
      *
-     * @deprecated ICU 54. See {@link icu::LayoutEngine}
+     * @stable ICU 2.8
      */
     virtual UClassID getDynamicClassID() const;
 
     /**
      * ICU "poor man's RTTI", returns a UClassID for this class.
      *
-     * @deprecated ICU 54. See {@link icu::LayoutEngine}
+     * @stable ICU 2.8
      */
     static UClassID getStaticClassID();
 

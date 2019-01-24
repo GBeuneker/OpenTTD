@@ -1,6 +1,6 @@
 /*
 ******************************************************************************
-* Copyright (C) 2010-2014, International Business Machines Corporation and
+* Copyright (C) 2010-2012, International Business Machines Corporation and
 * others. All Rights Reserved.
 ******************************************************************************
 */
@@ -61,6 +61,7 @@ public:
     static LocaleDisplayNames* U_EXPORT2 createInstance(const Locale& locale,
                             UDialectHandling dialectHandling);
 
+#ifndef U_HIDE_DRAFT_API
     /**
      * Returns an instance of LocaleDisplayNames that returns names formatted
      * for the provided locale, using the provided UDisplayContext settings.
@@ -70,10 +71,11 @@ public:
      *               handling, capitalization, etc.
      * @param length Number of items in the contexts list
      * @return a LocaleDisplayNames instance
-     * @stable ICU 51
+     * @draft ICU 51
      */
     static LocaleDisplayNames* U_EXPORT2 createInstance(const Locale& locale,
                             UDisplayContext *contexts, int32_t length);
+#endif  /* U_HIDE_DRAFT_API */
 
     // getters for state
     /**
@@ -95,7 +97,7 @@ public:
      * Returns the UDisplayContext value for the specified UDisplayContextType.
      * @param type the UDisplayContextType whose value to return
      * @return the UDisplayContext for the specified type.
-     * @stable ICU 51
+     * @draft ICU 51
      */
     virtual UDisplayContext getContext(UDisplayContextType type) const = 0;
 

@@ -1,8 +1,8 @@
 #pragma once
-class som
+class SOM
 {
 public:
-    som();
-    ~som();
+    SOM();
+    ~SOM();
 };
 

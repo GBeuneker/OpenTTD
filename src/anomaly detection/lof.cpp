@@ -2,11 +2,11 @@
 
 
 
-lof::lof()
+LOF::LOF()
 {
 }
 
 
-lof::~lof()
+LOF::~LOF()
 {
 }

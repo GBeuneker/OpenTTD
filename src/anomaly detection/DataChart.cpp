@@ -4,18 +4,23 @@ DataChart::DataChart(VariablePointer varA, VariablePointer varB)
 {
 	this->m_varA = varA;
 	this->m_varB = varB;
+
+	values = new std::vector<Vector2>();
 }
 
 void DataChart::LogData()
 {
-	values.push_back(Vector2(m_varA.GetValue(), m_varB.GetValue()));
+	Vector2 value = Vector2(m_varA.GetValue(), m_varB.GetValue());
+	values->push_back(value);
+
+	lastValue = value;
 }
 
 std::string DataChart::SerializeLine()
 {
 	std::ostringstream stringstream;
 
-	stringstream << values.back().X << " " << values.back().Y << "\n";
+	stringstream << values->back().X << " " << values->back().Y << "\n";
 
 	return stringstream.str();
 }
@@ -28,8 +33,8 @@ std::string DataChart::SerializeFull()
 	stringstream << GetLabelString();
 
 	// Loop through all the values
-	for (int i = 0; i < values.size(); ++i)
-		stringstream << values[i].X << " " << values[i].Y << "\n";
+	for (int i = 0; i < values->size(); ++i)
+		stringstream << values->at(i).X << " " << values->at(i).Y << "\n";
 
 	return stringstream.str();
 }
@@ -45,4 +50,5 @@ std::string DataChart::GetLabelString()
 
 DataChart::~DataChart()
 {
+	delete values;
 }

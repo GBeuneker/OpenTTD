@@ -1,8 +1,8 @@
 #pragma once
-class lof
+class LOF
 {
 public:
-    lof();
-    ~lof();
+    LOF();
+    ~LOF();
 };
 
