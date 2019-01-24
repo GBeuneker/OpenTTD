@@ -93,12 +93,12 @@
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\bin</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\_Projects\School\Utrecht University\Thesis\OpenTTD\OpenTTD essentials\shared\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\_Projects\School\Utrecht University\Thesis\OpenTTD\OpenTTD essentials\win64\library;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\..\OpenTTD essentials\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\..\OpenTTD essentials\win64\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\_Projects\School\Utrecht University\Thesis\OpenTTD\OpenTTD essentials\shared\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\_Projects\School\Utrecht University\Thesis\OpenTTD\OpenTTD essentials\win64\library;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\..\OpenTTD essentials\shared\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\..\OpenTTD essentials\win64\library;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\_Projects\School\Utrecht University\Thesis\OpenTTD\OpenTTD essentials\shared\include;$(IncludePath)</IncludePath>
