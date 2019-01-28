@@ -16,7 +16,6 @@ void LOF::Run()
 	}
 }
 
-
 LOF::~LOF()
 {
 }
