@@ -1,7 +1,7 @@
 #pragma once
 #include "Detector.h";
 
-#define MAXSIZE 500
+#define WINDOW_SIZE 500
 
 class KNN : public Detector
 {
@@ -9,9 +9,10 @@ public:
 	KNN() {};
 	KNN(uint16_t k);
 	void Run() override;
-	Classification Classify(DataChart* d, Vector2 v);
 	~KNN();
+protected:
+	Classification Classify(DataChart* d, DataPoint p) override;
 private:
 	uint16_t k;
-	float distances[MAXSIZE];
+	float distances[WINDOW_SIZE];
 };
