@@ -15,6 +15,7 @@ public:
 	virtual void AddData(std::vector<DataChart*> _datacharts) { this->datacharts = _datacharts; };
 	virtual void Run() {};
 protected:
-	virtual Classification Classify(DataChart* d, DataPoint p) { return Classification(); };
+	virtual Classification Classify(DataChart* d, Datapoint p) { return Classification(); };
+	virtual Classification Classify(DataChart* d, LOF_Datapoint p) { return Classification(); };
 	std::vector<DataChart*> datacharts;
 };

@@ -10,6 +10,7 @@ AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
 	this->knn = new KNN(5);
+	this->lof = new LOF(5);
 }
 
 AnomalyDetector::~AnomalyDetector()
@@ -27,6 +28,7 @@ void AnomalyDetector::BuildCharts()
 
 	// Add the data to the knn algorithm
 	knn->AddData(m_datacharts);
+	lof->AddData(m_datacharts);
 	chartsBuilt = true;
 }
 
@@ -39,7 +41,8 @@ void AnomalyDetector::LogDataTick()
 
 	for (int i = 0; i < m_datacharts.size(); ++i)
 		m_datacharts[i]->LogData();
-	knn->Run();
+	//knn->Run();
+	lof->Run();
 
 	ticks++;
 }

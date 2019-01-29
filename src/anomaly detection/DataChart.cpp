@@ -5,14 +5,14 @@ DataChart::DataChart(VariablePointer varA, VariablePointer varB)
 	this->m_varA = varA;
 	this->m_varB = varB;
 
-	values = new std::vector<DataPoint>();
+	values = new std::vector<Datapoint>();
 }
 
 void DataChart::LogData()
 {
 	Vector2 position = Vector2(m_varA.GetValue(), m_varB.GetValue());
 
-	LOF_DataPoint newDataPoint;
+	Datapoint newDataPoint;
 	newDataPoint.position = position;
 	values->push_back(newDataPoint);
 

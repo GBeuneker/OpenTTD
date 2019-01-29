@@ -11,7 +11,7 @@ public:
 	void Run() override;
 	~KNN();
 protected:
-	Classification Classify(DataChart* d, DataPoint p) override;
+	Classification Classify(DataChart* d, Datapoint p) override;
 private:
 	uint16_t k;
 	float distances[WINDOW_SIZE];

@@ -14,12 +14,12 @@ void KNN::Run()
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
 		DataChart* d = datacharts[i];
-		DataPoint p = d->GetLast();
+		Datapoint p = d->GetLast();
 		results.push_back(Classify(d, p));
 	}
 }
 
-Classification KNN::Classify(DataChart* dc, DataPoint p)
+Classification KNN::Classify(DataChart* dc, Datapoint p)
 {
 	Classification result;
 
