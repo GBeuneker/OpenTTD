@@ -463,6 +463,7 @@
     <ClInclude Include="..\src\animated_tile_func.h" />
     <ClInclude Include="..\src\anomaly detection\AnomalyDetector.h" />
     <ClInclude Include="..\src\anomaly detection\DataChart.h" />
+    <ClInclude Include="..\src\anomaly detection\DataPoint.h" />
     <ClInclude Include="..\src\anomaly detection\Detector.h" />
     <ClInclude Include="..\src\anomaly detection\knn.h" />
     <ClInclude Include="..\src\anomaly detection\loci.h" />

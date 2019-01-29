@@ -12,7 +12,7 @@ void DataChart::LogData()
 {
 	Vector2 position = Vector2(m_varA.GetValue(), m_varB.GetValue());
 
-	DataPoint newDataPoint;
+	LOF_DataPoint newDataPoint;
 	newDataPoint.position = position;
 	values->push_back(newDataPoint);
 

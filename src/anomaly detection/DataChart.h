@@ -3,17 +3,7 @@
 #include <sstream>
 #include "VariablePointer.h"
 #include "Vector2.h"
-
-struct DataPoint
-{
-	Vector2 position;
-	float distance;
-
-	bool operator < (const DataPoint& dp) const
-	{
-		return (distance < dp.distance);
-	}
-};
+#include "DataPoint.h"
 
 class DataChart
 {

@@ -4,13 +4,16 @@
 class LOF : public Detector
 {
 public:
-    LOF();
+	LOF();
 	void Run() override;
-    ~LOF();
+	~LOF();
 protected:
-	Classification Classify(DataChart* d, DataPoint p) override;
-private:
-	std::vector<DataPoint> GetNeighbours(DataChart* d, DataPoint p, uint16_t k);
+	Classification Classify(DataChart* d, LOF_DataPoint p) override;
+	void SetLOF(DataChart * d, LOF_DataPoint * p);
+	void SetLRD(DataChart * d, LOF_DataPoint *p);
+	float GetReachDistance(DataChart * d, LOF_DataPoint p, LOF_DataPoint o);
+	void SetKDistance(DataChart * d, LOF_DataPoint *p);
+	void SetKNeighbours(DataChart* d, LOF_DataPoint *p);
 	uint16_t k;
 };
 
