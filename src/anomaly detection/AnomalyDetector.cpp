@@ -44,9 +44,9 @@ void AnomalyDetector::LogDataTick()
 
 	for (int i = 0; i < m_datacharts.size(); ++i)
 		m_datacharts[i]->LogData();
-	//knn->Run();
+	knn->Run();
 	//lof->Run();
-	loci->Run();
+	//loci->Run();
 
 	ticks++;
 }

@@ -15,6 +15,11 @@ struct Datapoint
 		return (distance < dp.distance);
 	}
 
+	bool operator == (const Datapoint& dp) const
+	{
+		return (position.X == dp.position.X && position.Y == dp.position.Y);
+	}
+
 	virtual ~Datapoint() {};
 };
 

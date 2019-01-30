@@ -14,8 +14,13 @@ void DataChart::LogData()
 
 	Datapoint newDataPoint;
 	newDataPoint.position = position;
-	values->push_back(newDataPoint);
 
+	// Only add unique values
+	for (int i = 0; i < values->size(); ++i)
+		if (values->at(i) == newDataPoint)
+			return;
+
+	values->push_back(newDataPoint);
 	lastValue = newDataPoint;
 }
 

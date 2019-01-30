@@ -12,8 +12,7 @@ void LOCI::Run()
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
 		DataChart* d = datacharts[i];
-		//Datapoint datapoint = d->GetLast();
-		Datapoint datapoint = d->GetValues()->back();
+		Datapoint datapoint = d->GetLast();
 
 		LOCI_Datapoint p = LOCI_Datapoint(datapoint.position.X, datapoint.position.Y);
 		results.push_back(Classify(d, p));
@@ -27,7 +26,7 @@ Classification LOCI::Classify(DataChart * d, LOCI_Datapoint p)
 {
 	Classification result;
 
-	int rMin = 0, rMax = 1;
+	int rMin = 0, rMax = 10;
 	for (int r = rMin; r < rMax; ++r)
 	{
 		// Set the neighbours and neighbourhood of p
