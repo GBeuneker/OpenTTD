@@ -5,7 +5,7 @@
 #include <algorithm>
 
 struct Classification {
-	bool answer = false;
+	bool isAnomaly = false;
 	float certainty = -1;
 };
 
@@ -17,5 +17,6 @@ public:
 protected:
 	virtual Classification Classify(DataChart* d, Datapoint p) { return Classification(); };
 	virtual Classification Classify(DataChart* d, LOF_Datapoint p) { return Classification(); };
+	virtual Classification Classify(DataChart* d, LOCI_Datapoint p) { return Classification(); };
 	std::vector<DataChart*> datacharts;
 };

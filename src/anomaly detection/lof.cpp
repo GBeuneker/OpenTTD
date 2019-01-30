@@ -1,10 +1,13 @@
 #include "lof.h"
 
+/// <summary>Constructor for Local Outlier Factor.</summary>
+/// <param name='k'>The amount of neighbours we want to use.</param>
 LOF::LOF(uint16_t k)
 {
 	this->k = k;
 }
 
+/// <summary>Runs the LOF algorithm on all datacharts to determine if there is an anomaly.</summary>
 void LOF::Run()
 {
 	std::vector<Classification> results;
@@ -15,12 +18,13 @@ void LOF::Run()
 		Datapoint datapoint = d->GetLast();
 
 		LOF_Datapoint p = LOF_Datapoint(datapoint.position.X, datapoint.position.Y);
-		Classify(d, p);
-
-		//results.push_back(Classify(d, *p));
+		results.push_back(Classify(d, p));
 	}
 }
 
+/// <summary>Classifies whether a datapoint is anomalous.</summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The datapoint we would like to classify.</param>
 Classification LOF::Classify(DataChart * d, LOF_Datapoint p)
 {
 	Classification result;
@@ -28,32 +32,34 @@ Classification LOF::Classify(DataChart * d, LOF_Datapoint p)
 	// Get k-neighbours of p
 	SetKNeighbours(d, &p);
 
-	// Get reach distance for every k-neighbour of p
+	// Set the k-neighbours of every k-neighbour of p
 	for (int i = 0; i < p.kNeighbours.size(); ++i)
 	{
-		//// Set the k-neighbours of o
-		//SetKNeighbours(d, &p.kNeighbours[i]);
-		//// Set the k-distance of o
-		//SetKDistance(d, &p.kNeighbours[i]);
-
-		// Get the reach distance = MAX(dist(o,p), o.kDistance)
-		GetReachDistance(d, p, p.kNeighbours[i]);
+		// Set the k-neighbours of o
+		SetKNeighbours(d, &p.kNeighbours[i]);
+		// Set the k-distance of o
+		SetKDistance(d, &p.kNeighbours[i]);
 	}
 
 	// Calculate lrd(p) = |k-neighbours(p)| / SUM(reach-distances)
 	SetLRD(d, &p);
+	// Set the LRD for all the k-neighbours of p
 	for (int i = 0; i < p.kNeighbours.size(); ++i)
 		SetLRD(d, &p.kNeighbours[i]);
 
 	// Calculate LOF(p) = SUM(lrd(o) / lrd(p)) / |k-neighbours(p)|
 	SetLOF(d, &p);
 
-	result.answer = false;
+	//TODO: Determine if anomalous
+	result.isAnomaly = false;
 	result.certainty = p.lof;
 
 	return result;
 }
 
+/// <summary>Sets the LOF value for a datapoint.</summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The datapoint we would like to set the LOF value for.</param>
 void LOF::SetLOF(DataChart *d, LOF_Datapoint *p)
 {
 	float lrdSum = 0;
@@ -66,6 +72,9 @@ void LOF::SetLOF(DataChart *d, LOF_Datapoint *p)
 	p->lof = lrdSum / p->kNeighbours.size();
 }
 
+/// <summary>Sets the LRD value for a datapoint.</summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The datapoint we would like to set the LRD value for.</param>
 void LOF::SetLRD(DataChart *d, LOF_Datapoint *p)
 {
 	float reachDistSum = 0;
@@ -79,17 +88,27 @@ void LOF::SetLRD(DataChart *d, LOF_Datapoint *p)
 	p->lrd = (p->kNeighbours.size()) / reachDistSum;
 }
 
+/// <summary>Calculates and returns the reach-distance from a point.</summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The point we want to calculate the reach-distance for.</param>
+/// <param name='o'>The reference point used for calculating the reach distance.</param>
 float LOF::GetReachDistance(DataChart *d, LOF_Datapoint p, LOF_Datapoint o)
 {
 	return fmax(Distance(p.position, o.position), o.kDistance);
 }
 
+/// <summary>Sets the k-distance(distance to the k-th negihbour) of a datapoint. </summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The datapoint we would like to set the k-distance for.</param>
 void LOF::SetKDistance(DataChart *d, LOF_Datapoint *p)
 {
 	// Set the distance to the k-th nearest neighbour
 	p->kDistance = Distance(p->kNeighbours.back().position, p->position);
 }
 
+/// <summary>Sets the k-neighbours(closest k neighbours) of a datapoint. </summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The datapoint we would like to set the k-neighbours for.</param>
 void LOF::SetKNeighbours(DataChart * d, LOF_Datapoint* p)
 {
 	std::vector<Datapoint> datapoints = *(d->GetValues());

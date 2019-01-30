@@ -11,12 +11,14 @@ AnomalyDetector::AnomalyDetector()
 	ticks = 0;
 	this->knn = new KNN(5);
 	this->lof = new LOF(5);
+	this->loci = new LOCI();
 }
 
 AnomalyDetector::~AnomalyDetector()
 {
 }
 
+/// <summary>Build the data charts by combining all variables.</summary>
 void AnomalyDetector::BuildCharts()
 {
 	// Build charts based on all combinations of variables
@@ -29,6 +31,7 @@ void AnomalyDetector::BuildCharts()
 	// Add the data to the knn algorithm
 	knn->AddData(m_datacharts);
 	lof->AddData(m_datacharts);
+	loci->AddData(m_datacharts);
 	chartsBuilt = true;
 }
 
@@ -42,7 +45,8 @@ void AnomalyDetector::LogDataTick()
 	for (int i = 0; i < m_datacharts.size(); ++i)
 		m_datacharts[i]->LogData();
 	//knn->Run();
-	lof->Run();
+	//lof->Run();
+	loci->Run();
 
 	ticks++;
 }
@@ -146,11 +150,15 @@ bool AnomalyDetector::TriggerFunctionFailure(float chance, char* msg)
 #endif
 }
 
+/// <summary>Track the pointer of a variable for Anomaly Detection.</summary>
+/// <param name='var'>The pointer we would like to track.</param>
+/// <param name='name'>The name we can identify the variable with.</param>
 void AnomalyDetector::TrackPointer(size_t* var, char* name)
 {
 	m_variables.push_back(VariablePointer(var, name));
 }
 
+/// <summary>Resets all variables in the Anomaly Detector.</summary>
 void AnomalyDetector::Reset()
 {
 	m_variables.clear();

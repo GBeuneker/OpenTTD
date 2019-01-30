@@ -5,6 +5,8 @@
 #include <ostream>
 #include <sstream>
 #include <cmath>
+#include <math.h>
+
 class Vector2
 {
 public:
@@ -268,14 +270,16 @@ inline void Truncate(Vector2 &rhs, float const& max) {
 inline Vector2 Inverse(Vector2 const &rhs) {
 	return Vector2(-rhs.X, -rhs.Y);
 }
-//Returns distance between the Vector2's
-inline double Distance(Vector2 const&lhs, Vector2 const&rhs) {
-	double ySeparation = rhs.Y - lhs.Y;
-	double xSeparation = rhs.X - lhs.X;
 
-	//return sqrtf(ySeparation*ySeparation + xSeparation*xSeparation);
-	return sqrt(ySeparation*ySeparation + xSeparation * xSeparation);
+//Returns distance between the Vector2's
+inline float Distance(Vector2 const&lhs, Vector2 const&rhs) {
+	float ySeparation = rhs.Y - lhs.Y;
+	float xSeparation = rhs.X - lhs.X;
+
+	return sqrtf(ySeparation*ySeparation + xSeparation*xSeparation);
+	//return sqrt(ySeparation*ySeparation + xSeparation * xSeparation);
 }
+
 //Returns squared distance between the Vector2's
 inline double DistanceSquared(Vector2 const&lhs, Vector2 const&rhs) {
 	double ySeparation = rhs.Y - lhs.Y;

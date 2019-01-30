@@ -28,3 +28,12 @@ struct LOF_Datapoint : public Datapoint
 	std::vector<LOF_Datapoint> kNeighbours;
 };
 
+struct LOCI_Datapoint : public Datapoint
+{
+	LOCI_Datapoint() {};
+	LOCI_Datapoint(float x, float y) { this->position = Vector2(x, y); }
+
+	std::vector<LOCI_Datapoint> rNeighbours;
+	float rNeighbourhood = -1;
+};
+
