@@ -2,8 +2,8 @@
 #include <vector>
 #include <sstream>
 #include "VariablePointer.h"
-#include "Vector2.h"
 #include "DataPoint.h"
+#include "../core/random_func.hpp"
 
 class DataChart
 {
@@ -15,11 +15,12 @@ public:
 	std::string SerializeFull();
 	std::string GetLabelString();
 	std::vector<Datapoint>* GetValues() { return this->values; }
-	std::vector<Datapoint>* values;
 	Datapoint GetLast() { return lastValue; }
+	Datapoint GetRandom() { return values->at(_random.Next(values->size())); }
 	~DataChart();
 private:
 	VariablePointer m_varA, m_varB;
 	Datapoint lastValue;
+	std::vector<Datapoint>* values;
 };
 

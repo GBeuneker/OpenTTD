@@ -1,7 +1,5 @@
 #pragma once
 #include "DataChart.h"
-#include "Vector2.h"
-
 #include <algorithm>
 
 struct Classification {
@@ -18,5 +16,6 @@ protected:
 	virtual Classification Classify(DataChart* d, Datapoint p) { return Classification(); };
 	virtual Classification Classify(DataChart* d, LOF_Datapoint p) { return Classification(); };
 	virtual Classification Classify(DataChart* d, LOCI_Datapoint p) { return Classification(); };
+	virtual Classification Classify(DataChart* d, SOM_Datapoint p) { return Classification(); }
 	std::vector<DataChart*> datacharts;
 };

@@ -42,3 +42,8 @@ struct LOCI_Datapoint : public Datapoint
 	float rNeighbourhood = -1;
 };
 
+struct SOM_Datapoint : public Datapoint
+{
+	SOM_Datapoint() {};
+	SOM_Datapoint(float x, float y) { this->position = Vector2(x, y); }
+};
