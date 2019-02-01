@@ -18,7 +18,7 @@ protected:
 	void Train(DataChart * d, SOM_Datapoint * nodes, uint16_t iterations);
 	float GetRadius(uint16_t iteration, uint16_t totalIterations);
 	float GetLearningRate(uint16_t iteration, uint16_t totalIterations);
-	float GetDistanceDrop(float distance, float radius);
+	float GetDistanceDecay(float distance, float radius);
 	void UpdatePosition(SOM_Datapoint* p, Vector2 targetPosition, float learningRate, float distanceDecay = 1);
 private:
 	std::map<DataChart*, int> chartIndices;
