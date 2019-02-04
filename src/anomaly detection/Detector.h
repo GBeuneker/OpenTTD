@@ -10,7 +10,7 @@ struct Classification {
 class Detector
 {
 public:
-	virtual void AddData(std::vector<DataChart*> _datacharts) { this->datacharts = _datacharts; };
+	virtual void SetData(std::vector<DataChart*> _datacharts) { this->datacharts = _datacharts; };
 	virtual void Run() {};
 protected:
 	virtual Classification Classify(DataChart* d, Datapoint p) { return Classification(); };

@@ -24,16 +24,7 @@ void DataChart::LogData()
 	lastValue = newDataPoint;
 }
 
-std::string DataChart::SerializeLine()
-{
-	std::ostringstream stringstream;
-
-	stringstream << values->back().position.X << " " << values->back().position.Y << "\n";
-
-	return stringstream.str();
-}
-
-std::string DataChart::SerializeFull()
+std::string DataChart::Serialize()
 {
 	std::ostringstream stringstream;
 
@@ -47,11 +38,30 @@ std::string DataChart::SerializeFull()
 	return stringstream.str();
 }
 
+void DataChart::DeSerialize(const char* path)
+{
+	std::ifstream infile(path);
+
+	std::string line;
+	//Skip first line
+	std::getline(infile, line);
+	// Read the rest
+	while (std::getline(infile, line))
+	{
+		int a, b;
+		std::istringstream iss(line);
+		if (!(iss >> a >> b)) { break; }
+
+		values->push_back(Datapoint(a, b));
+	}
+}
+
 std::string DataChart::GetLabelString()
 {
 	std::ostringstream stringstream;
 
-	stringstream << "# " << m_varA.GetName() << " " << m_varB.GetName() << "\n";
+	//stringstream << "# " << m_varA.GetName() << " " << m_varB.GetName() << "\n";
+	stringstream << "# X Y\n";
 
 	return stringstream.str();
 }

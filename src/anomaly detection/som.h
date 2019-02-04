@@ -8,22 +8,24 @@ class SOM : public Detector
 public:
 	SOM() {};
 	SOM(uint16_t size);
+	void IntializeMap(DataChart * d, std::vector<SOM_Datapoint>* nodes);
 	void Run() override;
-	void IntializeMap(DataChart * d, SOM_Datapoint * nodes);
-	virtual void AddData(std::vector<DataChart*> _datacharts) override;
+	void TrainAll(uint16_t iterations);
+	virtual void SetTrainingData(std::vector<DataChart*> _trainingSet);
 	~SOM();
 protected:
-	Classification Classify(DataChart* d, SOM_Datapoint p) override;
-	bool IsInSOMMap(SOM_Datapoint * nodes, uint16_t size, SOM_Datapoint node);
-	void Train(DataChart * d, SOM_Datapoint * nodes, uint16_t iterations);
+	Classification Classify(uint16_t index, SOM_Datapoint p);
+	bool IsInSOMMap(std::vector<SOM_Datapoint> nodes, uint16_t size, SOM_Datapoint datapoint);
+	void Train(DataChart * d, std::vector<SOM_Datapoint> *nodes, uint16_t iterations);
 	float GetRadius(uint16_t iteration, uint16_t totalIterations);
 	float GetLearningRate(uint16_t iteration, uint16_t totalIterations);
 	float GetDistanceDecay(float distance, float radius);
 	void UpdatePosition(SOM_Datapoint* p, Vector2 targetPosition, float learningRate, float distanceDecay = 1);
+	void SortCounterClockwise(std::vector<SOM_Datapoint>* nodes);
 private:
-	std::map<DataChart*, int> chartIndices;
-	SOM_Datapoint nodesList[1][1];
-	uint16_t size;
-	float startRadius = 10, learningRate = 1;
+	std::vector<std::vector<SOM_Datapoint>> nodesList;
+	std::vector<DataChart*> trainingSet;
+	uint16_t nodeAmount;
+	float startRadius = 1, learningRate = 1;
 };
 

@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <vector>
 #include <direct.h>
 #include <stdlib.h>
@@ -27,8 +28,8 @@ public:
 	~AnomalyDetector();
 	void BuildCharts();
 	void LogDataTick();
-	void SerializeLine();
-	void SerializeFull();
+	void Serialize();
+	std::vector<DataChart*> DeSerialize(const char* folder);
 	bool TriggerVariableIncrease(float chance = 10, char* msg = "");
 	bool TriggerVariableReset(float chance = 10, char* msg = "");
 	bool TriggerFunctionFailure(float chance = 10, char* msg = "");

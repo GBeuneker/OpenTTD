@@ -191,7 +191,7 @@ static void IConsoleHelp(const char *str)
 
 DEF_CONSOLE_CMD(ConLogAnomalies)
 {
-	AnomalyDetector::GetInstance()->SerializeFull();
+	AnomalyDetector::GetInstance()->Serialize();
 	return true;
 }
 
