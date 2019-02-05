@@ -21,7 +21,7 @@ AnomalyDetector::AnomalyDetector()
 #elif USE_LOCI
 	this->loci = new LOCI();
 #elif USE_SOM
-	this->som = new SOM(1500);
+	this->som = new SOM(40, 40, 0.5);
 #endif
 }
 
@@ -52,7 +52,7 @@ void AnomalyDetector::BuildCharts()
 	// Set the training data for the SOM
 	som->SetTrainingData(trainingSet);
 	// Train the SOM using the added data
-	som->TrainAll(100);
+	som->TrainAll(500);
 #endif
 
 	chartsBuilt = true;

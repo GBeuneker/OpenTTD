@@ -21,7 +21,7 @@ public:
 	~DataChart();
 private:
 	std::vector<Datapoint>* values;
-	VariablePointer m_varA, m_varB;
+	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
 	Datapoint lastValue;
 };
 

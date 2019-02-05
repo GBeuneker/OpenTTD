@@ -10,9 +10,12 @@
 
 /// <summary>Constructor for Self-Organizing Map.</summary>
 /// <param name='k'>The amount of nodes we would like to use</param>
-SOM::SOM(uint16_t nodeAmount)
+SOM::SOM(uint16_t width, uint16_t height, float learningRate)
 {
-	this->nodeAmount = nodeAmount;
+	this->width = width;
+	this->height = height;
+	this->nodeAmount = width * height;
+	this->learningRate = learningRate;
 }
 
 /// <summary>Add the datacharts and initialize the SOMs.</summary>
@@ -52,24 +55,29 @@ void SOM::IntializeMap(DataChart *d, std::vector<SOM_Datapoint> *nodes)
 		maxValue_y = fmax(maxValue_y, pos.Y);
 	}
 
+	float valueWidth = (maxValue_x - minValue_x);
+	float valueHeight = (maxValue_y - minValue_y);
 	// Add a margin of 10% on all sides
-	minValue_x -= minValue_x / 10;
-	minValue_y -= minValue_y / 10;
-	maxValue_x += maxValue_x / 10;
-	maxValue_y += maxValue_y / 10;
+	minValue_x -= valueWidth / 10;
+	maxValue_x += valueWidth / 10;
+	minValue_y -= valueHeight / 10;
+	maxValue_y += valueHeight / 10;
 
-	// Set the start radius to 1/8 the distance of the minimum and maximum boundary corners
-	this->startRadius = Distance(Vector2(minValue_x, minValue_y), Vector2(maxValue_x, maxValue_y)) / 8;
+	float deltaX = (maxValue_x - minValue_x) / (this->width - 1);
+	float deltaY = (maxValue_y - minValue_y) / (this->height - 1);
+	// Initialize nodes at uniform intervals
+	for (int y = 0; y < this->height; ++y)
+		for (int x = 0; x < this->width; ++x)
+		{
+			int index = y * this->width + x;
+			float xPos = minValue_x + x * deltaX;
+			float yPos = minValue_y + y * deltaY;
 
-	// Initialize nodes at random positions
-	for (int n = 0; n < nodeAmount; ++n)
-	{
-		// Get a random x,y position
-		float xPos = minValue_x + _random.Next((maxValue_x - minValue_x) * 100) / 100.0f;
-		float yPos = minValue_y + _random.Next((maxValue_y - minValue_y) * 100) / 100.0f;
+			nodes->at(index).position = Vector2(xPos, yPos);
+		}
 
-		nodes->at(n).position = Vector2(xPos, yPos);
-	}
+	// Set the start radius
+	this->startRadius = fmax(valueWidth, valueHeight) / 2;
 }
 
 /// <summary>Run the SOM and test the datapoints against the trained SOM maps.</summary>
@@ -89,11 +97,19 @@ void SOM::Run()
 
 void SOM::TrainAll(uint16_t iterations)
 {
-	for (int i = 0; i < trainingSet.size(); ++i)
+	for (int i = 0; i < nodesList.size(); ++i)
 	{
 		DataChart* d = trainingSet[i];
 		Train(d, &nodesList[i], iterations);
+	}
 
+	Serialize();
+}
+
+void SOM::Serialize()
+{
+	for (int i = 0; i < nodesList.size(); ++i)
+	{
 		// Serialize the values
 		DataChart dc;
 		// Add all values to a new datachart
@@ -124,6 +140,13 @@ void SOM::TrainAll(uint16_t iterations)
 Classification SOM::Classify(uint16_t index, SOM_Datapoint p)
 {
 	Classification result;
+
+	// Index cannot be larger than the nodes list
+	if (index >= nodesList.size())
+	{
+		printf("ERROR: index is larger than trainingset");
+		return result;
+	}
 
 	// Get the right collection of trained nodes from the list
 	std::vector<SOM_Datapoint> nodes = nodesList[index];
@@ -170,14 +193,16 @@ void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterat
 
 		// Find the node closest to the datapoint(BMU: Best Matching Unit)
 		float minDist = FLT_MAX;
-		SOM_Datapoint bmu;
+		SOM_Datapoint* bmu;
+		int bmuIndex = -1;
 		for (int n = 0; n < nodeAmount; ++n)
 		{
 			float dist = Distance(nodes->at(n).position, randomPoint.position);
 			if (dist < minDist)
 			{
 				minDist = dist;
-				bmu = nodes->at(n);
+				bmu = &nodes->at(n);
+				bmuIndex = n;
 			}
 		}
 
@@ -186,15 +211,18 @@ void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterat
 		// Find the nodes within range of the BMU
 		for (int n = 0; n < nodeAmount; ++n)
 		{
-			float dist = Distance(nodes->at(n).position, bmu.position);
-			if (dist < radius)
+			float dist = Distance(nodes->at(n).position, bmu->position);
+			// ONly update nodes within range which are not the bmu
+			if (dist < radius && &nodes->at(n) != bmu)
 			{
+
 				// Update the position of the node in the neighbourhood of the BMU
 				UpdatePosition(&nodes->at(n), randomPoint.position, GetLearningRate(i, iterations), GetDistanceDecay(dist, radius));
 			}
 		}
 
-		UpdatePosition(&bmu, randomPoint.position, GetLearningRate(i, iterations));
+		// Also update the bmu
+		UpdatePosition(bmu, randomPoint.position, GetLearningRate(i, iterations));
 	}
 
 	//Sort Nodes to form a polygon

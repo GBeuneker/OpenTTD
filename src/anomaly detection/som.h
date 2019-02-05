@@ -7,10 +7,11 @@ class SOM : public Detector
 {
 public:
 	SOM() {};
-	SOM(uint16_t size);
+	SOM(uint16_t width, uint16_t height, float learningRate);
 	void IntializeMap(DataChart * d, std::vector<SOM_Datapoint>* nodes);
 	void Run() override;
 	void TrainAll(uint16_t iterations);
+	void Serialize();
 	virtual void SetTrainingData(std::vector<DataChart*> _trainingSet);
 	~SOM();
 protected:
@@ -25,7 +26,7 @@ protected:
 private:
 	std::vector<std::vector<SOM_Datapoint>> nodesList;
 	std::vector<DataChart*> trainingSet;
-	uint16_t nodeAmount;
+	uint16_t width, height, nodeAmount;
 	float startRadius = 1, learningRate = 1;
 };
 

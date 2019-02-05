@@ -60,7 +60,7 @@ std::string DataChart::GetLabelString()
 {
 	std::ostringstream stringstream;
 
-	if (m_varA.GetPointer() && m_varB.GetPointer())
+	if (m_varA.GetPointer() != 0 && m_varB.GetPointer() != 0)
 		stringstream << "# " << m_varA.GetName() << " " << m_varB.GetName() << "\n";
 	else
 		stringstream << "# X Y\n";
