@@ -149,14 +149,7 @@ inline bool Vector2::operator!=(const Vector2& vector) const
 {
 	return X != vector.X || Y != vector.Y;
 }
-//Subtractes the two Vector2 objects
-inline const Vector2 operator-(Vector2 const&lhs, Vector2 const&rhs) {
-	return Vector2(lhs.X - rhs.X, lhs.Y - rhs.Y);
-}
-//Adds the two Vector2 objects
-inline const Vector2 operator+(Vector2 const&lhs, Vector2 const&rhs) {
-	return Vector2(lhs.X + rhs.X, lhs.Y + rhs.Y);
-}
+
 //divides the two Vector2 objects
 inline const Vector2 operator/(Vector2 const&lhs, float const&rhs) {
 	return Vector2(lhs.X / rhs, lhs.Y / rhs);
@@ -168,30 +161,14 @@ inline const Vector2 operator*(float lhs, Vector2 const &rhs) {
 	result.Y = rhs.Y * lhs;
 	return result;
 }
-//Subtractes the two Vector2 objects
-inline const Vector2& operator-=(Vector2 &lhs, const Vector2 &rhs) {
-	lhs.X -= rhs.X;
-	lhs.Y -= rhs.Y;
-	return lhs;
-}
-//Adds the two Vector2 objects
-inline const Vector2& operator+=(Vector2 &lhs, const Vector2 &rhs) {
-	lhs.X += rhs.X;
-	lhs.Y += rhs.Y;
-	return  lhs;
-}
+
 //Divides the two Vector2 objects
 inline const Vector2& operator/=(Vector2 &lhs, const Vector2 &rhs) {
 	lhs.X /= rhs.X;
 	lhs.Y /= rhs.Y;
 	return  lhs;
 }
-//Multiplies the two Vector2 objects
-inline const Vector2& operator*=(Vector2 &lhs, const Vector2 &rhs) {
-	lhs.X *= rhs.X;
-	lhs.Y *= rhs.Y;
-	return  lhs;
-}
+
 //Multiplies the Vector2 object by a float
 inline const Vector2& operator*=(Vector2 &lhs, const float &rhs) {
 	lhs.X *= rhs;
@@ -237,6 +214,12 @@ inline Vector2 Normalize(Vector2 const &lhs) {
 inline float Cross(Vector2 const &lhs, Vector2 const &rhs) {
 	return (lhs.X * rhs.Y - lhs.Y * rhs.X);
 }
+
+//Returns cross product for Vector2 with a given origin
+inline float Cross(Vector2 const &o, Vector2 const &lhs, Vector2 const&rhs) {
+	return ((lhs.X - o.X) * (rhs.Y - o.Y) - (lhs.Y - o.Y) * (rhs.X - o.X));
+}
+
 //Returns (Vector2) cross product of the Vector2 objects
 inline Vector2 CrossVector(Vector2 const &vec2, Vector2 const &vec1) {
 	return Vector2(

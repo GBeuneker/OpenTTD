@@ -15,18 +15,21 @@ public:
 	virtual void SetTrainingData(std::vector<DataChart*> _trainingSet);
 	~SOM();
 protected:
+	int Orientation(SOM_Datapoint p, SOM_Datapoint q, SOM_Datapoint r);
 	Classification Classify(uint16_t index, SOM_Datapoint p);
 	bool IsInSOMMap(std::vector<SOM_Datapoint> nodes, uint16_t size, SOM_Datapoint datapoint);
+	bool DistToEdge(std::vector<SOM_Datapoint> nodes, SOM_Datapoint p);
 	void Train(DataChart * d, std::vector<SOM_Datapoint> *nodes, uint16_t iterations);
 	float GetRadius(uint16_t iteration, uint16_t totalIterations);
 	float GetLearningRate(uint16_t iteration, uint16_t totalIterations);
 	float GetDistanceDecay(float distance, float radius);
 	void UpdatePosition(SOM_Datapoint* p, Vector2 targetPosition, float learningRate, float distanceDecay = 1);
 	void SortCounterClockwise(std::vector<SOM_Datapoint>* nodes);
+	void ConvexHull(std::vector<SOM_Datapoint>* nodes);
 private:
 	std::vector<std::vector<SOM_Datapoint>> nodesList;
 	std::vector<DataChart*> trainingSet;
-	uint16_t width, height, nodeAmount;
+	uint16_t width, height;
 	float startRadius = 1, learningRate = 1;
 };
 
