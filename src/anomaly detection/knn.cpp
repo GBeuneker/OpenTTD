@@ -79,6 +79,9 @@ Classification KNN::Classify(DataChart* d, Datapoint p)
 	else
 		result.certainty = fmin(abs(kDistance - averageDist) / (4 * stDev), 1);
 
+	if (result.isAnomaly)
+		printf("Anomaly detected! Certainty: %f | Chart: %i\n", result.certainty, chartIndex);
+
 	return result;
 }
 
