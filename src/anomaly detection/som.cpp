@@ -148,15 +148,6 @@ Classification SOM::Classify(uint16_t index, SOM_Datapoint p)
 	// Check if the point is inside the SOM
 	result.isAnomaly = IsInSOMMap(nodes, nodes.size(), p);
 
-	// Get the maximum possible distance between points in our SOM polygon
-	float maxDist = 0;
-	for (int i = 0; i < nodes.size(); ++i)
-	{
-		for (int j = 0; j < nodes.size(); ++j)
-			maxDist = fmax(Distance(nodes.at(i).position, nodes.at(j).position), maxDist);
-	}
-	maxDist;
-
 	// If our point is outside the SOM, normalize using 2 times the max distance
 	if (result.isAnomaly)
 		result.certainty = fmax(DistToEdge(nodes, p) / 2 * maxDist, 1);
@@ -268,6 +259,13 @@ void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterat
 	ConvexHull(nodes);
 	//Sort Nodes to form a polygon
 	SortCounterClockwise(nodes);
+
+	// Get the maximum possible distance between points in our SOM polygon
+	for (int i = 0; i < nodes->size(); ++i)
+	{
+		for (int j = 0; j < nodes->size(); ++j)
+			maxDist = fmax(Distance(nodes->at(i).position, nodes->at(j).position), maxDist);
+	}
 }
 
 /// <summary>The radius of our neighbourhood.</summary>

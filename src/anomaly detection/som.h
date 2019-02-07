@@ -31,5 +31,6 @@ private:
 	std::vector<DataChart*> trainingSet;
 	uint16_t width, height;
 	float startRadius = 1, learningRate = 1;
+	float maxDist = FLT_MIN;
 };
 
