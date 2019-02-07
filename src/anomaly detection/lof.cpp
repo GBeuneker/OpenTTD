@@ -7,6 +7,14 @@ LOF::LOF(uint16_t k)
 	this->k = k;
 }
 
+void LOF::SetData(std::vector<DataChart*> _datacharts)
+{
+	Detector::SetData(_datacharts);
+
+	lofValues= std::vector<float[WINDOW_SIZE]>(datacharts.size());
+	lofIndices = std::vector<int>(datacharts.size());
+}
+
 /// <summary>Runs the LOF algorithm on all datacharts to determine if there is an anomaly.</summary>
 void LOF::Run()
 {
@@ -29,6 +37,9 @@ Classification LOF::Classify(DataChart * d, LOF_Datapoint p)
 {
 	Classification result;
 
+	if (d->GetValues()->size() <= k)
+		return result;
+
 	// Get k-neighbours of p
 	SetKNeighbours(d, &p);
 
@@ -50,9 +61,33 @@ Classification LOF::Classify(DataChart * d, LOF_Datapoint p)
 	// Calculate LOF(p) = SUM(lrd(o) / lrd(p)) / |k-neighbours(p)|
 	SetLOF(d, &p);
 
-	//TODO: Determine if anomalous
-	result.isAnomaly = false;
-	result.certainty = p.lof;
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+
+	float lofValue = p.lof;
+	lofValues.at(chartIndex)[lofIndices[chartIndex]] = lofValue;
+	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
+	int maxIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - k);
+
+	// Calculate the average distance of this window
+	float averageValue = 0;
+	for (int i = 0; i < maxIndex; ++i)
+		averageValue += lofValues.at(chartIndex)[i];
+	averageValue /= maxIndex;
+
+	// Calculate the standard deviation
+	float stDev = 0;
+	for (int i = 0; i < maxIndex; ++i)
+		stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2);
+	stDev = sqrtf(stDev / maxIndex);
+
+	// We flag it as anomalous if the distance is at least one stDev removed from the average
+	result.isAnomaly = lofValue > (averageValue + stDev);
+	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
+	if (stDev <= 0)
+		result.certainty = 1;
+	else
+		result.certainty = fmin(abs(lofValue - averageValue) / (4 * stDev), 1);
 
 	return result;
 }
@@ -69,7 +104,8 @@ void LOF::SetLOF(DataChart *d, LOF_Datapoint *p)
 		lrdSum += (o.lrd / p->lrd);
 	}
 
-	p->lof = lrdSum / p->kNeighbours.size();
+	float lof = lrdSum / p->kNeighbours.size();
+	p->lof = lof;
 }
 
 /// <summary>Sets the LRD value for a datapoint.</summary>

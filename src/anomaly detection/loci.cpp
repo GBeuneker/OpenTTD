@@ -26,8 +26,13 @@ Classification LOCI::Classify(DataChart * d, LOCI_Datapoint p)
 {
 	Classification result;
 
-	int rMin = 0, rMax = 10;
-	for (int r = rMin; r < rMax; ++r)
+	// Determine rmin, rmax and the stepsize
+	int steps = 10;
+	float maxRange = Distance(d->GetMinValue(), d->GetMaxValue());
+	int rMin = maxRange / 100, rMax = maxRange;
+	float stepSize = (rMax - rMin) / steps;
+
+	for (float r = rMin; r < rMax; r += stepSize)
 	{
 		// Set the neighbours and neighbourhood of p
 		SetRNeighbours(d, &p, r);
@@ -41,7 +46,11 @@ Classification LOCI::Classify(DataChart * d, LOCI_Datapoint p)
 
 		// Point is flagged as anomalous if the mdef is greater than the standard deviation
 		result.isAnomaly = mdef > l * s_mdef;
-		result.certainty = mdef;
+		// The certainty is the amount of standard deviations removed (maxes out at 4 standard deviations)
+		if (s_mdef <= 0)
+			result.certainty = 1;
+		else
+			result.certainty = fmin(mdef / (4 * l * s_mdef), 1);
 
 		// Break if for any range we have found an anomaly
 		if (result.isAnomaly)

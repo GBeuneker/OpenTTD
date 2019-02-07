@@ -8,7 +8,7 @@ struct Datapoint
 	Datapoint(float x, float y) { this->position = Vector2(x, y); }
 
 	Vector2 position;
-	float distance = -1;
+	float distance = FLT_MAX;
 
 	bool operator < (const Datapoint& dp) const
 	{

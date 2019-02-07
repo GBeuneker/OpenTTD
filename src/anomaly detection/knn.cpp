@@ -9,6 +9,14 @@ KNN::KNN(uint16_t k)
 		distances[i] = FLT_MAX;
 }
 
+void KNN::SetData(std::vector<DataChart*> _datacharts)
+{
+	Detector::SetData(_datacharts);
+	// Assign all the kDistances
+	kDistances = std::vector<float[WINDOW_SIZE]>(datacharts.size());
+	kIndices = std::vector<int>(datacharts.size());
+}
+
 /// <summary>Runs the KNN algorithm on all datacharts to determine if there is an anomaly.</summary>
 void KNN::Run()
 {
@@ -42,12 +50,34 @@ Classification KNN::Classify(DataChart* d, Datapoint p)
 	// Sort distances
 	std::sort(std::begin(distances), std::end(distances));
 
-	// Get the k-th distance
-	float maxDist = distances[k];
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
-	//TODO: Determine the result
-	result.certainty = 1;
-	result.isAnomaly = maxDist > 4;
+	// Get the k-th distance and add it to the list
+	float kDistance = distances[k];
+	kDistances.at(chartIndex)[kIndices[chartIndex]] = kDistance;
+	kIndices[chartIndex] = (kIndices[chartIndex] + 1) % WINDOW_SIZE;
+	int maxIndex = fmin(WINDOW_SIZE, valuesSize - k);
+
+	// Calculate the average distance of this window
+	float averageDist = 0;
+	for (int i = 0; i < maxIndex; ++i)
+		averageDist += kDistances.at(chartIndex)[i];
+	averageDist /= maxIndex;
+
+	// Calculate the standard deviation
+	float stDev = 0;
+	for (int i = 0; i < maxIndex; ++i)
+		stDev += pow(kDistances.at(chartIndex)[i] - averageDist, 2);
+	stDev = sqrtf(stDev / maxIndex);
+
+	// We flag it is anomalous if the distance is at least one stDev removed from the average
+	result.isAnomaly = kDistance > (averageDist + stDev);
+	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
+	if (stDev <= 0)
+		result.certainty = 1;
+	else
+		result.certainty = fmin(abs(kDistance - averageDist) / (4 * stDev), 1);
 
 	return result;
 }

@@ -147,8 +147,22 @@ Classification SOM::Classify(uint16_t index, SOM_Datapoint p)
 
 	// Check if the point is inside the SOM
 	result.isAnomaly = IsInSOMMap(nodes, nodes.size(), p);
-	// TODO: Normalize this
-	result.certainty = DistToEdge(nodes, p);
+
+	// Get the maximum possible distance between points in our SOM polygon
+	float maxDist = 0;
+	for (int i = 0; i < nodes.size(); ++i)
+	{
+		for (int j = 0; j < nodes.size(); ++j)
+			maxDist = fmax(Distance(nodes.at(i).position, nodes.at(j).position), maxDist);
+	}
+	maxDist;
+
+	// If our point is outside the SOM, normalize using 2 times the max distance
+	if (result.isAnomaly)
+		result.certainty = fmax(DistToEdge(nodes, p) / 2 * maxDist, 1);
+	// If our point is inside the SOM, normalize using half the max distance
+	else
+		result.certainty = fmax(DistToEdge(nodes, p) / (maxDist / 2), 1);
 
 	return result;
 }

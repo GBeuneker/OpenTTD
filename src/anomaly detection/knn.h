@@ -9,10 +9,14 @@ public:
 	KNN() {};
 	KNN(uint16_t k);
 	void Run() override;
+	void SetData(std::vector<DataChart*> _datacharts) override;
 	~KNN();
 protected:
 	Classification Classify(DataChart* d, Datapoint p) override;
 private:
 	uint16_t k;
 	float distances[WINDOW_SIZE];
+	float averageDistance;
+	std::vector<float[WINDOW_SIZE]> kDistances;
+	std::vector<int> kIndices;
 };

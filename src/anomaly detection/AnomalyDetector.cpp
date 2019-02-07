@@ -2,9 +2,9 @@
 
 #define DISABLE_ANOMALIES 0
 #define USE_KNN 0
-#define USE_LOF 0
+#define USE_LOF 1
 #define USE_LOCI 0
-#define USE_SOM 1
+#define USE_SOM 0
 
 
 using namespace std;
@@ -35,11 +35,11 @@ void AnomalyDetector::BuildCharts()
 
 	// Add the data to the knn algorithm
 #if USE_KNN
-	knn->AddData(m_datacharts);
+	knn->SetData(m_datacharts);
 #elif USE_LOF
-	lof->AddData(m_datacharts);
+	lof->SetData(m_datacharts);
 #elif USE_LOCI
-	loci->AddData(m_datacharts);
+	loci->SetData(m_datacharts);
 #elif USE_SOM
 	som->SetData(m_datacharts);
 

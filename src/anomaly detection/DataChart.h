@@ -18,9 +18,13 @@ public:
 	std::vector<Datapoint>* GetValues() { return this->values; }
 	Datapoint GetLast() { return lastValue; }
 	Datapoint GetRandom() { return values->at(_random.Next(values->size())); }
+	Vector2 GetMinValue() { return Vector2(minX, minY); }
+	Vector2 GetMaxValue() { return Vector2(maxX, maxY); }
 	~DataChart();
 private:
 	std::vector<Datapoint>* values;
+	float minX = FLT_MAX, maxX = FLT_MIN;
+	float minY = FLT_MAX, maxY = FLT_MIN;
 	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
 	Datapoint lastValue;
 };

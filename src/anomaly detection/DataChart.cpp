@@ -22,6 +22,12 @@ void DataChart::LogData()
 
 	values->push_back(newDataPoint);
 	lastValue = newDataPoint;
+
+	// Get the datarange
+	minX = fmin(position.X, minX);
+	maxX = fmax(position.X, maxX);
+	minY = fmin(position.Y, minY);
+	maxY = fmax(position.Y, maxY);
 }
 
 std::string DataChart::Serialize()
