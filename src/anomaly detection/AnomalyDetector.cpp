@@ -1,10 +1,10 @@
 #include "AnomalyDetector.h"
 
 #define DISABLE_ANOMALIES 0
-#define USE_KNN 1
+#define USE_KNN 0
 #define USE_LOF 0
 #define USE_LOCI 0
-#define USE_SOM 0
+#define USE_SOM 1
 
 
 using namespace std;
@@ -42,17 +42,6 @@ void AnomalyDetector::BuildCharts()
 	loci->SetData(m_datacharts);
 #elif USE_SOM
 	som->SetData(m_datacharts);
-
-	// Deserialize baseline datacharts
-	string spath = "seed_" + to_string(_random.seed) + "_baseline";
-	const char* path = spath.c_str();
-	// Get the training set
-	std::vector<DataChart*> trainingSet = DeSerialize(path);
-
-	// Set the training data for the SOM
-	som->SetTrainingData(trainingSet);
-	// Train the SOM using the added data
-	som->TrainAll(500);
 #endif
 
 	chartsBuilt = true;
@@ -65,11 +54,9 @@ void AnomalyDetector::LogDataTick()
 	if (ticks == 0)
 		BuildCharts();
 
-#if !USE_SOM
 	// Log new values
 	for (int i = 0; i < m_datacharts.size(); ++i)
 		m_datacharts[i]->LogData();
-#endif
 
 #if USE_KNN
 	knn->Run();

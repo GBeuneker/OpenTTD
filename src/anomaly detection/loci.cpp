@@ -17,6 +17,8 @@ void LOCI::Run()
 		LOCI_Datapoint p = LOCI_Datapoint(datapoint.position.X, datapoint.position.Y);
 		results.push_back(Classify(d, p));
 	}
+
+	DetermineAnomaly(results);
 }
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>

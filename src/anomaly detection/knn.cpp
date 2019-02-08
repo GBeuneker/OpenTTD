@@ -28,6 +28,8 @@ void KNN::Run()
 		Datapoint p = d->GetLast();
 		results.push_back(Classify(d, p));
 	}
+
+	DetermineAnomaly(results);
 }
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>

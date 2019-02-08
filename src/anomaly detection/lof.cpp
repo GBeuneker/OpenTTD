@@ -28,6 +28,8 @@ void LOF::Run()
 		LOF_Datapoint p = LOF_Datapoint(datapoint.position.X, datapoint.position.Y);
 		results.push_back(Classify(d, p));
 	}
+
+	DetermineAnomaly(results);
 }
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>

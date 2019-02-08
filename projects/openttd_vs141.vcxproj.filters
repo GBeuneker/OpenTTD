@@ -3114,6 +3114,9 @@
     <ClCompile Include="..\src\anomaly detection\DataChart.cpp">
       <Filter>Anomaly Detection</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\anomaly detection\Detector.cpp">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\media\openttd.ico" />

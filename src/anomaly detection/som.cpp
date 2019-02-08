@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#pragma region Initialization
+
 /// <summary>Constructor for Self-Organizing Map.</summary>
 /// <param name='k'>The amount of nodes we would like to use</param>
 SOM::SOM(uint16_t width, uint16_t height, float learningRate)
@@ -17,17 +19,15 @@ SOM::SOM(uint16_t width, uint16_t height, float learningRate)
 	this->learningRate = learningRate;
 }
 
-/// <summary>Add the datacharts and initialize the SOMs.</summary>
-/// <param name='_datacharts'>The datacharts we want to add.</param>
-void SOM::SetTrainingData(std::vector<DataChart*> _trainingSet)
+void SOM::SetData(std::vector<DataChart*> _datacharts)
 {
-	trainingSet = _trainingSet;
-	int chartAmount = trainingSet.size();
+	Detector::SetData(_datacharts);
 
-	for (int i = 0; i < chartAmount; ++i)
+	// Initialize values
+	for (int i = 0; i < datacharts.size(); ++i)
 	{
-		nodesList.push_back(std::vector<SOM_Datapoint>(width * height));
-		IntializeMap(trainingSet.at(i), &nodesList.at(i));
+		somNodes.push_back(std::vector<SOM_Datapoint>(width * height));
+		initializedCharts.push_back(false);
 	}
 }
 
@@ -57,8 +57,8 @@ void SOM::IntializeMap(DataChart *d, std::vector<SOM_Datapoint> *nodes)
 	float valueWidth = (maxValue_x - minValue_x);
 	float valueHeight = (maxValue_y - minValue_y);
 
-	float deltaX = (maxValue_x - minValue_x) / (this->width - 1);
-	float deltaY = (maxValue_y - minValue_y) / (this->height - 1);
+	float deltaX = valueWidth / (this->width - 1);
+	float deltaY = valueHeight / (this->height - 1);
 	// Initialize nodes at uniform intervals
 	for (int y = 0; y < this->height; ++y)
 		for (int x = 0; x < this->width; ++x)
@@ -74,6 +74,8 @@ void SOM::IntializeMap(DataChart *d, std::vector<SOM_Datapoint> *nodes)
 	this->startRadius = sqrtf(powf(deltaX, 2) + powf(deltaY, 2)) * 2;
 }
 
+#pragma endregion
+
 /// <summary>Run the SOM and test the datapoints against the trained SOM maps.</summary>
 void SOM::Run()
 {
@@ -82,51 +84,155 @@ void SOM::Run()
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
 		Datapoint datapoint = datacharts[i]->GetLast();
-		SOM_Datapoint p = SOM_Datapoint(datapoint.position.X, datapoint.position.Y);
-
-		// Classify the datapoint and add it to the results
-		results.push_back(Classify(i, p));
+		// Initialize the SOM if there are enough values
+		if (!initializedCharts[i] && datacharts[i]->GetValues()->size() >= windowSize)
+		{
+			// Initialize the map
+			IntializeMap(datacharts[i], &somNodes[i]);
+			// Do some initial training on the map
+			Train(datacharts[i], &somNodes[i], 100);
+			initializedCharts[i] = true;
+		}
+		//If the chart is initialized, update it with newer values
+		else if (initializedCharts[i])
+		{
+			SOM_Datapoint p = SOM_Datapoint(datapoint.position.X, datapoint.position.Y);
+			// Classify the datapoint and add it to the results
+			results.push_back(Classify(i, p));
+			// Update the SOM map
+			UpdateMap(&somNodes.at(i), p, iteration);
+		}
 	}
+
+	if (iteration < windowSize)
+		iteration++;
+
+	DetermineAnomaly(results);
 }
 
-void SOM::TrainAll(uint16_t iterations)
+#pragma region Training
+
+/// <summary>Train the Self Organizing Map.</summary>
+/// <param name='d'>The chart used for training.</param>
+/// <param name='nodes'>The nodes used for training the SOM.</param>
+/// <param name='iterations'>The amount of iterations used for training.</param>
+void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterations)
 {
-	for (int i = 0; i < nodesList.size(); ++i)
+	for (int i = 0; i < iterations; ++i)
 	{
-		DataChart* d = trainingSet[i];
-		Train(d, &nodesList[i], iterations);
-	}
+		// Randomly pick a datapoint from the datachart
+		Datapoint randomPoint = d->GetRandom();
 
-	Serialize();
+		// Find the node closest to the datapoint(BMU: Best Matching Unit)
+		float minDist = FLT_MAX;
+		SOM_Datapoint* bmu;
+		int bmuIndex = -1;
+		for (int n = 0; n < nodes->size(); ++n)
+		{
+			float dist = Distance(nodes->at(n).position, randomPoint.position);
+			if (dist < minDist)
+			{
+				minDist = dist;
+				bmu = &nodes->at(n);
+				bmuIndex = n;
+			}
+		}
+
+		// Get the radius around the BMU from the Neighbourhood function
+		float radius = GetRadius(i, iterations);
+		// Find the nodes within range of the BMU
+		for (int n = 0; n < nodes->size(); ++n)
+		{
+			float dist = Distance(nodes->at(n).position, bmu->position);
+			// ONly update nodes within range which are not the bmu
+			if (dist < radius && &nodes->at(n) != bmu)
+			{
+				// Update the position of the node in the neighbourhood of the BMU
+				UpdatePosition(&nodes->at(n), randomPoint.position, GetLearningRate(i, iterations), GetDistanceDecay(dist, radius));
+			}
+		}
+
+		// Also update the bmu
+		UpdatePosition(bmu, randomPoint.position, GetLearningRate(i, iterations));
+	}
 }
 
-void SOM::Serialize()
+/// <summary>Update the Self-Organizing Map</summary>
+/// <param name='nodes'>The nodes used for training the SOM.</param>
+/// <param name='datapoint'>The new point that was added.</param>
+/// <param name='i'>The current iteration</param>
+void SOM::UpdateMap(std::vector<SOM_Datapoint> *nodes, SOM_Datapoint datapoint, uint16_t i)
 {
-	for (int i = 0; i < nodesList.size(); ++i)
+	// Find the node closest to the datapoint(BMU: Best Matching Unit)
+	float minDist = FLT_MAX;
+	SOM_Datapoint* bmu;
+	int bmuIndex = -1;
+	for (int n = 0; n < nodes->size(); ++n)
 	{
-		// Serialize the values
-		DataChart dc;
-		// Add all values to a new datachart
-		for (int j = 0; j < nodesList[i].size(); ++j)
-			dc.GetValues()->push_back(Datapoint(nodesList[i][j].position.X, nodesList[i][j].position.Y));
-
-		std::string spath = ".\\..\\_data\\SOM";
-		const char* path = spath.c_str();
-		if (mkdir(path) == 0)
-			printf("Directory: \'%s\' was successfully created", path);
-
-		std::ofstream datafile;
-		// Open the file and start writing stream
-		char src[60];
-		sprintf(src, "%s\\data_%i.dat", path, i);
-		datafile.open(src, std::ofstream::trunc);
-
-		datafile << dc.Serialize();
-
-		// Close the file when writing is done
-		datafile.close();
+		float dist = Distance(nodes->at(n).position, datapoint.position);
+		if (dist < minDist)
+		{
+			minDist = dist;
+			bmu = &nodes->at(n);
+			bmuIndex = n;
+		}
 	}
+
+	// Get the radius around the BMU from the Neighbourhood function
+	float radius = GetRadius(i, windowSize);
+	// Find the nodes within range of the BMU
+	for (int n = 0; n < nodes->size(); ++n)
+	{
+		float dist = Distance(nodes->at(n).position, bmu->position);
+		// ONly update nodes within range which are not the bmu
+		if (dist < radius && &nodes->at(n) != bmu)
+		{
+			// Update the position of the node in the neighbourhood of the BMU
+			UpdatePosition(&nodes->at(n), datapoint.position, GetLearningRate(i, windowSize), GetDistanceDecay(dist, radius));
+		}
+	}
+
+	// Also update the bmu
+	UpdatePosition(bmu, datapoint.position, GetLearningRate(i, windowSize));
 }
+
+/// <summary>The radius of our neighbourhood.</summary>
+/// <param name='iteration'>The current iteration we're in.</param>
+/// <param name='totalIterations'>The total amount of iterations.</param>
+float SOM::GetRadius(uint16_t iteration, uint16_t totalIterations)
+{
+	return startRadius * exp(-iteration / timeConstant);
+}
+
+/// <summary>The current learning rate.</summary>
+/// <param name='iteration'>The current iteration we're in.</param>
+/// <param name='totalIterations'>The total amount of iterations.</param>
+float SOM::GetLearningRate(uint16_t iteration, uint16_t totalIterations)
+{
+	return learningRate * exp(-1 * (float)iteration / totalIterations);
+}
+
+/// <summary>Gets the drop-off learning rate based on the distance of a point within the radius.</summary>
+/// <param name='iteration'>The current iteration we're in.</param>
+/// <param name='totalIterations'>The total amount of iterations.</param>
+float SOM::GetDistanceDecay(float distance, float radius)
+{
+	return exp(-distance / (2 * pow(radius, 2)));
+}
+
+/// <summary>Updates a datapoint's position.</summary>
+/// <param name='p'>The datapoint we would like to update.</param>
+/// <param name='targetPosition'>The position we should move the datapoint towards.</param>
+/// <param name='learningRate'>The amount we will change the datapoint.</param>
+/// <param name='distanceDecay'>The decay based on the distance from the BMU.</param>
+void SOM::UpdatePosition(SOM_Datapoint * p, Vector2 targetPosition, float learningRate, float distanceDecay)
+{
+	p->position += (distanceDecay * learningRate * (targetPosition - p->position));
+}
+
+#pragma endregion
+
+#pragma region Classification
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
@@ -136,14 +242,26 @@ Classification SOM::Classify(uint16_t index, SOM_Datapoint p)
 	Classification result;
 
 	// Index cannot be larger than the nodes list
-	if (index >= nodesList.size())
+	if (index >= somNodes.size())
 	{
 		printf("ERROR: index is larger than trainingset");
 		return result;
 	}
 
 	// Get the right collection of trained nodes from the list
-	std::vector<SOM_Datapoint> nodes = nodesList[index];
+	std::vector<SOM_Datapoint> nodes = somNodes[index];
+	// Convert the nodes to a convex hull
+	ConvexHull(&nodes);
+	//Sort Nodes to form a polygon
+	SortCounterClockwise(&nodes);
+
+	float maxDist = 0;
+	// Get the maximum possible distance between points in our SOM polygon
+	for (int i = 0; i < nodes.size(); ++i)
+	{
+		for (int j = 0; j < nodes.size(); ++j)
+			maxDist = fmax(Distance(nodes.at(i).position, nodes.at(j).position), maxDist);
+	}
 
 	// Check if the point is inside the SOM
 	result.isAnomaly = IsInSOMMap(nodes, nodes.size(), p);
@@ -210,97 +328,9 @@ bool SOM::DistToEdge(std::vector<SOM_Datapoint> nodes, SOM_Datapoint p)
 	return closestDist;
 }
 
-/// <summary>Train the Self Organizing Map.</summary>
-/// <param name='d'>The chart used for training.</param>
-/// <param name='nodes'>The nodes used for training the SOM.</param>
-/// <param name='iterations'>The amount of iterations used for training.</param>
-void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterations)
-{
-	for (int i = 0; i < iterations; ++i)
-	{
-		// Randomly pick a datapoint from the datachart
-		Datapoint randomPoint = d->GetRandom();
+#pragma endregion
 
-		// Find the node closest to the datapoint(BMU: Best Matching Unit)
-		float minDist = FLT_MAX;
-		SOM_Datapoint* bmu;
-		int bmuIndex = -1;
-		for (int n = 0; n < nodes->size(); ++n)
-		{
-			float dist = Distance(nodes->at(n).position, randomPoint.position);
-			if (dist < minDist)
-			{
-				minDist = dist;
-				bmu = &nodes->at(n);
-				bmuIndex = n;
-			}
-		}
-
-		// Get the radius around the BMU from the Neighbourhood function
-		float radius = GetRadius(i, iterations);
-		// Find the nodes within range of the BMU
-		for (int n = 0; n < nodes->size(); ++n)
-		{
-			float dist = Distance(nodes->at(n).position, bmu->position);
-			// ONly update nodes within range which are not the bmu
-			if (dist < radius && &nodes->at(n) != bmu)
-			{
-
-				// Update the position of the node in the neighbourhood of the BMU
-				UpdatePosition(&nodes->at(n), randomPoint.position, GetLearningRate(i, iterations), GetDistanceDecay(dist, radius));
-			}
-		}
-
-		// Also update the bmu
-		UpdatePosition(bmu, randomPoint.position, GetLearningRate(i, iterations));
-	}
-
-	// Convert the nodes to a convex hull
-	ConvexHull(nodes);
-	//Sort Nodes to form a polygon
-	SortCounterClockwise(nodes);
-
-	// Get the maximum possible distance between points in our SOM polygon
-	for (int i = 0; i < nodes->size(); ++i)
-	{
-		for (int j = 0; j < nodes->size(); ++j)
-			maxDist = fmax(Distance(nodes->at(i).position, nodes->at(j).position), maxDist);
-	}
-}
-
-/// <summary>The radius of our neighbourhood.</summary>
-/// <param name='iteration'>The current iteration we're in.</param>
-/// <param name='totalIterations'>The total amount of iterations.</param>
-float SOM::GetRadius(uint16_t iteration, uint16_t totalIterations)
-{
-	return startRadius * exp(-3 * (float)iteration / totalIterations);
-}
-
-/// <summary>The current learning rate.</summary>
-/// <param name='iteration'>The current iteration we're in.</param>
-/// <param name='totalIterations'>The total amount of iterations.</param>
-float SOM::GetLearningRate(uint16_t iteration, uint16_t totalIterations)
-{
-	return learningRate * exp(-1 * (float)iteration / totalIterations);
-}
-
-/// <summary>Gets the drop-off learning rate based on the distance of a point within the radius.</summary>
-/// <param name='iteration'>The current iteration we're in.</param>
-/// <param name='totalIterations'>The total amount of iterations.</param>
-float SOM::GetDistanceDecay(float distance, float radius)
-{
-	return exp(-(3 * pow(distance, 2) / pow(radius, 2)));
-}
-
-/// <summary>Updates a datapoint's position.</summary>
-/// <param name='p'>The datapoint we would like to update.</param>
-/// <param name='targetPosition'>The position we should move the datapoint towards.</param>
-/// <param name='learningRate'>The amount we will change the datapoint.</param>
-/// <param name='distanceDecay'>The decay based on the distance from the BMU.</param>
-void SOM::UpdatePosition(SOM_Datapoint * p, Vector2 targetPosition, float learningRate, float distanceDecay)
-{
-	p->position += (distanceDecay * learningRate * (targetPosition - p->position));
-}
+#pragma region Utilities
 
 void SOM::SortCounterClockwise(std::vector<SOM_Datapoint>* nodes)
 {
@@ -362,6 +392,40 @@ int SOM::Orientation(SOM_Datapoint p, SOM_Datapoint q, SOM_Datapoint r)
 	if (val == 0) return 0;  // colinear 
 	return (val > 0) ? 1 : 2; // clock or counterclock wise 
 }
+
+void SOM::Serialize()
+{
+	for (int i = 0; i < somNodes.size(); ++i)
+	{
+		std::vector<SOM_Datapoint> nodes = somNodes[i];
+		ConvexHull(&nodes);
+		SortCounterClockwise(&nodes);
+
+		// Serialize the values
+		DataChart dc;
+		// Add all values to a new datachart
+		for (int j = 0; j < nodes.size(); ++j)
+			dc.GetValues()->push_back(Datapoint(nodes[j].position.X, nodes[j].position.Y));
+
+		std::string spath = ".\\..\\_data\\SOM";
+		const char* path = spath.c_str();
+		if (mkdir(path) == 0)
+			printf("Directory: \'%s\' was successfully created", path);
+
+		std::ofstream datafile;
+		// Open the file and start writing stream
+		char src[60];
+		sprintf(src, "%s\\data_%i.dat", path, i);
+		datafile.open(src, std::ofstream::trunc);
+
+		datafile << dc.Serialize();
+
+		// Close the file when writing is done
+		datafile.close();
+	}
+}
+
+#pragma endregion
 
 SOM::~SOM()
 {

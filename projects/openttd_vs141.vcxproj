@@ -357,6 +357,7 @@
     <ClCompile Include="..\src\animated_tile.cpp" />
     <ClCompile Include="..\src\anomaly detection\AnomalyDetector.cpp" />
     <ClCompile Include="..\src\anomaly detection\DataChart.cpp" />
+    <ClCompile Include="..\src\anomaly detection\Detector.cpp" />
     <ClCompile Include="..\src\anomaly detection\knn.cpp" />
     <ClCompile Include="..\src\anomaly detection\loci.cpp" />
     <ClCompile Include="..\src\anomaly detection\lof.cpp" />
