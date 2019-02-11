@@ -15,58 +15,43 @@ void LOF::SetData(std::vector<DataChart*> _datacharts)
 	lofIndices = std::vector<int>(datacharts.size());
 }
 
-/// <summary>Runs the LOF algorithm on all datacharts to determine if there is an anomaly.</summary>
-void LOF::Run()
-{
-	std::vector<Classification> results;
-
-	for (int i = 0; i < datacharts.size(); ++i)
-	{
-		DataChart* d = datacharts[i];
-		Datapoint datapoint = d->GetLast();
-
-		LOF_Datapoint p = LOF_Datapoint(datapoint.position.X, datapoint.position.Y);
-		results.push_back(Classify(d, p));
-	}
-
-	DetermineAnomaly(results);
-}
-
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
 /// <param name='p'>The datapoint we would like to classify.</param>
-Classification LOF::Classify(DataChart * d, LOF_Datapoint p)
+Classification LOF::Classify(DataChart * d, Datapoint p)
 {
 	Classification result;
 
 	if (d->GetValues()->size() <= k)
 		return result;
 
+	// Convert datapoint to lof_datapoint
+	LOF_Datapoint lof_p = LOF_Datapoint(p.position.X, p.position.Y);
 	// Get k-neighbours of p
-	SetKNeighbours(d, &p);
+	SetKNeighbours(d, &lof_p);
 
 	// Set the k-neighbours of every k-neighbour of p
-	for (int i = 0; i < p.kNeighbours.size(); ++i)
+	for (int i = 0; i < lof_p.kNeighbours.size(); ++i)
 	{
 		// Set the k-neighbours of o
-		SetKNeighbours(d, &p.kNeighbours[i]);
+		SetKNeighbours(d, &lof_p.kNeighbours[i]);
 		// Set the k-distance of o
-		SetKDistance(d, &p.kNeighbours[i]);
+		SetKDistance(d, &lof_p.kNeighbours[i]);
 	}
 
 	// Calculate lrd(p) = |k-neighbours(p)| / SUM(reach-distances)
-	SetLRD(d, &p);
+	SetLRD(d, &lof_p);
 	// Set the LRD for all the k-neighbours of p
-	for (int i = 0; i < p.kNeighbours.size(); ++i)
-		SetLRD(d, &p.kNeighbours[i]);
+	for (int i = 0; i < lof_p.kNeighbours.size(); ++i)
+		SetLRD(d, &lof_p.kNeighbours[i]);
 
 	// Calculate LOF(p) = SUM(lrd(o) / lrd(p)) / |k-neighbours(p)|
-	SetLOF(d, &p);
+	SetLOF(d, &lof_p);
 
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
-	float lofValue = p.lof;
+	float lofValue = lof_p.lof;
 	lofValues.at(chartIndex)[lofIndices[chartIndex]] = lofValue;
 	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
 	int maxIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - k);

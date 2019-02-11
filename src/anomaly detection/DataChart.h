@@ -20,6 +20,7 @@ public:
 	Datapoint GetRandom() { return values->at(_random.Next(values->size())); }
 	Vector2 GetMinValue() { return Vector2(minX, minY); }
 	Vector2 GetMaxValue() { return Vector2(maxX, maxY); }
+	bool IsDirty() { return isDirty; }
 	~DataChart();
 private:
 	std::vector<Datapoint>* values;
@@ -27,5 +28,6 @@ private:
 	float minY = FLT_MAX, maxY = FLT_MIN;
 	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
 	Datapoint lastValue;
+	bool isDirty = true;
 };
 

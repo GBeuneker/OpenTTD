@@ -1,10 +1,10 @@
 #include "AnomalyDetector.h"
 
 #define DISABLE_ANOMALIES 0
-#define USE_KNN 0
+#define USE_KNN 1
 #define USE_LOF 0
 #define USE_LOCI 0
-#define USE_SOM 1
+#define USE_SOM 0
 
 
 using namespace std;
@@ -58,17 +58,38 @@ void AnomalyDetector::LogDataTick()
 	for (int i = 0; i < m_datacharts.size(); ++i)
 		m_datacharts[i]->LogData();
 
+	std::vector<Classification> results;
 #if USE_KNN
-	knn->Run();
+	results = knn->Run();
 #elif USE_LOF
-	lof->Run();
+	results = lof->Run();
 #elif USE_LOCI
-	loci->Run();
+	results = loci->Run();
 #elif USE_SOM
-	som->Run();
+	results = som->Run();
 #endif
 
+	DetectAnomaly(results);
+
 	ticks++;
+}
+
+void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
+{
+	float anomalyScore = 0;
+	for (int i = 0; i < results.size(); ++i)
+	{
+		if (results[i].isAnomaly)
+			anomalyScore += results[i].certainty;
+	}
+
+	// Threshold based on percentage of possible combinations that report anomalies
+	float threshold = (m_variables.size() - 1) * 0.3f;
+	// If anomaly score is greater than threshold
+	if (anomalyScore >= threshold)
+		printf("ANOMALY DETECTED! | Tick: %i | Score: %f\n", ticks, anomalyScore);
+	else if (anomalyScore > 0)
+		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 }
 
 /// <summary>Serializes the entire data charts.</summary>

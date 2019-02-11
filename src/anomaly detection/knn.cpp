@@ -17,21 +17,6 @@ void KNN::SetData(std::vector<DataChart*> _datacharts)
 	kIndices = std::vector<int>(datacharts.size());
 }
 
-/// <summary>Runs the KNN algorithm on all datacharts to determine if there is an anomaly.</summary>
-void KNN::Run()
-{
-	std::vector<Classification> results;
-
-	for (int i = 0; i < datacharts.size(); ++i)
-	{
-		DataChart* d = datacharts[i];
-		Datapoint p = d->GetLast();
-		results.push_back(Classify(d, p));
-	}
-
-	DetermineAnomaly(results);
-}
-
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
 /// <param name='p'>The datapoint we would like to classify.</param>
@@ -57,8 +42,9 @@ Classification KNN::Classify(DataChart* d, Datapoint p)
 
 	// Get the k-th distance and add it to the list
 	float kDistance = distances[k];
-	kDistances.at(chartIndex)[kIndices[chartIndex]] = kDistance;
-	kIndices[chartIndex] = (kIndices[chartIndex] + 1) % WINDOW_SIZE;
+	int kIndex = kIndices[chartIndex];
+	kDistances.at(chartIndex)[kIndex] = kDistance;
+	kIndices[chartIndex] = (kIndex + 1) % WINDOW_SIZE;
 	int maxIndex = fmin(WINDOW_SIZE, valuesSize - k);
 
 	// Calculate the average distance of this window
@@ -73,16 +59,31 @@ Classification KNN::Classify(DataChart* d, Datapoint p)
 		stDev += pow(kDistances.at(chartIndex)[i] - averageDist, 2);
 	stDev = sqrtf(stDev / maxIndex);
 
-	// We flag it is anomalous if the distance is at least one stDev removed from the average
-	result.isAnomaly = kDistance > (averageDist + stDev);
-	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
-	if (stDev <= 0)
-		result.certainty = 1;
+	// We flag it is outlier if the distance is at least one stDev removed from the average
+	bool isOutlier = kDistance > (averageDist + stDev);
+	if (isOutlier)
+	{
+		// If we aren't cooling down, start the cooldown and don't flag as outlier
+		if (cooldownSteps[chartIndex] <= 0)
+		{
+			cooldownSteps[chartIndex] = cooldownSize;
+			isOutlier = false;
+		}
+		// If we were still cooling down, flag as outlier
+		else if (cooldownSteps[chartIndex] > 0)
+		{
+			isOutlier = true;
+			cooldownSteps[chartIndex] = 0;
+		}
+	}
+	// If there is no outlier, decrease the cooldown
 	else
-		result.certainty = fmin(abs(kDistance - averageDist) / (4 * stDev), 1);
+		cooldownSteps[chartIndex]--;
 
-	if (result.isAnomaly)
-		printf("Anomaly detected! Certainty: %f | Chart: %i\n", result.certainty, chartIndex);
+	// Result is anomalous if there is an outlier and we were still cooling down
+	result.isAnomaly = isOutlier;
+	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
+	result.certainty = stDev > 0 ? fmin(abs(kDistance - averageDist) / (4 * stDev), 1) : 1;
 
 	return result;
 }

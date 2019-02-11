@@ -26,7 +26,7 @@ void SOM::SetData(std::vector<DataChart*> _datacharts)
 	// Initialize values
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
-		somNodes.push_back(std::vector<SOM_Datapoint>(width * height));
+		somNodes.push_back(std::vector<Datapoint>(width * height));
 		initializedCharts.push_back(false);
 	}
 }
@@ -34,7 +34,7 @@ void SOM::SetData(std::vector<DataChart*> _datacharts)
 /// <summary>Initializes the SOM.</summary>
 /// <param name='d'>The chart used for initialization.</param>
 /// <param name='nodes'>The collection of SOM nodes we would like to initialize</param>
-void SOM::IntializeMap(DataChart *d, std::vector<SOM_Datapoint> *nodes)
+void SOM::IntializeMap(DataChart *d, std::vector<Datapoint> *nodes)
 {
 	// Initialize the min and max x,y values
 	float minValue_x = FLT_MAX, minValue_y = FLT_MAX;
@@ -77,13 +77,13 @@ void SOM::IntializeMap(DataChart *d, std::vector<SOM_Datapoint> *nodes)
 #pragma endregion
 
 /// <summary>Run the SOM and test the datapoints against the trained SOM maps.</summary>
-void SOM::Run()
+std::vector<Classification> SOM::Run()
 {
 	std::vector<Classification> results;
 
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
-		Datapoint datapoint = datacharts[i]->GetLast();
+		Datapoint p = datacharts[i]->GetLast();
 		// Initialize the SOM if there are enough values
 		if (!initializedCharts[i] && datacharts[i]->GetValues()->size() >= windowSize)
 		{
@@ -96,9 +96,8 @@ void SOM::Run()
 		//If the chart is initialized, update it with newer values
 		else if (initializedCharts[i])
 		{
-			SOM_Datapoint p = SOM_Datapoint(datapoint.position.X, datapoint.position.Y);
 			// Classify the datapoint and add it to the results
-			results.push_back(Classify(i, p));
+			results.push_back(Classify(datacharts[i], p));
 			// Update the SOM map
 			UpdateMap(&somNodes.at(i), p, iteration);
 		}
@@ -107,7 +106,7 @@ void SOM::Run()
 	if (iteration < windowSize)
 		iteration++;
 
-	DetermineAnomaly(results);
+	return results;
 }
 
 #pragma region Training
@@ -116,7 +115,7 @@ void SOM::Run()
 /// <param name='d'>The chart used for training.</param>
 /// <param name='nodes'>The nodes used for training the SOM.</param>
 /// <param name='iterations'>The amount of iterations used for training.</param>
-void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterations)
+void SOM::Train(DataChart *d, std::vector<Datapoint> *nodes, uint16_t iterations)
 {
 	for (int i = 0; i < iterations; ++i)
 	{
@@ -125,7 +124,7 @@ void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterat
 
 		// Find the node closest to the datapoint(BMU: Best Matching Unit)
 		float minDist = FLT_MAX;
-		SOM_Datapoint* bmu;
+		Datapoint* bmu;
 		int bmuIndex = -1;
 		for (int n = 0; n < nodes->size(); ++n)
 		{
@@ -161,11 +160,11 @@ void SOM::Train(DataChart *d, std::vector<SOM_Datapoint> *nodes, uint16_t iterat
 /// <param name='nodes'>The nodes used for training the SOM.</param>
 /// <param name='datapoint'>The new point that was added.</param>
 /// <param name='i'>The current iteration</param>
-void SOM::UpdateMap(std::vector<SOM_Datapoint> *nodes, SOM_Datapoint datapoint, uint16_t i)
+void SOM::UpdateMap(std::vector<Datapoint> *nodes, Datapoint datapoint, uint16_t i)
 {
 	// Find the node closest to the datapoint(BMU: Best Matching Unit)
 	float minDist = FLT_MAX;
-	SOM_Datapoint* bmu;
+	Datapoint* bmu;
 	int bmuIndex = -1;
 	for (int n = 0; n < nodes->size(); ++n)
 	{
@@ -225,7 +224,7 @@ float SOM::GetDistanceDecay(float distance, float radius)
 /// <param name='targetPosition'>The position we should move the datapoint towards.</param>
 /// <param name='learningRate'>The amount we will change the datapoint.</param>
 /// <param name='distanceDecay'>The decay based on the distance from the BMU.</param>
-void SOM::UpdatePosition(SOM_Datapoint * p, Vector2 targetPosition, float learningRate, float distanceDecay)
+void SOM::UpdatePosition(Datapoint * p, Vector2 targetPosition, float learningRate, float distanceDecay)
 {
 	p->position += (distanceDecay * learningRate * (targetPosition - p->position));
 }
@@ -237,19 +236,23 @@ void SOM::UpdatePosition(SOM_Datapoint * p, Vector2 targetPosition, float learni
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
 /// <param name='p'>The datapoint we would like to classify.</param>
-Classification SOM::Classify(uint16_t index, SOM_Datapoint p)
+Classification SOM::Classify(DataChart *d, Datapoint p)
 {
 	Classification result;
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
 	// Index cannot be larger than the nodes list
-	if (index >= somNodes.size())
+	if (chartIndex >= somNodes.size())
 	{
 		printf("ERROR: index is larger than trainingset");
 		return result;
 	}
 
+	// Convert datapoint to Datapoint
+	Datapoint som_p = Datapoint(p.position.X, p.position.Y);
 	// Get the right collection of trained nodes from the list
-	std::vector<SOM_Datapoint> nodes = somNodes[index];
+	std::vector<Datapoint> nodes = somNodes[chartIndex];
 	// Convert the nodes to a convex hull
 	ConvexHull(&nodes);
 	//Sort Nodes to form a polygon
@@ -264,14 +267,14 @@ Classification SOM::Classify(uint16_t index, SOM_Datapoint p)
 	}
 
 	// Check if the point is inside the SOM
-	result.isAnomaly = IsInSOMMap(nodes, nodes.size(), p);
+	result.isAnomaly = IsInSOMMap(nodes, nodes.size(), som_p);
 
 	// If our point is outside the SOM, normalize using 2 times the max distance
 	if (result.isAnomaly)
-		result.certainty = fmax(DistToEdge(nodes, p) / 2 * maxDist, 1);
+		result.certainty = fmax(DistToEdge(nodes, som_p) / 2 * maxDist, 1);
 	// If our point is inside the SOM, normalize using half the max distance
 	else
-		result.certainty = fmax(DistToEdge(nodes, p) / (maxDist / 2), 1);
+		result.certainty = fmax(DistToEdge(nodes, som_p) / (maxDist / 2), 1);
 
 	return result;
 }
@@ -280,7 +283,7 @@ Classification SOM::Classify(uint16_t index, SOM_Datapoint p)
 /// <param name='nodes'>The nodes of trained SOM map forming a polygon.</param>
 /// <param name='size'>The size of our collection of nodes.</param>
 /// <param name='datapoint'>The datapoint we would like to check.</param>
-bool SOM::IsInSOMMap(std::vector<SOM_Datapoint> nodes, uint16_t size, SOM_Datapoint datapoint)
+bool SOM::IsInSOMMap(std::vector<Datapoint> nodes, uint16_t size, Datapoint datapoint)
 {
 	// There have to be at least 3 nodes to be a polygon
 	if (size < 3)
@@ -302,7 +305,7 @@ bool SOM::IsInSOMMap(std::vector<SOM_Datapoint> nodes, uint16_t size, SOM_Datapo
 /// <param name='nodes'>The nodes of trained SOM map forming a polygon.</param>
 /// <param name='size'>The size of our collection of nodes.</param>
 /// <param name='datapoint'>The datapoint we would like to check.</param>
-bool SOM::DistToEdge(std::vector<SOM_Datapoint> nodes, SOM_Datapoint p)
+bool SOM::DistToEdge(std::vector<Datapoint> nodes, Datapoint p)
 {
 	// There have to be at least 3 nodes to be a polygon
 	if (nodes.size() < 3)
@@ -332,7 +335,7 @@ bool SOM::DistToEdge(std::vector<SOM_Datapoint> nodes, SOM_Datapoint p)
 
 #pragma region Utilities
 
-void SOM::SortCounterClockwise(std::vector<SOM_Datapoint>* nodes)
+void SOM::SortCounterClockwise(std::vector<Datapoint>* nodes)
 {
 	// Calculate the barycenter of the datapoints
 	Vector2 barycenter = Vector2(0, 0);
@@ -342,22 +345,22 @@ void SOM::SortCounterClockwise(std::vector<SOM_Datapoint>* nodes)
 
 	// Sort the points relative to the barycenter
 	std::sort(nodes->begin(), nodes->end(),
-		[barycenter](const SOM_Datapoint& lhs, const SOM_Datapoint& rhs) -> bool
+		[barycenter](const Datapoint& lhs, const Datapoint& rhs) -> bool
 	{
 		return atan2(lhs.position.X - barycenter.X, lhs.position.Y - barycenter.Y) < atan2(rhs.position.X - barycenter.X, rhs.position.Y - barycenter.Y);
 	});
 }
 
-void SOM::ConvexHull(std::vector<SOM_Datapoint>* nodes)
+void SOM::ConvexHull(std::vector<Datapoint>* nodes)
 {
 	size_t n = nodes->size(), k = 0;
 	// Convex hull cannot be generated from less than 3 points
 	if (nodes->size() < 3) return;
-	std::vector<SOM_Datapoint> hull(2 * n);
+	std::vector<Datapoint> hull(2 * n);
 
 	// Sort the points by x-coordinate
 	std::sort(nodes->begin(), nodes->end(),
-		[](const SOM_Datapoint& lhs, const SOM_Datapoint& rhs) -> bool
+		[](const Datapoint& lhs, const Datapoint& rhs) -> bool
 	{
 		return lhs.position.X < rhs.position.X || (lhs.position.X == rhs.position.X && lhs.position.Y < rhs.position.Y);
 	});
@@ -384,7 +387,7 @@ void SOM::ConvexHull(std::vector<SOM_Datapoint>* nodes)
 	nodes->swap(hull);
 }
 
-int SOM::Orientation(SOM_Datapoint p, SOM_Datapoint q, SOM_Datapoint r)
+int SOM::Orientation(Datapoint p, Datapoint q, Datapoint r)
 {
 	int val = (q.position.Y - p.position.Y) * (r.position.X - q.position.X) -
 		(q.position.X - p.position.X) * (r.position.Y - q.position.Y);
@@ -397,7 +400,7 @@ void SOM::Serialize()
 {
 	for (int i = 0; i < somNodes.size(); ++i)
 	{
-		std::vector<SOM_Datapoint> nodes = somNodes[i];
+		std::vector<Datapoint> nodes = somNodes[i];
 		ConvexHull(&nodes);
 		SortCounterClockwise(&nodes);
 

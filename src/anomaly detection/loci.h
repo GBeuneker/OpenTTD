@@ -7,10 +7,9 @@ class LOCI : public Detector
 {
 public:
 	LOCI();
-	void Run() override;
 	~LOCI();
 protected:
-	Classification Classify(DataChart* d, LOCI_Datapoint p) override;
+	Classification Classify(DataChart* d, Datapoint p) override;
 	void SetRNeighbours(DataChart *d, LOCI_Datapoint *p, float r);
 	void SetRNeighbourhood(DataChart *d, LOCI_Datapoint *p, float r, float k);
 	std::vector<LOCI_Datapoint> GetRNeighbours(DataChart *d, LOCI_Datapoint *p, float r);

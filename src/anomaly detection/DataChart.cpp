@@ -18,7 +18,11 @@ void DataChart::LogData()
 	// Only add unique values
 	for (int i = 0; i < values->size(); ++i)
 		if (values->at(i) == newDataPoint)
+		{
+			// No new value was added
+			isDirty = false;
 			return;
+		}
 
 	values->push_back(newDataPoint);
 	lastValue = newDataPoint;
@@ -28,6 +32,9 @@ void DataChart::LogData()
 	maxX = fmax(position.X, maxX);
 	minY = fmin(position.Y, minY);
 	maxY = fmax(position.Y, maxY);
+
+	// A new value was added
+	isDirty = true;
 }
 
 std::string DataChart::Serialize()

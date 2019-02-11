@@ -8,10 +8,9 @@ class LOF : public Detector
 public:
 	LOF(uint16_t k);
 	void SetData(std::vector<DataChart*> _datacharts) override;
-	void Run() override;
 	~LOF();
 protected:
-	Classification Classify(DataChart* d, LOF_Datapoint p) override;
+	Classification Classify(DataChart* d, Datapoint p) override;
 	void SetLOF(DataChart * d, LOF_Datapoint * p);
 	void SetLRD(DataChart * d, LOF_Datapoint *p);
 	float GetReachDistance(DataChart * d, LOF_Datapoint p, LOF_Datapoint o);

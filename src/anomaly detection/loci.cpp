@@ -4,30 +4,15 @@ LOCI::LOCI()
 {
 }
 
-/// <summary>Runs the LOF algorithm on all datacharts to determine if there is an anomaly.</summary>
-void LOCI::Run()
-{
-	std::vector<Classification> results;
-
-	for (int i = 0; i < datacharts.size(); ++i)
-	{
-		DataChart* d = datacharts[i];
-		Datapoint datapoint = d->GetLast();
-
-		LOCI_Datapoint p = LOCI_Datapoint(datapoint.position.X, datapoint.position.Y);
-		results.push_back(Classify(d, p));
-	}
-
-	DetermineAnomaly(results);
-}
-
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
 /// <param name='p'>The datapoint we would like to classify.</param>
-Classification LOCI::Classify(DataChart * d, LOCI_Datapoint p)
+Classification LOCI::Classify(DataChart * d, Datapoint p)
 {
 	Classification result;
 
+	// Convert datapoint to loci_datapoint
+	LOCI_Datapoint loci_p = LOCI_Datapoint(p.position.X, p.position.Y);
 	// Determine rmin, rmax and the stepsize
 	int steps = 10;
 	float maxRange = Distance(d->GetMinValue(), d->GetMaxValue());
@@ -37,14 +22,14 @@ Classification LOCI::Classify(DataChart * d, LOCI_Datapoint p)
 	for (float r = rMin; r < rMax; r += stepSize)
 	{
 		// Set the neighbours and neighbourhood of p
-		SetRNeighbours(d, &p, r);
-		SetRNeighbourhood(d, &p, r, k);
+		SetRNeighbours(d, &loci_p, r);
+		SetRNeighbourhood(d, &loci_p, r, k);
 
 		// Get the MDEF value for p for this range r
-		float mdef = GetMDEF(d, &p, r, k);
+		float mdef = GetMDEF(d, &loci_p, r, k);
 
 		// Get the standard deviation for this range r
-		float s_mdef = GetStandardDeviationMDEF(d, &p, r, k);
+		float s_mdef = GetStandardDeviationMDEF(d, &loci_p, r, k);
 
 		// Point is flagged as anomalous if the mdef is greater than the standard deviation
 		result.isAnomaly = mdef > l * s_mdef;

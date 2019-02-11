@@ -4,24 +4,20 @@
 void Detector::SetData(std::vector<DataChart*> _datacharts)
 {
 	this->datacharts = _datacharts;
+	cooldownSteps = std::vector<int>(datacharts.size());
 }
 
-void Detector::DetermineAnomaly(std::vector<Classification> results)
+std::vector<Classification> Detector::Run()
 {
-	float anomalyScore = 0;
+	std::vector<Classification> results;
 
-	for (int i = 0; i < results.size(); ++i)
+	for (int i = 0; i < datacharts.size(); ++i)
 	{
-		Classification result = results.at(i);
-
-		if (result.isAnomaly)
-			anomalyScore += result.certainty;
+		DataChart* d = datacharts[i];
+		Datapoint p = d->GetLast();
+		if (d->IsDirty())
+			results.push_back(Classify(d, p));
 	}
 
-	// If our anomaly score is high enough
-	if (anomalyScore >= anomalyThreshold)
-	{
-		// Report an anomaly
-		printf("Anomaly Detected!");
-	}
+	return results;
 }

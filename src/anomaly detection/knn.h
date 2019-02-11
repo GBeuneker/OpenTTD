@@ -8,7 +8,6 @@ class KNN : public Detector
 public:
 	KNN() {};
 	KNN(uint16_t k);
-	void Run() override;
 	void SetData(std::vector<DataChart*> _datacharts) override;
 	~KNN();
 protected:

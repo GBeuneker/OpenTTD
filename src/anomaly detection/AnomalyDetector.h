@@ -36,6 +36,7 @@ public:
 	void TrackPointer(size_t * var, char * name);
 	void Reset();
 private:
+	void DetectAnomaly(std::vector<Classification> results);
 	static AnomalyDetector* instance;
 	std::vector<VariablePointer> m_variables;
 	std::vector<DataChart*> m_datacharts;
