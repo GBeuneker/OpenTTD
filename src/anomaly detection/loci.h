@@ -9,7 +9,7 @@ public:
 	LOCI();
 	~LOCI();
 protected:
-	Classification Classify(DataChart* d, Datapoint p) override;
+	Classification Classify(DataChart* d, Datapoint* p) override;
 	void SetRNeighbours(DataChart *d, Datapoint *p, float r);
 	void SetRNeighbourhood(DataChart *d, Datapoint *p, float r, float k);
 	std::vector<Datapoint> GetRNeighbours(DataChart *d, Datapoint *p, float r);

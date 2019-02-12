@@ -72,7 +72,7 @@ INSTANTIATE_POOL_METHODS(Company)
 	for (uint j = 0; j < 4; j++) this->share_owners[j] = COMPANY_SPECTATOR;
 	InvalidateWindowData(WC_PERFORMANCE_DETAIL, 0, INVALID_COMPANY);
 
-	if (_game_mode != GM_MENU && this->is_ai)
+	if (_game_mode != GM_MENU) //TODO: enable this for only AI tracking && this->is_ai)
 	{
 		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&money, "Money");
 		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&cur_economy.company_value, "CompanyValue");
