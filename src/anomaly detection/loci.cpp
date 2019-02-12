@@ -1,5 +1,7 @@
 #include "loci.h"
 
+#if USE_LOCI
+
 LOCI::LOCI()
 {
 }
@@ -11,8 +13,8 @@ Classification LOCI::Classify(DataChart * d, Datapoint p)
 {
 	Classification result;
 
-	// Convert datapoint to loci_datapoint
-	LOCI_Datapoint loci_p = LOCI_Datapoint(p.position.X, p.position.Y);
+	// Convert datapoint to Datapoint
+	Datapoint loci_p = Datapoint(p.position.X, p.position.Y);
 	// Determine rmin, rmax and the stepsize
 	int steps = 10;
 	float maxRange = Distance(d->GetMinValue(), d->GetMaxValue());
@@ -52,7 +54,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint p)
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
 /// <param name='k'>The neighbourhood size.</param>
-float LOCI::GetMDEF(DataChart * d, LOCI_Datapoint * p, float r, float k)
+float LOCI::GetMDEF(DataChart * d, Datapoint * p, float r, float k)
 {
 	float prk_neighbourhood = p->rNeighbourhood;
 	float pkr_neighbours = GetRNeighbourCount(d, p, k*r);
@@ -66,7 +68,7 @@ float LOCI::GetMDEF(DataChart * d, LOCI_Datapoint * p, float r, float k)
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
 /// <param name='k'>The neighbourhood size.</param>
-float LOCI::GetStandardDeviationMDEF(DataChart * d, LOCI_Datapoint * p, float r, float k)
+float LOCI::GetStandardDeviationMDEF(DataChart * d, Datapoint * p, float r, float k)
 {
 	return GetSigma(d, p, r, k) / p->rNeighbourhood;
 }
@@ -76,17 +78,17 @@ float LOCI::GetStandardDeviationMDEF(DataChart * d, LOCI_Datapoint * p, float r,
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
 /// <param name='k'>The neighbourhood size.</param>
-float LOCI::GetSigma(DataChart * d, LOCI_Datapoint * p, float r, float k)
+float LOCI::GetSigma(DataChart * d, Datapoint * p, float r, float k)
 {
 	float stdevSum = 0;
 
-	for (int i = 0; i < p->rNeighbours.size(); ++i)
+	for (int i = 0; i < p->neighbours.size(); ++i)
 	{
-		LOCI_Datapoint o = p->rNeighbours[i];
-		stdevSum += powf((o.rNeighbours.size() - p->rNeighbourhood), 2);
+		Datapoint o = p->neighbours[i];
+		stdevSum += powf((o.neighbours.size() - p->rNeighbourhood), 2);
 	}
 
-	return sqrtf(stdevSum / p->rNeighbours.size());
+	return sqrtf(stdevSum / p->neighbours.size());
 }
 
 #pragma region R-Neighbours
@@ -95,14 +97,14 @@ float LOCI::GetSigma(DataChart * d, LOCI_Datapoint * p, float r, float k)
 /// <param name='d'>The collection of data we want to use for our calculation.</param>
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
-void LOCI::SetRNeighbours(DataChart * d, LOCI_Datapoint * p, float r)
+void LOCI::SetRNeighbours(DataChart * d, Datapoint * p, float r)
 {
 	std::vector<Datapoint> datapoints = *(d->GetValues());
 
 	int startIndex = datapoints.size() > WINDOW_SIZE ? datapoints.size() - WINDOW_SIZE : 0;
 	int endIndex = datapoints.size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : datapoints.size();
 
-	std::vector<LOCI_Datapoint> rNeighbours;
+	std::vector<Datapoint> rNeighbours;
 	// Calculate the distance to p for all the values
 	for (int i = startIndex; i < endIndex; ++i)
 	{
@@ -111,27 +113,27 @@ void LOCI::SetRNeighbours(DataChart * d, LOCI_Datapoint * p, float r)
 		float dist = Distance(datapoints[i].position, p->position);
 		if (dist <= r)
 		{
-			// Convert to a LOCI_DataPoint
-			LOCI_Datapoint lociDatapoint = LOCI_Datapoint(pos.X, pos.Y);
+			// Convert to a Datapoint
+			Datapoint lociDatapoint = Datapoint(pos.X, pos.Y);
 			rNeighbours.push_back(lociDatapoint);
 		}
 	}
 
-	p->rNeighbours = rNeighbours;
+	p->neighbours = rNeighbours;
 }
 
 /// <summary>Calculates and returns the r-neighbours(neighbours within range r) of a datapoint.</summary>
 /// <param name='d'>The collection of data we want to use for our calculation.</param>
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
-std::vector<LOCI_Datapoint> LOCI::GetRNeighbours(DataChart * d, LOCI_Datapoint * p, float r)
+std::vector<Datapoint> LOCI::GetRNeighbours(DataChart * d, Datapoint * p, float r)
 {
 	std::vector<Datapoint> datapoints = *(d->GetValues());
 
 	int startIndex = datapoints.size() > WINDOW_SIZE ? datapoints.size() - WINDOW_SIZE : 0;
 	int endIndex = datapoints.size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : datapoints.size();
 
-	std::vector<LOCI_Datapoint> rNeighbours;
+	std::vector<Datapoint> rNeighbours;
 	// Calculate the distance to p for all the values
 	for (int i = startIndex; i < endIndex; ++i)
 	{
@@ -140,8 +142,8 @@ std::vector<LOCI_Datapoint> LOCI::GetRNeighbours(DataChart * d, LOCI_Datapoint *
 		float dist = Distance(datapoints[i].position, p->position);
 		if (dist <= r)
 		{
-			// Convert to a LOCI_DataPoint
-			LOCI_Datapoint lociDatapoint = LOCI_Datapoint(pos.X, pos.Y);
+			// Convert to a Datapoint
+			Datapoint lociDatapoint = Datapoint(pos.X, pos.Y);
 			rNeighbours.push_back(lociDatapoint);
 		}
 	}
@@ -153,7 +155,7 @@ std::vector<LOCI_Datapoint> LOCI::GetRNeighbours(DataChart * d, LOCI_Datapoint *
 /// <param name='d'>The collection of data we want to use for our calculation.</param>
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
-int LOCI::GetRNeighbourCount(DataChart * d, LOCI_Datapoint * p, float r)
+int LOCI::GetRNeighbourCount(DataChart * d, Datapoint * p, float r)
 {
 	std::vector<Datapoint> datapoints = *(d->GetValues());
 
@@ -182,37 +184,37 @@ int LOCI::GetRNeighbourCount(DataChart * d, LOCI_Datapoint * p, float r)
 /// <param name='d'>The collection of data we want to use for our calculation.</param>
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
-void LOCI::SetRNeighbourhood(DataChart * d, LOCI_Datapoint * p, float r, float k)
+void LOCI::SetRNeighbourhood(DataChart * d, Datapoint * p, float r, float k)
 {
 	float sum_rNeighbours = 0;
 
 	// Sum the r-neighbour count for all the points in the neighbourhood of p
-	for (int i = 0; i < p->rNeighbours.size(); ++i)
+	for (int i = 0; i < p->neighbours.size(); ++i)
 	{
-		LOCI_Datapoint o = p->rNeighbours[i];
+		Datapoint o = p->neighbours[i];
 		SetRNeighbours(d, &o, k*r);
-		sum_rNeighbours += o.rNeighbours.size();
+		sum_rNeighbours += o.neighbours.size();
 	}
 
 	// Calculate the average over all the neighbours
-	p->rNeighbourhood = sum_rNeighbours / p->rNeighbours.size();
+	p->rNeighbourhood = sum_rNeighbours / p->neighbours.size();
 }
 
 /// <summary>Calculates and returns the r-neighbourhood(average amount of r-neighbours in its neighbourhood) of a datapoint.</summary>
 /// <param name='d'>The collection of data we want to use for our calculation.</param>
 /// <param name='p'>The reference datapoint we would like to use.</param>
 /// <param name='r'>The range we want to use.</param>
-float LOCI::GetRNeighbourhood(DataChart * d, LOCI_Datapoint * p, float r, float k)
+float LOCI::GetRNeighbourhood(DataChart * d, Datapoint * p, float r, float k)
 {
 	float sum_rNeighbours = 0;
 
 	// Get the neighbours of p in range r
-	std::vector<LOCI_Datapoint> rNeighbours = GetRNeighbours(d, p, r);
+	std::vector<Datapoint> rNeighbours = GetRNeighbours(d, p, r);
 
 	// Sum the r-neighbour count for all the points in the neighbourhood of p
 	for (int i = 0; i < rNeighbours.size(); ++i)
 	{
-		LOCI_Datapoint o = rNeighbours[i];
+		Datapoint o = rNeighbours[i];
 		sum_rNeighbours += GetRNeighbourCount(d, &o, k*r);
 	}
 
@@ -225,3 +227,5 @@ float LOCI::GetRNeighbourhood(DataChart * d, LOCI_Datapoint * p, float r, float 
 LOCI::~LOCI()
 {
 }
+
+#endif

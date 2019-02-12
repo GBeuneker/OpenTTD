@@ -1,5 +1,7 @@
 #include "knn.h"
 
+#if USE_KNN
+
 /// <summary>Constructor for K-Nearest Neighbours.</summary>
 /// <param name='k'>The amount of neighbours we want to use.</param>
 KNN::KNN(uint16_t k)
@@ -91,3 +93,5 @@ Classification KNN::Classify(DataChart* d, Datapoint p)
 KNN::~KNN()
 {
 }
+
+#endif

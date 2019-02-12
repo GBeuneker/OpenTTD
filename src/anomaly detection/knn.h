@@ -1,7 +1,7 @@
 #pragma once
 #include "Detector.h";
 
-#define WINDOW_SIZE 500
+#if USE_KNN
 
 class KNN : public Detector
 {
@@ -19,3 +19,5 @@ private:
 	std::vector<float[WINDOW_SIZE]> kDistances;
 	std::vector<int> kIndices;
 };
+
+#endif

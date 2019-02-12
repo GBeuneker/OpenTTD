@@ -3153,5 +3153,8 @@
     <ClInclude Include="..\src\anomaly detection\DataPoint.h">
       <Filter>Anomaly Detection</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\anomaly detection\DetectionSettings.h">
+      <Filter>Anomaly Detection\Detectors</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

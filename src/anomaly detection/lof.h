@@ -1,7 +1,7 @@
 #pragma once
 #include "Detector.h";
 
-#define WINDOW_SIZE 100
+#if USE_LOF
 
 class LOF : public Detector
 {
@@ -10,16 +10,18 @@ public:
 	void SetData(std::vector<DataChart*> _datacharts) override;
 	~LOF();
 protected:
-	Classification Classify(DataChart* d, Datapoint p) override;
-	void SetLOF(DataChart * d, LOF_Datapoint * p);
-	void SetLRD(DataChart * d, LOF_Datapoint *p);
-	float GetReachDistance(DataChart * d, LOF_Datapoint p, LOF_Datapoint o);
-	void SetKDistance(DataChart * d, LOF_Datapoint *p);
-	void SetKNeighbours(DataChart* d, LOF_Datapoint *p);
+	Classification Classify(DataChart* d, Datapoint *p) override;
+	float GetLOF(DataChart * d, Datapoint * p);
+	void SetLRD(DataChart * d, Datapoint *p);
+	float GetReachDistance(DataChart * d, Datapoint* p, Datapoint* o);
+	void SetKDistance(DataChart * d, Datapoint *p);
+	void SetKNeighbours(DataChart* d, Datapoint *p);
+	void UpdateKNeighbours(DataChart* d, Datapoint* p, Datapoint* new_p);
 private:
 	uint16_t k;
-	LOF_Datapoint lofDatapoints[WINDOW_SIZE];
 	std::vector<float[WINDOW_SIZE]> lofValues;
 	std::vector<int> lofIndices;
 };
+
+#endif
 

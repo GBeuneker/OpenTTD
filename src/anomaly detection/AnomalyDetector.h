@@ -44,9 +44,14 @@ private:
 	bool chartsBuilt = false;
 
 	// Anomaly Detectors
+#if USE_KNN
 	KNN *knn;
+#elif USE_LOF
 	LOF *lof;
+#elif USE_LOCI
 	LOCI *loci;
+#elif USE_SOM
 	SOM *som;
+#endif
 };
 

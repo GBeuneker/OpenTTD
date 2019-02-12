@@ -5,19 +5,18 @@ DataChart::DataChart(VariablePointer varA, VariablePointer varB)
 	this->m_varA = varA;
 	this->m_varB = varB;
 
-	values = new std::vector<Datapoint>();
+	values = new std::vector<Datapoint*>();
 }
 
 void DataChart::LogData()
 {
 	Vector2 position = Vector2(m_varA.GetValue(), m_varB.GetValue());
 
-	Datapoint newDataPoint;
-	newDataPoint.position = position;
+	Datapoint* newDataPoint = new Datapoint(position.X, position.Y);
 
 	// Only add unique values
 	for (int i = 0; i < values->size(); ++i)
-		if (values->at(i) == newDataPoint)
+		if (values->at(i)->position == newDataPoint->position)
 		{
 			// No new value was added
 			isDirty = false;
@@ -25,7 +24,6 @@ void DataChart::LogData()
 		}
 
 	values->push_back(newDataPoint);
-	lastValue = newDataPoint;
 
 	// Get the datarange
 	minX = fmin(position.X, minX);
@@ -46,7 +44,7 @@ std::string DataChart::Serialize()
 
 	// Loop through all the values
 	for (int i = 0; i < values->size(); ++i)
-		stringstream << values->at(i).position.X << " " << values->at(i).position.Y << "\n";
+		stringstream << values->at(i)->position.X << " " << values->at(i)->position.Y << "\n";
 
 	return stringstream.str();
 }
@@ -65,7 +63,7 @@ void DataChart::DeSerialize(const char* path)
 		std::istringstream iss(line);
 		if (!(iss >> a >> b)) { break; }
 
-		values->push_back(Datapoint(a, b));
+		values->push_back(new Datapoint(a, b));
 	}
 }
 

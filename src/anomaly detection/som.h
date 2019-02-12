@@ -5,6 +5,8 @@
 
 #define WINDOW_SIZE 500;
 
+#if USE_SOM
+
 class SOM : public Detector
 {
 public:
@@ -41,4 +43,6 @@ private:
 	float startRadius = 1, learningRate = 1, timeConstant;
 	uint16_t iteration = 1;
 };
+
+#endif
 

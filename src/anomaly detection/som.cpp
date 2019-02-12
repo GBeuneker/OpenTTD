@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#if USE_SOM
+
 #pragma region Initialization
 
 /// <summary>Constructor for Self-Organizing Map.</summary>
@@ -433,3 +435,5 @@ void SOM::Serialize()
 SOM::~SOM()
 {
 }
+
+#endif

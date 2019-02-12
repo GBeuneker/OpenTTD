@@ -175,14 +175,6 @@ inline const Vector2& operator*=(Vector2 &lhs, const float &rhs) {
 	lhs.Y *= rhs;
 	return  lhs;
 }
-//Compares the two Vector2 objects and returns (true) if they are not equal
-inline const bool operator!=(Vector2 const&lhs, Vector2 const&rhs) {
-	return (lhs.X != rhs.X) || (lhs.Y != rhs.Y);
-}
-//Compares the two Vector2 objects and returns (true) if they are equal
-inline const bool operator==(Vector2 const&lhs, Vector2 const&rhs) {
-	return ((lhs.X * rhs.X < (float)0.000001) && (lhs.Y * rhs.Y < (float)0.000001));
-}
 
 //Sets the Vector2 with zero values
 inline void zero(Vector2 &lhs) {

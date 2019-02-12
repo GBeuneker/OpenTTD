@@ -14,7 +14,7 @@ std::vector<Classification> Detector::Run()
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
 		DataChart* d = datacharts[i];
-		Datapoint p = d->GetLast();
+		Datapoint* p = d->GetLast();
 		if (d->IsDirty())
 			results.push_back(Classify(d, p));
 	}
