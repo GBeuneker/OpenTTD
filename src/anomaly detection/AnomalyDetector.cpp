@@ -145,14 +145,14 @@ std::vector<DataChart*> AnomalyDetector::DeSerialize(const char* folder)
 bool AnomalyDetector::TriggerVariableIncrease(float chance, char* msg)
 {
 	float randomValue = _random.Next(100000) / 1000.0f;
-	bool canTrigger = randomValue < chance;
 
-#if DISABLE_ANOMALIES
-	return false;
-#else
+#if ENABLE_ANOMALIES
+	bool canTrigger = randomValue < chance;
 	if (canTrigger)
 		printf("Variable Increase triggered. Tick: %i | message: %s\n", ticks, msg);
 	return canTrigger;
+#else
+	return false;
 #endif
 }
 
@@ -161,14 +161,14 @@ bool AnomalyDetector::TriggerVariableIncrease(float chance, char* msg)
 bool AnomalyDetector::TriggerVariableReset(float chance, char* msg)
 {
 	float randomValue = _random.Next(100000) / 1000.0f;
-	bool canTrigger = randomValue < chance;
 
-#if DISABLE_ANOMALIES
-	return false;
-#else
+#if ENABLE_ANOMALIES
+	bool canTrigger = randomValue < chance;
 	if (canTrigger)
 		printf("Variable Reset triggered. Tick: %i | message: %s\n", ticks, msg);
 	return canTrigger;
+#else
+	return false;
 #endif
 }
 
@@ -177,14 +177,14 @@ bool AnomalyDetector::TriggerVariableReset(float chance, char* msg)
 bool AnomalyDetector::TriggerFunctionFailure(float chance, char* msg)
 {
 	float randomValue = _random.Next(100000) / 1000.0f;
-	bool canTrigger = randomValue < chance;
 
-#if DISABLE_ANOMALIES
-	return false;
-#else
+#if ENABLE_ANOMALIES
+	bool canTrigger = randomValue < chance;
 	if (canTrigger)
 		printf("Funtion Failure triggered. Tick: %i | message: %s\n", ticks, msg);
 	return canTrigger;
+#else
+	return false;
 #endif
 }
 

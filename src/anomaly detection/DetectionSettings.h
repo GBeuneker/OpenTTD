@@ -1,5 +1,5 @@
 #pragma once
-#define DISABLE_ANOMALIES 0
+#define ENABLE_ANOMALIES 0
 
 #define USE_KNN 0
 #define USE_LOF 0

@@ -71,7 +71,11 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 		stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2);
 	stDev = sqrtf(stDev / maxIndex);
 
-	// We flag it as anomalous if the distance is at least one stDev removed from the average
+
+	// We flag it as outlier if the distance is at least one stDev removed from the average
+	bool isOutlier = lofValue > (averageValue + stDev);
+	isOutlier = ApplyCooldown(chartIndex, isOutlier);
+
 	result.isAnomaly = lofValue > (averageValue + stDev);
 	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
 	if (stDev <= 0)
@@ -150,9 +154,6 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 		// Exclude p itself
 		if (lofDatapoint->position == p->position)
 			continue;
-
-		float dist = Distance(datapoints->at(i)->position, p->position);
-		lofDatapoint->distance = dist;
 
 		// Add it to the list
 		lofDatapoints.push_back(lofDatapoint);

@@ -54,11 +54,11 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 /// <param name='k'>The neighbourhood size.</param>
 float LOCI::GetMDEF(DataChart * d, Datapoint * p, float r, float k)
 {
-	float prk_neighbourhood = p->rNeighbourhood;
-	float pkr_neighbours = GetRNeighbourCount(d, p, k*r);
+	float prk_neighbourhood = p->prkNeighbourhood;
+	float pkr_neighbourCount = GetRNeighbourCount(d, p, k*r);
 	float pkr_neighbourhood = GetRNeighbourhood(d, p, k, r);
 
-	return (prk_neighbourhood - pkr_neighbours) / pkr_neighbourhood;
+	return (prk_neighbourhood - pkr_neighbourCount) / pkr_neighbourhood;
 }
 
 /// <summary>Calculates and returns the standard deviation of the MDEF.</summary>
@@ -68,7 +68,7 @@ float LOCI::GetMDEF(DataChart * d, Datapoint * p, float r, float k)
 /// <param name='k'>The neighbourhood size.</param>
 float LOCI::GetStandardDeviationMDEF(DataChart * d, Datapoint * p, float r, float k)
 {
-	return GetSigma(d, p, r, k) / p->rNeighbourhood;
+	return GetSigma(d, p, r, k) / p->prkNeighbourhood;
 }
 
 /// <summary>Calculates and returns the sigma values for the standard deviations of the MDEF.</summary>
@@ -80,10 +80,14 @@ float LOCI::GetSigma(DataChart * d, Datapoint * p, float r, float k)
 {
 	float stdevSum = 0;
 
+	int pkNeighbourCount = 0;
 	for (int i = 0; i < p->neighbours.size(); ++i)
 	{
-		Datapoint* o = p->neighbours[i];
-		stdevSum += powf((o->neighbours.size() - p->rNeighbourhood), 2);
+		if (p->neighbours[i] == p)
+			pkNeighbourCount = GetRNeighbours(d, p, k*r).size();
+		else
+			pkNeighbourCount = p->neighbours[i]->neighbours.size();
+		stdevSum += powf((pkNeighbourCount - p->prkNeighbourhood), 2);
 	}
 
 	return sqrtf(stdevSum / p->neighbours.size());
@@ -102,17 +106,16 @@ void LOCI::SetRNeighbours(DataChart * d, Datapoint * p, float r)
 	int startIndex = datapoints.size() > WINDOW_SIZE ? datapoints.size() - WINDOW_SIZE : 0;
 	int endIndex = datapoints.size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : datapoints.size();
 
-	std::vector<Datapoint*> rNeighbours;
+	p->neighbours.clear();
 	// Calculate the distance to p for all the values
 	for (int i = startIndex; i < endIndex; ++i)
 	{
 		// Get the position from the Datapoint
 		float dist = Distance(datapoints[i]->position, p->position);
+		// Add a neighbour to p
 		if (dist <= r)
-			rNeighbours.push_back(datapoints[i]);
+			p->neighbours.push_back(datapoints[i]);
 	}
-
-	p->neighbours = rNeighbours;
 }
 
 /// <summary>Calculates and returns the r-neighbours(neighbours within range r) of a datapoint.</summary>
@@ -130,15 +133,9 @@ std::vector<Datapoint> LOCI::GetRNeighbours(DataChart * d, Datapoint * p, float 
 	// Calculate the distance to p for all the values
 	for (int i = startIndex; i < endIndex; ++i)
 	{
-		// Get the position from the Datapoint
-		Vector2 pos = datapoints[i]->position;
 		float dist = Distance(datapoints[i]->position, p->position);
 		if (dist <= r)
-		{
-			// Convert to a Datapoint
-			Datapoint lociDatapoint = Datapoint(pos.X, pos.Y);
-			rNeighbours.push_back(lociDatapoint);
-		}
+			rNeighbours.push_back(*datapoints[i]);
 	}
 
 	return rNeighbours;
@@ -184,13 +181,19 @@ void LOCI::SetRNeighbourhood(DataChart * d, Datapoint * p, float r, float k)
 	// Sum the r-neighbour count for all the points in the neighbourhood of p
 	for (int i = 0; i < p->neighbours.size(); ++i)
 	{
-		Datapoint* o = p->neighbours[i];
-		SetRNeighbours(d, o, k*r);
-		sum_rNeighbours += o->neighbours.size();
+		// Make sure we do not edit the r-neighbours of p itself
+		if (p->neighbours[i] == p)
+			sum_rNeighbours += GetRNeighbours(d, p, k*r).size();
+		else
+		{
+			Datapoint* o = p->neighbours[i];
+			SetRNeighbours(d, o, k*r);
+			sum_rNeighbours += o->neighbours.size();
+		}
 	}
 
 	// Calculate the average over all the neighbours
-	p->rNeighbourhood = sum_rNeighbours / p->neighbours.size();
+	p->prkNeighbourhood = sum_rNeighbours / p->neighbours.size();
 }
 
 /// <summary>Calculates and returns the r-neighbourhood(average amount of r-neighbours in its neighbourhood) of a datapoint.</summary>

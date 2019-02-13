@@ -22,10 +22,10 @@ public:
 	Vector2 GetMaxValue() { return Vector2(maxX, maxY); }
 	bool IsDirty() { return isDirty; }
 	~DataChart();
-private:
-	std::vector<Datapoint*>* values;
 	float minX = FLT_MAX, maxX = FLT_MIN;
 	float minY = FLT_MAX, maxY = FLT_MIN;
+private:
+	std::vector<Datapoint*>* values;
 	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
 	bool isDirty = true;
 };

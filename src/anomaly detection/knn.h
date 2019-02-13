@@ -11,7 +11,7 @@ public:
 	void SetData(std::vector<DataChart*> _datacharts) override;
 	~KNN();
 protected:
-	Classification Classify(DataChart* d, Datapoint p) override;
+	Classification Classify(DataChart* d, Datapoint* p) override;
 private:
 	uint16_t k;
 	float distances[WINDOW_SIZE];

@@ -22,7 +22,7 @@ void KNN::SetData(std::vector<DataChart*> _datacharts)
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
 /// <param name='p'>The datapoint we would like to classify.</param>
-Classification KNN::Classify(DataChart* d, Datapoint p)
+Classification KNN::Classify(DataChart* d, Datapoint* p)
 {
 	Classification result;
 
@@ -34,7 +34,7 @@ Classification KNN::Classify(DataChart* d, Datapoint p)
 	int offset = valuesSize > WINDOW_SIZE ? valuesSize - WINDOW_SIZE : 0;
 	// Fill the list of distances
 	for (int i = 0; i < WINDOW_SIZE && i < valuesSize; ++i)
-		distances[i] = Distance(p.position, d->GetValues()->at(offset + i).position);
+		distances[i] = Distance(p->position, d->GetValues()->at(offset + i)->position);
 
 	// Sort distances
 	std::sort(std::begin(distances), std::end(distances));
@@ -63,24 +63,7 @@ Classification KNN::Classify(DataChart* d, Datapoint p)
 
 	// We flag it is outlier if the distance is at least one stDev removed from the average
 	bool isOutlier = kDistance > (averageDist + stDev);
-	if (isOutlier)
-	{
-		// If we aren't cooling down, start the cooldown and don't flag as outlier
-		if (cooldownSteps[chartIndex] <= 0)
-		{
-			cooldownSteps[chartIndex] = cooldownSize;
-			isOutlier = false;
-		}
-		// If we were still cooling down, flag as outlier
-		else if (cooldownSteps[chartIndex] > 0)
-		{
-			isOutlier = true;
-			cooldownSteps[chartIndex] = 0;
-		}
-	}
-	// If there is no outlier, decrease the cooldown
-	else
-		cooldownSteps[chartIndex]--;
+	isOutlier = ApplyCooldown(chartIndex, isOutlier);
 
 	// Result is anomalous if there is an outlier and we were still cooling down
 	result.isAnomaly = isOutlier;

@@ -13,6 +13,7 @@ public:
 	virtual void SetData(std::vector<DataChart*> _datacharts);
 	virtual std::vector<Classification> Run();
 protected:
+	bool ApplyCooldown(uint16_t chartIndex, bool isOutlier);
 	virtual Classification Classify(DataChart* d, Datapoint* p) { return Classification(); };
 	std::vector<DataChart*> datacharts;
 	float anomalyThreshold = 2.0;
