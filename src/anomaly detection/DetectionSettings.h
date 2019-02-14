@@ -6,4 +6,4 @@
 #define USE_LOCI 1
 #define USE_SOM 0
 
-#define WINDOW_SIZE 500
+#define WINDOW_SIZE 100

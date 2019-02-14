@@ -10,11 +10,11 @@ public:
 	~LOCI();
 protected:
 	Classification Classify(DataChart* d, Datapoint* p) override;
-	void SetRNeighbours(DataChart *d, Datapoint *p, float r);
+	void SetRNeighbours(DataChart * d, Datapoint * p, std::vector<Datapoint*>* neighbours, float r);
+	void UpdateRNeighbours(Datapoint * p, std::vector<Datapoint*>* neighbours, float r);
 	void SetRNeighbourhood(DataChart *d, Datapoint *p, float r, float k);
-	std::vector<Datapoint> GetRNeighbours(DataChart *d, Datapoint *p, float r);
-	int GetRNeighbourCount(DataChart * d, Datapoint * p, float r);
-	float GetRNeighbourhood(DataChart *d, Datapoint *p, float r, float k);
+	void UpdateRNeighbourhood(DataChart * d, Datapoint * p, float r, float k);
+	float GetRNeighbourhood(std::vector<Datapoint*>* neighbours);
 	float GetMDEF(DataChart *d, Datapoint *p, float r, float k);
 	float GetStandardDeviationMDEF(DataChart *d, Datapoint *p, float r, float k);
 	float GetSigma(DataChart *d, Datapoint *p, float r, float k);

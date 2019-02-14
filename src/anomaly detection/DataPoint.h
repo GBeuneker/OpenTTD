@@ -16,6 +16,7 @@ public:
 	float lrd = -1;
 #elif USE_LOCI
 	float prkNeighbourhood = -1;
+	std::vector<Datapoint*> krNeighbours, kNeighbours;
 #endif
 
 	virtual ~Datapoint() {};

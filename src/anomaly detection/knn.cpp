@@ -62,13 +62,14 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 	stDev = sqrtf(stDev / maxIndex);
 
 	// We flag it is outlier if the distance is at least one stDev removed from the average
-	bool isOutlier = kDistance > (averageDist + stDev);
+	float threshold = averageDist + stDev;
+	bool isOutlier = kDistance > threshold;
 	isOutlier = ApplyCooldown(chartIndex, isOutlier);
 
 	// Result is anomalous if there is an outlier and we were still cooling down
 	result.isAnomaly = isOutlier;
 	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
-	result.certainty = stDev > 0 ? fmin(abs(kDistance - averageDist) / (4 * stDev), 1) : 1;
+	result.certainty = stDev > 0 ? fmin(abs(kDistance - threshold) / (4 * stDev), 1) : 1;
 
 	return result;
 }

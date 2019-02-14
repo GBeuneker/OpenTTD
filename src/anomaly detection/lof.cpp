@@ -76,12 +76,13 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	bool isOutlier = lofValue > (averageValue + stDev);
 	isOutlier = ApplyCooldown(chartIndex, isOutlier);
 
-	result.isAnomaly = lofValue > (averageValue + stDev);
+	float threshold = averageValue + stDev;
+	result.isAnomaly = lofValue > threshold;
 	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
 	if (stDev <= 0)
 		result.certainty = 1;
 	else
-		result.certainty = fmin(abs(lofValue - averageValue) / (4 * stDev), 1);
+		result.certainty = fmin(abs(lofValue - threshold) / (4 * stDev), 1);
 
 	return result;
 }

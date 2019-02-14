@@ -81,8 +81,8 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 	// If anomaly score is greater than threshold
 	if (anomalyScore >= threshold)
 		printf("ANOMALY DETECTED! | Tick: %i | Score: %f\n", ticks, anomalyScore);
-	else if (anomalyScore > 0)
-		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
+	//else if (anomalyScore > 0)
+	//	printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 }
 
 /// <summary>Serializes the entire data charts.</summary>
