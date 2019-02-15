@@ -24,21 +24,19 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 
 	// Set the neighbours in range k of p
 	SetRNeighbours(d, loci_p, &loci_p->kNeighbours, k);
+	// Set the neighbours and neighbourhood of p
+	SetRNeighbours(d, loci_p, &loci_p->neighbours, rMax);
+	loci_p->tmp_neighbours = loci_p->neighbours;
+	SetRNeighbours(d, loci_p, &loci_p->krNeighbours, k*rMax);
+	loci_p->tmp_krNeighbours = loci_p->krNeighbours;
+	SetRNeighbourhood(d, loci_p, rMax, k);
+
 	for (float r = rMax; r > rMin; r -= stepSize)
 	{
-		if (r == rMax)
-		{
-			// Set the neighbours and neighbourhood of p
-			SetRNeighbours(d, loci_p, &loci_p->neighbours, r);
-			SetRNeighbours(d, loci_p, &loci_p->krNeighbours, k*r);
-			SetRNeighbourhood(d, loci_p, r, k);
-		}
-		else
-		{
-			UpdateRNeighbours(loci_p, &loci_p->neighbours, r);
-			UpdateRNeighbours(loci_p, &loci_p->krNeighbours, k*r);
-			UpdateRNeighbourhood(d, loci_p, r, k);
-		}
+		// Update the neighbours and neighbourhood of p
+		UpdateRNeighbours(loci_p, &loci_p->tmp_neighbours, r);
+		UpdateRNeighbours(loci_p, &loci_p->tmp_krNeighbours, k*r);
+		UpdateRNeighbourhood(d, loci_p, r, k);
 
 		// Get the MDEF value for p for this range r
 		float mdef = GetMDEF(d, loci_p, r, k);
@@ -75,7 +73,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 float LOCI::GetMDEF(DataChart * d, Datapoint * p, float r, float k)
 {
 	float prk_neighbourhood = p->prkNeighbourhood;
-	float pkr_neighbourCount = p->krNeighbours.size();
+	float pkr_neighbourCount = p->tmp_krNeighbours.size();
 	float pkr_neighbourhood = GetRNeighbourhood(&p->kNeighbours);
 
 	return (prk_neighbourhood - pkr_neighbourCount) / pkr_neighbourhood;
@@ -101,13 +99,13 @@ float LOCI::GetSigma(DataChart * d, Datapoint * p, float r, float k)
 	float stdevSum = 0;
 
 	int pkNeighbourCount = 0;
-	for (int i = 0; i < p->neighbours.size(); ++i)
+	for (int i = 0; i < p->tmp_neighbours.size(); ++i)
 	{
-		pkNeighbourCount = p->neighbours[i]->krNeighbours.size();
+		pkNeighbourCount = p->tmp_neighbours[i]->tmp_krNeighbours.size();
 		stdevSum += powf((pkNeighbourCount - p->prkNeighbourhood), 2);
 	}
 
-	return sqrtf(stdevSum / p->neighbours.size());
+	return sqrtf(stdevSum / p->tmp_neighbours.size());
 }
 
 #pragma region R-Neighbours
@@ -149,6 +147,13 @@ void LOCI::UpdateRNeighbours(Datapoint * p, std::vector<Datapoint*>* neighbours,
 		neighbours->end());
 }
 
+void LOCI::AddNewNeighbour(Datapoint *p, Datapoint* nbr, std::vector<Datapoint*>* neighbours, float r)
+{
+	float dist = Distance(p->position, nbr->position);
+	if (dist < r)
+		neighbours->push_back(nbr);
+}
+
 #pragma endregion
 
 #pragma region R-Neighbourhood
@@ -170,7 +175,12 @@ void LOCI::SetRNeighbourhood(DataChart * d, Datapoint * p, float r, float k)
 		else
 		{
 			Datapoint* o = p->neighbours[i];
-			SetRNeighbours(d, o, &o->krNeighbours, k*r);
+			if (o->krNeighbours.size() == 0)
+				SetRNeighbours(d, o, &o->krNeighbours, k*r);
+			else
+				AddNewNeighbour(o, p, &o->krNeighbours, k*r);
+
+			o->tmp_krNeighbours = o->krNeighbours;
 			sum_rNeighbours += o->krNeighbours.size();
 		}
 	}
@@ -188,21 +198,21 @@ void LOCI::UpdateRNeighbourhood(DataChart * d, Datapoint * p, float r, float k)
 	float sum_rNeighbours = 0;
 
 	// Sum the r-neighbour count for all the points in the neighbourhood of p
-	for (int i = 0; i < p->neighbours.size(); ++i)
+	for (int i = 0; i < p->tmp_neighbours.size(); ++i)
 	{
 		// Make sure we do not edit the r-neighbours of p itself
-		if (p->neighbours[i] == p)
-			sum_rNeighbours += p->krNeighbours.size();
+		if (p->tmp_neighbours[i] == p)
+			sum_rNeighbours += p->tmp_krNeighbours.size();
 		else
 		{
-			Datapoint* o = p->neighbours[i];
-			UpdateRNeighbours(o, &o->krNeighbours, k*r);
-			sum_rNeighbours += o->krNeighbours.size();
+			Datapoint* o = p->tmp_neighbours[i];
+			UpdateRNeighbours(o, &o->tmp_krNeighbours, k*r);
+			sum_rNeighbours += o->tmp_krNeighbours.size();
 		}
 	}
 
 	// Calculate the average over all the neighbours
-	p->prkNeighbourhood = sum_rNeighbours / p->neighbours.size();
+	p->prkNeighbourhood = sum_rNeighbours / p->tmp_neighbours.size();
 }
 
 /// <summary>Calculates and returns the r-neighbourhood(average amount of r-neighbours in its neighbourhood) of a datapoint.</summary>
@@ -215,7 +225,7 @@ float LOCI::GetRNeighbourhood(std::vector<Datapoint*>* neighbours)
 
 	// Sum the r-neighbour count for all the points in the neighbourhood of p
 	for (int i = 0; i < neighbours->size(); ++i)
-		sum_rNeighbours += neighbours->at(i)->krNeighbours.size();
+		sum_rNeighbours += neighbours->at(i)->tmp_krNeighbours.size();
 
 	// Calculate the average over all the neighbours
 	return sum_rNeighbours / neighbours->size();

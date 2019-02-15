@@ -12,6 +12,7 @@ protected:
 	Classification Classify(DataChart* d, Datapoint* p) override;
 	void SetRNeighbours(DataChart * d, Datapoint * p, std::vector<Datapoint*>* neighbours, float r);
 	void UpdateRNeighbours(Datapoint * p, std::vector<Datapoint*>* neighbours, float r);
+	void AddNewNeighbour(Datapoint * p, Datapoint * nbr, std::vector<Datapoint*>* neighbours, float r);
 	void SetRNeighbourhood(DataChart *d, Datapoint *p, float r, float k);
 	void UpdateRNeighbourhood(DataChart * d, Datapoint * p, float r, float k);
 	float GetRNeighbourhood(std::vector<Datapoint*>* neighbours);
