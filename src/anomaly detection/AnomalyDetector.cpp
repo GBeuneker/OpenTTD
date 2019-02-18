@@ -12,10 +12,23 @@ AnomalyDetector::AnomalyDetector()
 #elif USE_LOF
 	this->lof = new LOF(5);
 #elif USE_LOCI
-	this->loci = new LOCI();
+	this->loci = new LOCI(50);
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 #endif
+
+	//DataChart* test = new DataChart();
+	//m_datacharts.push_back(test);
+	//this->loci->SetData(m_datacharts);
+
+	//for (int i = 0; i <= 9; ++i)
+	//{
+	//	test->GetValues()->push_back(new Datapoint(i, 0));
+	//}
+
+	//test->GetValues()->push_back(new Datapoint(10, 10));
+	//loci->Run();
+
 }
 
 /// <summary>Build the data charts by combining all variables.</summary>
@@ -81,8 +94,8 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 	// If anomaly score is greater than threshold
 	if (anomalyScore >= threshold)
 		printf("ANOMALY DETECTED! | Tick: %i | Score: %f\n", ticks, anomalyScore);
-	//else if (anomalyScore > 0)
-	//	printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
+	else if (anomalyScore > 0)
+		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 }
 
 /// <summary>Serializes the entire data charts.</summary>
