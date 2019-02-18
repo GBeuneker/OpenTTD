@@ -10,6 +10,7 @@ public:
 	~LOCI();
 protected:
 	Classification Classify(DataChart* d, Datapoint* p) override;
+	float GetMaxRadius(DataChart * d);
 	void SetRNeighbours(DataChart * d, Datapoint * p, std::vector<Datapoint*>* neighbours, float r);
 	void UpdateRNeighbours(Datapoint * p, std::vector<Datapoint*>* neighbours, float r);
 	void AddNewNeighbour(Datapoint * p, Datapoint * nbr, std::vector<Datapoint*>* neighbours, float r);

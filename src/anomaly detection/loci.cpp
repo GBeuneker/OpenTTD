@@ -15,8 +15,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 
 	// Determine rmin, rmax and the stepsize
 	int steps = 10;
-	float maxRange = Distance(d->GetMinValue(), d->GetMaxValue());
-	int rMin = maxRange / 100, rMax = maxRange;
+	int rMax = GetMaxRadius(d) * k, rMin = rMax / 100;
 	float stepSize = (rMax - rMin) / (float)steps;
 
 	// Find the index of the chart
@@ -63,6 +62,28 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 	result.isAnomaly = ApplyCooldown(chartIndex, result.isAnomaly);
 
 	return result;
+}
+
+/// <summary>Calculates the maximum radius of the dataset.</summary>
+/// <param name='d'>The collection of data we want to use for our calculation.</param>
+float LOCI::GetMaxRadius(DataChart *d)
+{
+	int startIndex = d->GetValues()->size() > WINDOW_SIZE ? d->GetValues()->size() - WINDOW_SIZE : 0;
+	int endIndex = d->GetValues()->size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : d->GetValues()->size();
+
+	float minX = FLT_MAX, maxX = FLT_MIN;
+	float minY = FLT_MAX, maxY = FLT_MIN;
+
+	// Get the minimum and maximum x,y values
+	for (int i = startIndex; i < endIndex; ++i)
+	{
+		minX = fmin(d->GetValues()->at(i)->position.X, minX);
+		minY = fmin(d->GetValues()->at(i)->position.Y, minY);
+		maxX = fmin(d->GetValues()->at(i)->position.X, maxX);
+		maxY = fmin(d->GetValues()->at(i)->position.Y, maxY);
+	}
+
+	return Distance(Vector2(minX, minY), Vector2(maxX, maxY));
 }
 
 /// <summary>Calculates and returns the MDEF value of a datapoint.</summary>
@@ -116,20 +137,18 @@ float LOCI::GetSigma(DataChart * d, Datapoint * p, float r, float k)
 /// <param name='r'>The range we want to use.</param>
 void LOCI::SetRNeighbours(DataChart * d, Datapoint * p, std::vector<Datapoint*>* neighbours, float r)
 {
-	std::vector<Datapoint*> datapoints = *(d->GetValues());
-
-	int startIndex = datapoints.size() > WINDOW_SIZE ? datapoints.size() - WINDOW_SIZE : 0;
-	int endIndex = datapoints.size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : datapoints.size();
+	int startIndex = d->GetValues()->size() > WINDOW_SIZE ? d->GetValues()->size() - WINDOW_SIZE : 0;
+	int endIndex = d->GetValues()->size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : d->GetValues()->size();
 
 	neighbours->clear();
 	// Calculate the distance to p for all the values
 	for (int i = startIndex; i < endIndex; ++i)
 	{
 		// Get the position from the Datapoint
-		float dist = Distance(datapoints[i]->position, p->position);
+		float dist = Distance(d->GetValues()->at(i)->position, p->position);
 		// Add a neighbour to p
 		if (dist <= r)
-			neighbours->push_back(datapoints[i]);
+			neighbours->push_back(d->GetValues()->at(i));
 	}
 }
 
