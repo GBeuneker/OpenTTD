@@ -14,22 +14,23 @@ bool Detector::ApplyCooldown(uint16_t chartIndex, bool isOutlier)
 {
 	if (isOutlier)
 	{
-		// If we aren't cooling down, start the cooldown and don't flag as outlier
-		if (cooldownSteps[chartIndex] <= 0)
+		// If we still have room to cool down, don't flag as outlier
+		if (cooldownSteps[chartIndex] > 0)
 		{
-			cooldownSteps[chartIndex] = cooldownSize;
+			cooldownSteps[chartIndex]--;
 			return false;
 		}
-		// If we were still cooling down, flag as outlier
-		else if (cooldownSteps[chartIndex] > 0)
+		// If the cooldown has ended and we're still outlier, then flag as outlier
+		else if (cooldownSteps[chartIndex] <= 0)
 		{
-			cooldownSteps[chartIndex] = 0;
+			// Restart the cooldown
+			cooldownSteps[chartIndex] = cooldownSize;
 			return true;
 		}
 	}
-	// If there is no outlier, decrease the cooldown
 	else
-		cooldownSteps[chartIndex]--;
+		// Restart the cooldown
+		cooldownSteps[chartIndex] = cooldownSize;
 
 	return false;
 }

@@ -8,9 +8,9 @@ AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
 #if USE_KNN
-	this->knn = new KNN(5);
+	this->knn = new KNN(50);
 #elif USE_LOF
-	this->lof = new LOF(5);
+	this->lof = new LOF(50);
 #elif USE_LOCI
 	this->loci = new LOCI(50);
 #elif USE_SOM
@@ -28,7 +28,6 @@ AnomalyDetector::AnomalyDetector()
 
 	//test->GetValues()->push_back(new Datapoint(10, 10));
 	//loci->Run();
-
 }
 
 /// <summary>Build the data charts by combining all variables.</summary>
@@ -56,8 +55,12 @@ void AnomalyDetector::BuildCharts()
 /// <summary>Logs the data in our anomaly detection algorithms.</summary>
 void AnomalyDetector::LogDataTick()
 {
+	ticks++;
+
 	// Build data charts on the first tick
-	if (ticks == 0)
+	if (ticks < 10)
+		return;
+	else if (ticks == 10)
 		BuildCharts();
 
 	// Log new values
@@ -76,12 +79,14 @@ void AnomalyDetector::LogDataTick()
 #endif
 
 	DetectAnomaly(results);
-
-	ticks++;
 }
 
 void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 {
+	// Do not log anomalies for the first window
+	if (ticks < WINDOW_SIZE)
+		return;
+
 	float anomalyScore = 0;
 	for (int i = 0; i < results.size(); ++i)
 	{
@@ -93,7 +98,12 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 	float threshold = (m_variables.size() - 1) * 0.3f;
 	// If anomaly score is greater than threshold
 	if (anomalyScore >= threshold)
-		printf("ANOMALY DETECTED! | Tick: %i | Score: %f\n", ticks, anomalyScore);
+	{
+		printf("ANOMALY DETECTED! | Tick: %i | Total score: %f\n", ticks, anomalyScore);
+		for (int i = 0; i < results.size(); ++i)
+			if (results[i].isAnomaly)
+				printf("|    Chart %i: %s | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), results[i].certainty);
+	}
 	else if (anomalyScore > 0)
 		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 }
@@ -206,7 +216,19 @@ bool AnomalyDetector::TriggerFunctionFailure(float chance, char* msg)
 /// <param name='name'>The name we can identify the variable with.</param>
 void AnomalyDetector::TrackPointer(size_t* var, char* name)
 {
-	m_variables.push_back(VariablePointer(var, name));
+	bool foundElement = false;
+	for (int i = 0; i < m_variables.size(); ++i)
+	{
+		if (strcmp(m_variables.at(i).GetName(), name) == 0)
+		{
+			m_variables.at(i).AddPointer(var);
+			foundElement = true;
+			return;
+		}
+	}
+
+	if (!foundElement)
+		m_variables.push_back(VariablePointer(var, name));
 }
 
 /// <summary>Resets all variables in the Anomaly Detector.</summary>

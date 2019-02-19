@@ -29,6 +29,7 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 
 	// Get k-neighbours of p
 	SetKNeighbours(d, lof_p);
+	SetKDistance(d, lof_p);
 
 	// Update the k-neighbours of every k-neighbour of p
 	for (int i = 0; i < lof_p->neighbours.size(); ++i)
@@ -114,7 +115,7 @@ void LOF::SetLRD(DataChart *d, Datapoint *p)
 
 	// Ensure we don't divide by zero
 	if (reachDistSum == 0)
-		reachDistSum = 0.000001f;
+		reachDistSum = 0.001;
 
 	p->lrd = (p->neighbours.size()) / reachDistSum;
 }
@@ -153,7 +154,7 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 		// Get the position from the Datapoint
 		Datapoint* lofDatapoint = datapoints->at(i);
 		// Exclude p itself
-		if (lofDatapoint->position == p->position)
+		if (lofDatapoint == p)
 			continue;
 
 		// Add it to the list
@@ -183,7 +184,7 @@ void LOF::UpdateKNeighbours(DataChart *d, Datapoint * p, Datapoint* new_p)
 	// Insert the new point into the neighbours of p
 	for (int i = 0; i < p->neighbours.size(); ++i)
 	{
-		float dist = Distance(p->neighbours.at(i)->position, new_p->position);
+		float dist = Distance(p->neighbours.at(i)->position, p->position);
 		// When we find a distance greater than the new distance
 		if (dist > newDistance)
 		{

@@ -12,7 +12,7 @@ public:
 	std::vector<Datapoint*> neighbours;
 
 #if USE_LOF
-	float reachDistance = FLT_MAX, kDistance = FLT_MAX;
+	float kDistance = FLT_MAX;
 	float lrd = -1;
 #elif USE_LOCI
 	float prkNeighbourhood = -1;

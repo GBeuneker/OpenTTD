@@ -14,14 +14,14 @@ void DataChart::LogData()
 
 	Datapoint* newDataPoint = new Datapoint(position.X, position.Y);
 
-	// Only add unique values
-	for (int i = 0; i < values->size(); ++i)
-		if (values->at(i)->position == newDataPoint->position)
-		{
-			// No new value was added
-			isDirty = false;
-			return;
-		}
+	//// Only add unique values
+	//for (int i = 0; i < values->size(); ++i)
+	//	if (values->at(i)->position == newDataPoint->position)
+	//	{
+	//		// No new value was added
+	//		isDirty = false;
+	//		return;
+	//	}
 
 	values->push_back(newDataPoint);
 
@@ -40,7 +40,7 @@ std::string DataChart::Serialize()
 	std::ostringstream stringstream;
 
 	// Write the labels in the first line
-	stringstream << GetLabelString();
+	stringstream << GetLabelString() << "\n";
 
 	// Loop through all the values
 	for (int i = 0; i < values->size(); ++i)
@@ -71,10 +71,7 @@ std::string DataChart::GetLabelString()
 {
 	std::ostringstream stringstream;
 
-	if (m_varA.GetPointer() != 0 && m_varB.GetPointer() != 0)
-		stringstream << "# " << m_varA.GetName() << " " << m_varB.GetName() << "\n";
-	else
-		stringstream << "# X Y\n";
+	stringstream << "# " << m_varA.GetName() << " " << m_varB.GetName();
 
 	return stringstream.str();
 }

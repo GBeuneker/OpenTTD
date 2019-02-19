@@ -25,8 +25,8 @@ public:
 	float minX = FLT_MAX, maxX = FLT_MIN;
 	float minY = FLT_MAX, maxY = FLT_MIN;
 private:
-	std::vector<Datapoint*>* values;
 	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
+	std::vector<Datapoint*>* values;
 	bool isDirty = true;
 };
 

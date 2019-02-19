@@ -5,14 +5,22 @@ public:
 	VariablePointer() {};
 	VariablePointer(size_t* pointer, char* name)
 	{
-		m_pointer = pointer;
+		m_pointers.push_back(pointer);
 		m_name = name;
 	};
 	~VariablePointer() {};
-	size_t* GetPointer() { return m_pointer; }
+	std::vector<size_t*> GetPointers() { return m_pointers; }
+	void AddPointer(size_t* pointer) { m_pointers.push_back(pointer); }
 	char* GetName() { return m_name; }
-	int GetValue() { return *m_pointer; }
+	int GetValue() {
+		int sum = 0;
+		for (int i = 0; i < m_pointers.size(); ++i)
+		{
+			sum += *m_pointers.at(i);
+		}
+		return sum / m_pointers.size();
+	}
 private:
-	size_t* m_pointer;
-	char* m_name;
+	std::vector<size_t*> m_pointers;
+	char* m_name = "";
 };

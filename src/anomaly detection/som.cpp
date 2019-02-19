@@ -267,7 +267,7 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 		maxY = fmax(nodes.at(i)->position.Y, maxY);
 	}
 
-	float errorRadius = fmin(maxX - minX, maxY - minY);
+	float errorRadius = fmax(1, fmin(maxX - minX, maxY - minY));
 
 	// Check if the point is inside the SOM
 	result.isAnomaly = !IsInSOMMap(&nodes, p);
@@ -275,10 +275,7 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 	float distanceToEdge = DistToEdge(&nodes, p);
 	// If our point is outside the SOM, normalize using 3 times the max distance
 	if (result.isAnomaly)
-		result.certainty = fmin(distanceToEdge / (2 * errorRadius), 1);
-	// If our point is inside the SOM, normalize using half the max distance
-	else
-		result.certainty = fmin(distanceToEdge / (errorRadius / 2), 1);
+		result.certainty = std::clamp((distanceToEdge - errorRadius) / (2 * errorRadius), 0.0f, 1.0f);
 
 	return result;
 }
@@ -432,6 +429,9 @@ float SOM::DistToEdge(std::vector<Datapoint*>* nodes, Datapoint *p)
 	{
 		Vector2 a = nodes->at(i)->position;
 		Vector2 b = nodes->at(i + 1)->position;
+		// Make sure there is room between a and b
+		if (Distance(a, b) < 0.01f)
+			b.Y += 1;
 		float l2 = SqrMagnitude(b - a);
 		if (l2 == 0)
 			return Distance(p->position, a);
