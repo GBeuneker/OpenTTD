@@ -42,34 +42,36 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
-	// Get the k-th distance and add it to the list
+	// Get the k-distance
 	float kDistance = distances[k];
-	int kIndex = kIndices[chartIndex];
-	kDistances.at(chartIndex)[kIndex] = kDistance;
-	kIndices[chartIndex] = (kIndex + 1) % WINDOW_SIZE;
-	int maxIndex = fmin(WINDOW_SIZE, valuesSize - k);
+	// Get the maximum index of our k-distances (first k steps are skipped, plus the first time there are no kDistances yet)
+	int maxIndex = fmin(WINDOW_SIZE, valuesSize - k - 1);
 
 	// Calculate the average distance of this window
 	float averageDist = 0;
 	for (int i = 0; i < maxIndex; ++i)
-		averageDist += kDistances.at(chartIndex)[i];
-	averageDist /= maxIndex;
+		averageDist += kDistances.at(chartIndex)[i] / maxIndex;
 
 	// Calculate the standard deviation
 	float stDev = 0;
 	for (int i = 0; i < maxIndex; ++i)
-		stDev += pow(kDistances.at(chartIndex)[i] - averageDist, 2);
-	stDev = sqrtf(stDev / maxIndex);
+		stDev += pow(kDistances.at(chartIndex)[i] - averageDist, 2) / maxIndex;
+	stDev = sqrtf(stDev);
 
 	// We flag it is outlier if the distance is at least one stDev removed from the average
 	float threshold = averageDist + stDev;
 	bool isOutlier = kDistance > threshold;
-	isOutlier = ApplyCooldown(chartIndex, isOutlier);
 
 	// Result is anomalous if there is an outlier and we were still cooling down
-	result.isAnomaly = isOutlier;
+	result.isAnomaly = ApplyCooldown(chartIndex, isOutlier);
 	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
 	result.certainty = stDev > 0 ? fmin(abs(kDistance - threshold) / (4 * stDev), 1) : 1;
+
+	// Add the average to the list
+	int kIndex = kIndices[chartIndex];
+	kDistances.at(chartIndex)[kIndex] = kDistance;
+	// Increase the index
+	kIndices[chartIndex] = (kIndex + 1) % WINDOW_SIZE;
 
 	return result;
 }

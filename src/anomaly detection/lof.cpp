@@ -24,7 +24,7 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 {
 	Classification result;
 
-	if (d->GetValues()->size() < k + 1)
+	if (d->GetValues()->size() <= k)
 		return result;
 
 	// Get k-neighbours of p
@@ -34,10 +34,10 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	// Update the k-neighbours of every k-neighbour of p
 	for (int i = 0; i < lof_p->neighbours.size(); ++i)
 	{
-		// If there are too few neighbours, initialize the neighbourhood of this k-neighbour
-		if (lof_p->neighbours.at(i)->neighbours.size() < k)
+		// If the k-distance has not yet been reached for the point
+		if (!lof_p->neighbours.at(i)->kDistanceReached)
 			SetKNeighbours(d, lof_p->neighbours.at(i));
-		// If the neighbourhood is already full, just update the neighbourhood with this new point
+		// If k-distance has already been reached, just update the neighbourhood with this new point
 		else
 			UpdateKNeighbours(d, lof_p->neighbours.at(i), lof_p);
 
@@ -56,9 +56,8 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
-	lofValues.at(chartIndex)[lofIndices[chartIndex]] = lofValue;
-	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
-	int maxIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - k);
+	// Get the maximum index of our lof-values (first k steps are skipped, plus the first time there are no lof-values yet)
+	int maxIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - k - 1);
 
 	// Calculate the average distance of this window
 	float averageValue = 0;
@@ -84,6 +83,12 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 		result.certainty = 1;
 	else
 		result.certainty = fmin(abs(lofValue - threshold) / (4 * stDev), 1);
+
+	// Add the average to the list
+	int kIndex = lofIndices[chartIndex];
+	lofValues.at(chartIndex)[kIndex] = lofValue;
+	// Increase the index
+	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
 
 	return result;
 }
@@ -153,9 +158,13 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 	{
 		// Get the position from the Datapoint
 		Datapoint* lofDatapoint = datapoints->at(i);
+
 		// Exclude p itself
 		if (lofDatapoint == p)
 			continue;
+
+		//Set the distance of the datapoint
+		lofDatapoint->distance = Distance(lofDatapoint->position, p->position);
 
 		// Add it to the list
 		lofDatapoints.push_back(lofDatapoint);
@@ -165,13 +174,36 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 	std::sort(lofDatapoints.begin(), lofDatapoints.end(),
 		[p](const Datapoint * a, const Datapoint * b) -> bool
 	{
-		return Distance(a->position, p->position) < Distance(b->position, p->position);
+		return a->distance < b->distance;
 	});
 
+	// Search for the k-th distance
+	float dist = 0;
+	int nbrSize = lofDatapoints.size(), distSteps = 0;
+	for (int i = 0; i < lofDatapoints.size(); ++i)
+	{
+		// If we find a step in distance
+		if (lofDatapoints.at(i)->distance > dist)
+		{
+			// Remember the last observed distance
+			dist = lofDatapoints.at(i)->distance;
+			// If we haven't reached k-th nearest neighbour yet, take a step
+			if (distSteps < k)
+				distSteps++;
+			// We have reached the k-th nearest neighbour and found the next step	
+			else
+			{
+				// Size is equal to i
+				nbrSize = i;
+				p->kDistanceReached = true;
+				break;
+			}
+		}
+	}
+
 	// Get the closest k-neighbours
-	int maxNbrSize = fmin(k, lofDatapoints.size());
-	p->neighbours.resize(maxNbrSize);
-	std::copy_n(lofDatapoints.begin(), maxNbrSize, p->neighbours.begin());
+	p->neighbours.resize(nbrSize);
+	std::copy_n(lofDatapoints.begin(), nbrSize, p->neighbours.begin());
 }
 
 void LOF::UpdateKNeighbours(DataChart *d, Datapoint * p, Datapoint* new_p)
@@ -186,15 +218,13 @@ void LOF::UpdateKNeighbours(DataChart *d, Datapoint * p, Datapoint* new_p)
 	{
 		float dist = Distance(p->neighbours.at(i)->position, p->position);
 		// When we find a distance greater than the new distance
-		if (dist > newDistance)
+		if (dist >= newDistance)
 		{
 			// Insert at this position
 			p->neighbours.insert(p->neighbours.begin() + i, new_p);
 			break;
 		}
 	}
-
-	p->neighbours.resize(k);
 }
 
 LOF::~LOF()
