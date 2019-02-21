@@ -12,54 +12,52 @@ AnomalyDetector::AnomalyDetector()
 #elif USE_LOF
 	this->lof = new LOF(5);
 #elif USE_LOCI
-	this->loci = new LOCI(50);
+	this->loci = new LOCI(5);
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 #endif
 
-	//DataChart* test = new DataChart();
-	//m_datacharts.push_back(test);
-	//this->lof->SetData(m_datacharts);
+	DataChart* test = new DataChart();
+	m_datacharts.push_back(test);
+	this->loci->SetData(m_datacharts);
 #if 0
 	// Test 1
-	for (int i = 0; i <= 4; ++i)
+	for (int i = 0; i <= 9; ++i)
 	{
 		test->GetValues()->push_back(new Datapoint(i, 0));
-		if (i == 0)
-			test->GetValues()->at(0)->count = 5;
-		lof->Run();
+		loci->Run();
 	}
 #elif 0
 	// Test 2
 	for (int i = 0; i <= 9; ++i)
 	{
 		test->GetValues()->push_back(new Datapoint(i, i == 7 || i == 9 ? 1 : 0));
-		lof->Run();
+		loci->Run();
 	}
-#elif 0
+#elif 1
 	// Test 3
 	test->GetValues()->push_back(new Datapoint(0, 0)); // 0
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(1, 0)); // 1
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0.5, 0.5)); // 2
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0, 1)); // 3
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(1, 1)); // 4
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0.25, 1.5)); // 5
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0.75, 1.5)); // 6
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0, 2)); // 7
-	lof->Run();
+	loci->Run();
 	test->GetValues()->push_back(new Datapoint(1, 2)); // 8
-	lof->Run();
-	test->GetValues()->push_back(new Datapoint(8, 1)); // 9
-	lof->Run();
+	loci->Run();
+	test->GetValues()->push_back(new Datapoint(3, 3)); // 9
+	loci->Run();
 #endif
-	}
+}
 
 /// <summary>Build the data charts by combining all variables.</summary>
 void AnomalyDetector::BuildCharts()

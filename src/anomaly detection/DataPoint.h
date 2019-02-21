@@ -17,8 +17,6 @@ public:
 #if USE_LOF
 	float kDistance = FLT_MAX;
 	float lrd = -1;
-	bool kDistanceReached = false;
-	int exclusiveCount = 0;
 #elif USE_LOCI
 	float prkNeighbourhood = -1;
 	std::vector<Datapoint*> rkNeighbours;

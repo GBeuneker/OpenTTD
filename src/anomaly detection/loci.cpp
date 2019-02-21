@@ -19,7 +19,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 	Classification result;
 
 	// Determine rmin, rmax and the stepsize
-	int steps = 10;
+	int steps = 100;
 	float rMax = GetRadius(d, loci_p, maxNeighbourRange), rMin = 0;
 	float stepSize = (rMax - rMin) / (float)steps;
 
@@ -68,6 +68,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 
 /// <summary>Calculates the maximum radius of the dataset.</summary>
 /// <param name='d'>The collection of data we want to use for our calculation.</param>
+/// <param name='nbrAmount'>The amount of nearest neighbours we are looking for.</param>
 float LOCI::GetRadius(DataChart *d, Datapoint *p, uint16_t nbrAmount)
 {
 	int startIndex = d->GetValues()->size() > WINDOW_SIZE ? d->GetValues()->size() - WINDOW_SIZE : 0;
@@ -89,7 +90,7 @@ float LOCI::GetRadius(DataChart *d, Datapoint *p, uint16_t nbrAmount)
 		return Distance(a->position, p->position) < Distance(b->position, p->position);
 	});
 
-	return Distance(p->position, values.at(fmin(values.size() - 1, nbrAmount - 1))->position);
+	return Distance(p->position, values.at(fmin(values.size() - 1, nbrAmount))->position);
 }
 
 /// <summary>Calculates and returns the MDEF value of a datapoint.</summary>

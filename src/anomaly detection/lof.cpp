@@ -34,13 +34,7 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	// Update the k-neighbours of every k-neighbour of p
 	for (int i = 0; i < lof_p->neighbours.size(); ++i)
 	{
-		// If the k-distance has not yet been reached for the point
-		if (!lof_p->neighbours.at(i)->kDistanceReached)
-			SetKNeighbours(d, lof_p->neighbours.at(i));
-		// If k-distance has already been reached, just update the neighbourhood with this new point
-		else
-			UpdateKNeighbours(d, lof_p->neighbours.at(i), lof_p);
-
+		SetKNeighbours(d, lof_p->neighbours.at(i));
 		SetKDistance(d, lof_p->neighbours.at(i));
 	}
 
@@ -178,27 +172,18 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 	});
 
 	// Search for the k-th distance
-	float dist = 0;
-	int nbrSize = lofDatapoints.size(), distSteps = 0;
-	for (int i = 0; i < lofDatapoints.size(); ++i)
+	// Start distance at the k-th neighbour, since they're sorted this ensures we have at most k-1 neighbours whose distance is smaller
+	float dist = lofDatapoints.at(k - 1)->distance;
+	int nbrSize = lofDatapoints.size();
+
+	// Add all distances equal to the current distance
+	for (int i = k - 1; i < lofDatapoints.size(); ++i)
 	{
-		// If we find a step in distance
+		// We find a step in distance, stop adding
 		if (lofDatapoints.at(i)->distance > dist)
-		{
-			// Remember the last observed distance
-			dist = lofDatapoints.at(i)->distance;
-			// If we haven't reached k-th nearest neighbour yet, take a step
-			if (distSteps < k)
-				distSteps++;
-			// We have reached the k-th nearest neighbour and found the next step	
-			else
-			{
-				// Size is equal to i
-				nbrSize = i;
-				p->kDistanceReached = true;
-				break;
-			}
-		}
+			break;
+
+		nbrSize = i + 1;
 	}
 
 	// Get the closest k-neighbours
@@ -222,6 +207,23 @@ void LOF::UpdateKNeighbours(DataChart *d, Datapoint * p, Datapoint* new_p)
 		{
 			// Insert at this position
 			p->neighbours.insert(p->neighbours.begin() + i, new_p);
+			break;
+		}
+	}
+
+	// Remove any neighbours outside the neighbourhood
+	// Search for the k-th distance
+	// Start distance at the k-th neighbour, since they're sorted this ensures we have at most k-1 neighbours whose distance is smaller
+	float dist = p->neighbours.at(k - 1)->distance;
+
+	// Add all distances equal to the current distance
+	for (int i = k - 1; i < p->neighbours.size(); ++i)
+	{
+		// We find a step in distance, stop adding
+		if (p->neighbours.at(i)->distance > dist)
+		{
+			// Cut off any neighbours outside the neighbourhood
+			p->neighbours.resize(i);
 			break;
 		}
 	}

@@ -47,7 +47,7 @@ private:
 #if USE_KNN
 	KNN *knn;
 #elif USE_LOF
-	LOF *lof;
+	LOF *loci;
 #elif USE_LOCI
 	LOCI *loci;
 #elif USE_SOM
