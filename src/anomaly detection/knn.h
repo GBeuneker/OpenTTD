@@ -15,7 +15,6 @@ protected:
 private:
 	uint16_t k;
 	float distances[WINDOW_SIZE];
-	float averageDistance;
 	std::vector<float[WINDOW_SIZE]> kDistances;
 	std::vector<int> kIndices;
 };

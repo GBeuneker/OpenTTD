@@ -15,11 +15,35 @@ AnomalyDetector::AnomalyDetector()
 	this->loci = new LOCI(5);
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
-#endif
 
 	DataChart* test = new DataChart();
 	m_datacharts.push_back(test);
-	this->loci->SetData(m_datacharts);
+	this->som->SetData(m_datacharts);
+
+	// Fill with corners
+	test->GetValues()->push_back(new Datapoint(0, 0));
+	test->GetValues()->push_back(new Datapoint(1, 0));
+	test->GetValues()->push_back(new Datapoint(0, 1));
+	//fill with random values
+	for (int i = 0; i < 1000; ++i)
+	{
+		float xValue = _random.Next(10000) / 10000.0f;
+		float yValue = _random.Next(10000 - (10000 * xValue)) / 10000.0f;
+
+		test->GetValues()->push_back(new Datapoint(xValue, yValue));
+		som->Run();
+	}
+
+	som->Serialize();
+
+	//// Test value
+	//test->GetValues()->push_back(new Datapoint(0.5, 0.5));
+	//som->Run();
+#endif
+
+	//DataChart* test = new DataChart();
+	//m_datacharts.push_back(test);
+	//this->loci->SetData(m_datacharts);
 #if 0
 	// Test 1
 	for (int i = 0; i <= 9; ++i)
@@ -34,7 +58,7 @@ AnomalyDetector::AnomalyDetector()
 		test->GetValues()->push_back(new Datapoint(i, i == 7 || i == 9 ? 1 : 0));
 		loci->Run();
 	}
-#elif 1
+#elif 0
 	// Test 3
 	test->GetValues()->push_back(new Datapoint(0, 0)); // 0
 	loci->Run();
@@ -123,18 +147,18 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 			anomalyScore += results[i].certainty;
 	}
 
-	//// Threshold based on percentage of possible combinations that report anomalies
-	//float threshold = (m_variables.size() - 1) * 0.3f;
-	//// If anomaly score is greater than threshold
-	//if (anomalyScore >= threshold)
-	//{
-	//	printf("ANOMALY DETECTED! | Tick: %i | Total score: %f\n", ticks, anomalyScore);
-	//	for (int i = 0; i < results.size(); ++i)
-	//		if (results[i].isAnomaly)
-	//			printf("|    Chart %i: %s | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), results[i].certainty);
-	//}
-	//else if (anomalyScore > 0)
-	//	printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
+	// Threshold based on percentage of possible combinations that report anomalies
+	float threshold = (m_variables.size() - 1) * 0.3f;
+	// If anomaly score is greater than threshold
+	if (anomalyScore >= threshold)
+	{
+		printf("ANOMALY DETECTED! | Tick: %i | Total score: %f\n", ticks, anomalyScore);
+		for (int i = 0; i < results.size(); ++i)
+			if (results[i].isAnomaly)
+				printf("|    Chart %i: %s | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), results[i].certainty);
+	}
+	else if (anomalyScore > 0)
+		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 }
 
 /// <summary>Serializes the entire data charts.</summary>

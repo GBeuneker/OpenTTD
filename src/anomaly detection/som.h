@@ -40,8 +40,11 @@ private:
 	std::vector<std::vector<Datapoint*>*> somNodes;
 	std::vector<bool> initializedCharts;
 	uint16_t width, height;
-	float startRadius = 1, learningRate = 1, timeConstant;
+	float startRadius = 10, learningRate = 1, timeConstant;
 	uint16_t iteration = 1;
+
+	std::vector<std::vector<float>> somDistances;
+	std::vector<int> somIndices;
 };
 
 #endif

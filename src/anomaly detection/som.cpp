@@ -31,6 +31,10 @@ void SOM::SetData(std::vector<DataChart*> _datacharts)
 		somNodes.push_back(new std::vector<Datapoint*>(width * height));
 		initializedCharts.push_back(false);
 	}
+
+	// Assign all the somDistances
+	somDistances = std::vector<std::vector<float>>(datacharts.size());
+	somIndices = std::vector<int>(datacharts.size());
 }
 
 /// <summary>Initializes the SOM.</summary>
@@ -59,21 +63,24 @@ void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes)
 	float valueWidth = (maxValue_x - minValue_x);
 	float valueHeight = (maxValue_y - minValue_y);
 
+	// Set the start radius
+	this->startRadius = sqrtf(powf(valueWidth, 2) + powf(valueHeight, 2)) / 2;
+
 	float deltaX = valueWidth / (this->width - 1);
 	float deltaY = valueHeight / (this->height - 1);
-	// Initialize nodes at uniform intervals
+	// Initialize nodes at random positions based on the dataset
 	for (int y = 0; y < this->height; ++y)
 		for (int x = 0; x < this->width; ++x)
 		{
+			Vector2 position = d->GetRandom()->position;
+
 			int index = y * this->width + x;
-			float xPos = minValue_x + x * deltaX;
-			float yPos = minValue_y + y * deltaY;
+			float xPos = position.X + (-startRadius + _random.Next(2 * startRadius * 1000) / 1000.0f);
+			float yPos = position.Y + (-startRadius + _random.Next(2 * startRadius * 1000) / 1000.0f);
 
 			nodes->at(index) = new Datapoint(xPos, yPos);
 		}
-
-	// Set the start radius
-	this->startRadius = sqrtf(powf(deltaX, 2) + powf(deltaY, 2)) * 2;
+	Serialize();
 }
 
 #pragma endregion
@@ -183,12 +190,10 @@ void SOM::UpdateMap(std::vector<Datapoint*> *nodes, Datapoint* datapoint, uint16
 	for (int n = 0; n < nodes->size(); ++n)
 	{
 		float dist = Distance(nodes->at(n)->position, bmu->position);
-		// ONly update nodes within range which are not the bmu
+		// Only update nodes within range which are not the bmu
 		if (dist < radius && nodes->at(n) != bmu)
-		{
 			// Update the position of the node in the neighbourhood of the BMU
 			UpdatePosition(nodes->at(n), datapoint->position, GetLearningRate(i, maxIterations), GetDistanceDecay(dist, radius));
-		}
 	}
 
 	// Also update the bmu
@@ -200,7 +205,7 @@ void SOM::UpdateMap(std::vector<Datapoint*> *nodes, Datapoint* datapoint, uint16
 /// <param name='totalIterations'>The total amount of iterations.</param>
 float SOM::GetRadius(uint16_t iteration, uint16_t totalIterations)
 {
-	return startRadius * exp(-iteration / timeConstant);
+	return startRadius * exp(-2 * (float)iteration / totalIterations);
 }
 
 /// <summary>The current learning rate.</summary>
@@ -208,7 +213,7 @@ float SOM::GetRadius(uint16_t iteration, uint16_t totalIterations)
 /// <param name='totalIterations'>The total amount of iterations.</param>
 float SOM::GetLearningRate(uint16_t iteration, uint16_t totalIterations)
 {
-	return learningRate * exp(-1 * (float)iteration / totalIterations);
+	return learningRate * exp(-2 * (float)iteration / totalIterations);
 }
 
 /// <summary>Gets the drop-off learning rate based on the distance of a point within the radius.</summary>
@@ -216,7 +221,7 @@ float SOM::GetLearningRate(uint16_t iteration, uint16_t totalIterations)
 /// <param name='totalIterations'>The total amount of iterations.</param>
 float SOM::GetDistanceDecay(float distance, float radius)
 {
-	return exp(-distance / (2 * pow(radius, 2)));
+	return 1 - (pow(distance, 2) / pow(radius, 2));
 }
 
 /// <summary>Updates a datapoint's position.</summary>
@@ -267,15 +272,36 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 		maxY = fmax(nodes.at(i)->position.Y, maxY);
 	}
 
-	float errorRadius = fmax(1, fmin(maxX - minX, maxY - minY));
-
 	// Check if the point is inside the SOM
-	result.isAnomaly = !IsInSOMMap(&nodes, p);
+	if (somDistances.at(chartIndex).size() > 0)
+		result.isAnomaly = !IsInSOMMap(&nodes, p);
 
 	float distanceToEdge = DistToEdge(&nodes, p);
-	// If our point is outside the SOM, normalize using 3 times the max distance
+
+	// Calculate the error radius of this window based on the average distances to the edge
+	float errorRadius = 0;
+	for (int i = 0; i < somDistances.at(chartIndex).size(); ++i)
+		errorRadius += somDistances.at(chartIndex)[i] / somDistances.at(chartIndex).size();
+
+	// If our point is outside the SOM, normalize using the errorRadius
 	if (result.isAnomaly)
-		result.certainty = std::clamp((distanceToEdge - errorRadius) / (2 * errorRadius), 0.0f, 1.0f);
+	{
+		// Only give a certainty if there is a significant error radius (prevents rounding errors)
+		if (errorRadius > 0.01f)
+			result.certainty = std::clamp((distanceToEdge - errorRadius) / (3 * errorRadius), 0.0f, 1.0f);
+		else
+			result.certainty = 0;
+	}
+
+	// Add the average to the list
+	int index = somIndices[chartIndex];
+	if (somDistances.at(chartIndex).size() <= index)
+		somDistances.at(chartIndex).push_back(distanceToEdge);
+	else
+		somDistances.at(chartIndex)[index] = distanceToEdge;
+
+	// Increase the index
+	somIndices[chartIndex] = (index + 1) % WINDOW_SIZE;
 
 	return result;
 }
@@ -375,7 +401,7 @@ void SOM::ConvexHull(std::vector<Datapoint*>* nodes)
 
 int SOM::Orientation(Vector2 p, Vector2 q, Vector2 r)
 {
-	int val = (q.Y - p.Y) * (r.X - q.X) -
+	float val = (q.Y - p.Y) * (r.X - q.X) -
 		(q.X - p.X) * (r.Y - q.Y);
 
 	if (val == 0) return 0;  // colinear 
@@ -429,12 +455,7 @@ float SOM::DistToEdge(std::vector<Datapoint*>* nodes, Datapoint *p)
 	{
 		Vector2 a = nodes->at(i)->position;
 		Vector2 b = nodes->at(i + 1)->position;
-		// Make sure there is room between a and b
-		if (Distance(a, b) < 0.01f)
-			b.Y += 1;
 		float l2 = SqrMagnitude(b - a);
-		if (l2 == 0)
-			return Distance(p->position, a);
 
 		float t = fmax(0, fmin(1, Dot((p->position - a), b - a) / l2));
 		Vector2 proj = a + (t * (b - a));
@@ -461,8 +482,8 @@ void SOM::Serialize()
 	for (int i = 0; i < somNodes.size(); ++i)
 	{
 		std::vector<Datapoint*> nodes = *somNodes[i];
-		ConvexHull(&nodes);
-		SortCounterClockwise(&nodes);
+		//ConvexHull(&nodes);
+		//SortCounterClockwise(&nodes);
 
 		// Serialize the values
 		DataChart dc;
