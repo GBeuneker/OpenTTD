@@ -18,13 +18,15 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 {
 	Classification result;
 
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+	// Get a range-value from the pre-configured list
+	maxNeighbourRange = nbrRange_values[chartIndex];
+
 	// Determine rmin, rmax and the stepsize
 	int steps = 100;
 	float rMax = GetRadius(d, loci_p, maxNeighbourRange), rMin = 0;
 	float stepSize = (rMax - rMin) / (float)steps;
-
-	// Find the index of the chart
-	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
 	// Set the neighbours and neighbourhood of p
 	SetRNeighbours(d, loci_p, &loci_p->neighbours, rMax);

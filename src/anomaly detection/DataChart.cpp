@@ -47,6 +47,8 @@ std::string DataChart::Serialize()
 
 void DataChart::DeSerialize(const char* path)
 {
+	values->clear();
+
 	std::ifstream infile(path);
 
 	std::string line;

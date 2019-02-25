@@ -15,9 +15,14 @@ public:
 	int GetValue() {
 		int sum = 0;
 		for (int i = 0; i < m_pointers.size(); ++i)
-		{
 			sum += *m_pointers.at(i);
-		}
+
+		return sum;
+	}
+	int GetAvgValue() {
+		int sum = 0;
+		for (int i = 0; i < m_pointers.size(); ++i)
+			sum += *m_pointers.at(i);
 		return sum / m_pointers.size();
 	}
 private:

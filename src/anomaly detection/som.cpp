@@ -62,12 +62,7 @@ void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes)
 
 	float valueWidth = (maxValue_x - minValue_x);
 	float valueHeight = (maxValue_y - minValue_y);
-
-	// Set the start radius
-	this->startRadius = sqrtf(powf(valueWidth, 2) + powf(valueHeight, 2)) / 2;
-
-	float deltaX = valueWidth / (this->width - 1);
-	float deltaY = valueHeight / (this->height - 1);
+	;
 	// Initialize nodes at random positions based on the dataset
 	for (int y = 0; y < this->height; ++y)
 		for (int x = 0; x < this->width; ++x)
@@ -75,12 +70,20 @@ void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes)
 			Vector2 position = d->GetRandom()->position;
 
 			int index = y * this->width + x;
-			float xPos = position.X + (-startRadius + _random.Next(2 * startRadius * 1000) / 1000.0f);
-			float yPos = position.Y + (-startRadius + _random.Next(2 * startRadius * 1000) / 1000.0f);
+			float xPos = position.X;
+			float yPos = position.Y;
+
+			// Add random offset to x and y position
+			if (valueWidth > 0.001f)
+				xPos += (-0.5f*valueWidth + ((rand() % (int)(valueWidth * 1000)) / 1000.0f));
+			if (valueHeight > 0.001f)
+				yPos += (-0.5f*valueHeight + ((rand() % (int)(valueHeight * 1000)) / 1000.0f));
 
 			nodes->at(index) = new Datapoint(xPos, yPos);
 		}
-	Serialize();
+
+	// Set the start radius
+	this->startRadius = sqrtf(powf(valueWidth, 2) + powf(valueHeight, 2)) / 2;
 }
 
 #pragma endregion
@@ -288,7 +291,7 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 	{
 		// Only give a certainty if there is a significant error radius (prevents rounding errors)
 		if (errorRadius > 0.01f)
-			result.certainty = std::clamp((distanceToEdge - errorRadius) / (3 * errorRadius), 0.0f, 1.0f);
+			result.certainty = std::clamp((distanceToEdge - errorRadius) / (2 * errorRadius), 0.0f, 1.0f);
 		else
 			result.certainty = 0;
 	}
@@ -482,8 +485,8 @@ void SOM::Serialize()
 	for (int i = 0; i < somNodes.size(); ++i)
 	{
 		std::vector<Datapoint*> nodes = *somNodes[i];
-		//ConvexHull(&nodes);
-		//SortCounterClockwise(&nodes);
+		ConvexHull(&nodes);
+		SortCounterClockwise(&nodes);
 
 		// Serialize the values
 		DataChart dc;
@@ -491,7 +494,6 @@ void SOM::Serialize()
 		for (int j = 0; j < nodes.size(); ++j)
 			dc.GetValues()->push_back(new Datapoint(nodes[j]->position.X, nodes[j]->position.Y));
 
-		std::string spath = ".\\..\\_data\\SOM";
 		const char* path = spath.c_str();
 		if (mkdir(path) == 0)
 			printf("Directory: \'%s\' was successfully created", path);

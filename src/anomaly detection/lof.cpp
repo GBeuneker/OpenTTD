@@ -24,6 +24,11 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 {
 	Classification result;
 
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+	// Get a k-value from the pre-configured list
+	k = k_values[chartIndex];
+
 	if (d->GetValues()->size() <= k)
 		return result;
 
@@ -46,9 +51,6 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 
 	// Calculate LOF(p) = SUM(lrd(o) / lrd(p)) / |k-neighbours(p)|
 	float lofValue = GetLOF(d, lof_p);
-
-	// Find the index of the chart
-	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
 	// Get the maximum index of our lof-values (first k steps are skipped, plus the first time there are no lof-values yet)
 	int maxIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - k - 1);

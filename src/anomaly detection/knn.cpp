@@ -26,6 +26,11 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 {
 	Classification result;
 
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+	// Get a k-value from the pre-configured list
+	k = k_values[chartIndex];
+
 	int valuesSize = d->GetValues()->size();
 	// If there aren't enough points, return empty result
 	if (valuesSize <= k)
@@ -38,9 +43,6 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 
 	// Sort distances
 	std::sort(std::begin(distances), std::end(distances));
-
-	// Find the index of the chart
-	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
 	// Get the k-distance
 	float kDistance = distances[k];

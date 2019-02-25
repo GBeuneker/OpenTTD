@@ -17,7 +17,7 @@ public:
 	std::string GetLabelString();
 	std::vector<Datapoint*>* GetValues() { return this->values; }
 	Datapoint* GetLast() { return values->back(); }
-	Datapoint* GetRandom() { return values->at(_random.Next(values->size())); }
+	Datapoint* GetRandom() { return values->at(rand() % values->size()); }
 	Vector2 GetMinValue() { return Vector2(minX, minY); }
 	Vector2 GetMaxValue() { return Vector2(maxX, maxY); }
 	~DataChart();

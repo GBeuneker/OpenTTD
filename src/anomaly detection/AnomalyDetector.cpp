@@ -16,29 +16,6 @@ AnomalyDetector::AnomalyDetector()
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 
-	DataChart* test = new DataChart();
-	m_datacharts.push_back(test);
-	this->som->SetData(m_datacharts);
-
-	// Fill with corners
-	test->GetValues()->push_back(new Datapoint(0, 0));
-	test->GetValues()->push_back(new Datapoint(1, 0));
-	test->GetValues()->push_back(new Datapoint(0, 1));
-	//fill with random values
-	for (int i = 0; i < 1000; ++i)
-	{
-		float xValue = _random.Next(10000) / 10000.0f;
-		float yValue = _random.Next(10000 - (10000 * xValue)) / 10000.0f;
-
-		test->GetValues()->push_back(new Datapoint(xValue, yValue));
-		som->Run();
-	}
-
-	som->Serialize();
-
-	//// Test value
-	//test->GetValues()->push_back(new Datapoint(0.5, 0.5));
-	//som->Run();
 #endif
 
 	//DataChart* test = new DataChart();
@@ -132,6 +109,15 @@ void AnomalyDetector::LogDataTick()
 #endif
 
 	DetectAnomaly(results);
+
+	if (ticks >= MAX_TICK_COUNT)
+	{
+		Serialize();
+#if USE_SOM
+		this->som->Serialize();
+#endif
+		exit(0);
+	}
 }
 
 void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
@@ -148,7 +134,7 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 	}
 
 	// Threshold based on percentage of possible combinations that report anomalies
-	float threshold = (m_variables.size() - 1) * 0.3f;
+	float threshold = (m_variables.size() - 1) * 0.5f;
 	// If anomaly score is greater than threshold
 	if (anomalyScore >= threshold)
 	{
@@ -157,7 +143,7 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 			if (results[i].isAnomaly)
 				printf("|    Chart %i: %s | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), results[i].certainty);
 	}
-	else if (anomalyScore > 0)
+	else if (anomalyScore > 0.01f)
 		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 }
 

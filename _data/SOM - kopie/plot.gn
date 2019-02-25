@@ -12,7 +12,7 @@ do for [file in list] {
 
     set title "Anomaly Detection ".i
     set term wxt i
-    plot filename
+    plot filename with lines
     i=i+1
 }
 
