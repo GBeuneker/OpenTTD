@@ -11,6 +11,7 @@ class DataChart
 public:
 	DataChart() { values = new std::vector<Datapoint*>(); };
 	DataChart(VariablePointer varA, VariablePointer varB);
+	void SetPointers(VariablePointer varA, VariablePointer varB);
 	void LogData();
 	std::string Serialize();
 	void DeSerialize(const char* path);
@@ -18,11 +19,11 @@ public:
 	std::vector<Datapoint*>* GetValues() { return this->values; }
 	Datapoint* GetLast() { return values->back(); }
 	Datapoint* GetRandom() { return values->at(rand() % values->size()); }
-	Vector2 GetMinValue() { return Vector2(minX, minY); }
-	Vector2 GetMaxValue() { return Vector2(maxX, maxY); }
+#if FILTER_POINTS
+	int valueCount = 0;
+	bool isDirty = true;
+#endif
 	~DataChart();
-	float minX = FLT_MAX, maxX = FLT_MIN;
-	float minY = FLT_MAX, maxY = FLT_MIN;
 private:
 	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
 	std::vector<Datapoint*>* values;

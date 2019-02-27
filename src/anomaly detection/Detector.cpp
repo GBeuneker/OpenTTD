@@ -5,14 +5,9 @@ void Detector::SetData(std::vector<DataChart*> _datacharts)
 {
 	this->datacharts = _datacharts;
 	cooldownSteps = std::vector<int>(datacharts.size());
-}
 
-int Detector::GetCount(std::vector<Datapoint*> datapoints)
-{
-	int sum = 0;
-	for (int i = 0; i < datapoints.size(); ++i)
-		sum += datapoints.at(i)->count;
-	return sum;
+	for (int i = 0; i < cooldownSteps.size(); ++i)
+		cooldownSteps.at(i) = cooldownSize;
 }
 
 /// <summary>Applies a cooldown to an outlier to account for the forming of new clusters.</summary>
@@ -24,12 +19,10 @@ bool Detector::ApplyCooldown(uint16_t chartIndex, bool isOutlier)
 	{
 		// If we still have room to cool down, don't flag as outlier
 		if (cooldownSteps[chartIndex] > 0)
-		{
 			cooldownSteps[chartIndex]--;
-			return false;
-		}
+
 		// If the cooldown has ended and we're still outlier, then flag as outlier
-		else if (cooldownSteps[chartIndex] <= 0)
+		if (cooldownSteps[chartIndex] <= 0)
 		{
 			// Restart the cooldown
 			cooldownSteps[chartIndex] = cooldownSize;
@@ -51,6 +44,13 @@ std::vector<Classification> Detector::Run()
 	{
 		DataChart* d = datacharts[i];
 		Datapoint* p = d->GetLast();
+#if FILTER_POINTS
+		if (!d->isDirty)
+		{
+			results.push_back(Classification());
+			continue;
+		}
+#endif
 		results.push_back(Classify(d, p));
 	}
 

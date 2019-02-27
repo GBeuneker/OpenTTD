@@ -4,9 +4,9 @@
 
 /// <summary>Constructor for Local Outlier Factor.</summary>
 /// <param name='k'>The amount of neighbours we want to use.</param>
-LOF::LOF(uint16_t k)
+LOF::LOF(uint16_t k_values[])
 {
-	this->k = k;
+	this->k_values = k_values;
 }
 
 void LOF::SetData(std::vector<DataChart*> _datacharts)
@@ -27,9 +27,9 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 	// Get a k-value from the pre-configured list
-	k = k_values[chartIndex];
+	current_k = k_values[chartIndex];
 
-	if (d->GetValues()->size() <= k)
+	if (d->GetValues()->size() <= current_k)
 		return result;
 
 	// Get k-neighbours of p
@@ -53,32 +53,30 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	float lofValue = GetLOF(d, lof_p);
 
 	// Get the maximum index of our lof-values (first k steps are skipped, plus the first time there are no lof-values yet)
-	int maxIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - k - 1);
+	int maxlofValueIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - current_k - 1);
+	// Only calculate anomaly score if we have observed more than one point
+	if (maxlofValueIndex > 1)
+	{
+		// Calculate the average distance of this window
+		float averageValue = 0;
+		for (int i = 0; i < maxlofValueIndex; ++i)
+			averageValue += lofValues.at(chartIndex)[i] / maxlofValueIndex;
 
-	// Calculate the average distance of this window
-	float averageValue = 0;
-	for (int i = 0; i < maxIndex; ++i)
-		averageValue += lofValues.at(chartIndex)[i];
-	averageValue /= maxIndex;
+		// Calculate the standard deviation
+		float stDev = 0;
+		for (int i = 0; i < maxlofValueIndex; ++i)
+			stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2) / maxlofValueIndex;
+		stDev = sqrtf(stDev);
 
-	// Calculate the standard deviation
-	float stDev = 0;
-	for (int i = 0; i < maxIndex; ++i)
-		stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2);
-	stDev = sqrtf(stDev / maxIndex);
+		// We flag it as outlier if the distance is at least one stDev removed from the average
+		bool isOutlier = lofValue > (averageValue + stDev);
+		isOutlier = ApplyCooldown(chartIndex, isOutlier);
 
-
-	// We flag it as outlier if the distance is at least one stDev removed from the average
-	bool isOutlier = lofValue > (averageValue + stDev);
-	isOutlier = ApplyCooldown(chartIndex, isOutlier);
-
-	float threshold = averageValue + stDev;
-	result.isAnomaly = lofValue > threshold;
-	// The certainty is the amount of standard deviations removed from the average (maxes out at 4 standard deviations)
-	if (stDev <= 0)
-		result.certainty = 1;
-	else
-		result.certainty = fmin(abs(lofValue - threshold) / (4 * stDev), 1);
+		float threshold = averageValue + stDev;
+		result.isAnomaly = lofValue > threshold;
+		// The certainty is the amount of standard deviations removed from the average
+		result.certainty = stDev > 0 ? std::clamp(lofValue / (3 * stDev), 0.0f, 1.0f) : 1;
+	}
 
 	// Add the average to the list
 	int kIndex = lofIndices[chartIndex];
@@ -175,11 +173,11 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 
 	// Search for the k-th distance
 	// Start distance at the k-th neighbour, since they're sorted this ensures we have at most k-1 neighbours whose distance is smaller
-	float dist = lofDatapoints.at(k - 1)->distance;
+	float dist = lofDatapoints.at(current_k - 1)->distance;
 	int nbrSize = lofDatapoints.size();
 
 	// Add all distances equal to the current distance
-	for (int i = k - 1; i < lofDatapoints.size(); ++i)
+	for (int i = current_k - 1; i < lofDatapoints.size(); ++i)
 	{
 		// We find a step in distance, stop adding
 		if (lofDatapoints.at(i)->distance > dist)
@@ -216,10 +214,10 @@ void LOF::UpdateKNeighbours(DataChart *d, Datapoint * p, Datapoint* new_p)
 	// Remove any neighbours outside the neighbourhood
 	// Search for the k-th distance
 	// Start distance at the k-th neighbour, since they're sorted this ensures we have at most k-1 neighbours whose distance is smaller
-	float dist = p->neighbours.at(k - 1)->distance;
+	float dist = p->neighbours.at(current_k - 1)->distance;
 
 	// Add all distances equal to the current distance
-	for (int i = k - 1; i < p->neighbours.size(); ++i)
+	for (int i = current_k - 1; i < p->neighbours.size(); ++i)
 	{
 		// We find a step in distance, stop adding
 		if (p->neighbours.at(i)->distance > dist)

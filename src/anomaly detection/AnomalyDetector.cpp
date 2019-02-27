@@ -8,65 +8,120 @@ AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
 #if USE_KNN
-	this->knn = new KNN(5);
+	this->knn = new KNN(new uint16_t[10]{ 10,5,20,5,10,20,10,15,5,20 });
 #elif USE_LOF
-	this->lof = new LOF(5);
+	this->lof = new LOF(new uint16_t[10]{ 10,3,10,3,5,5,5,5,5,5 });
 #elif USE_LOCI
-	this->loci = new LOCI(5);
+	this->loci = new LOCI(new uint16_t[10]{ 10,3,10,3,5,5,5,5,5,5 });
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 
 #endif
 
-	//DataChart* test = new DataChart();
-	//m_datacharts.push_back(test);
-	//this->loci->SetData(m_datacharts);
+	DataChart* test = new DataChart();
+	m_datacharts.push_back(test);
+#if USE_KNN
+	this->knn->SetData(m_datacharts);
+#elif USE_LOF
+	this->lof->SetData(m_datacharts);
+#elif USE_LOCI
+	this->loci->SetData(m_datacharts);
+#endif
 #if 0
 	// Test 1
 	for (int i = 0; i <= 9; ++i)
 	{
 		test->GetValues()->push_back(new Datapoint(i, 0));
-		loci->Run();
+#if USE_KNN
+		this->knn->Run();
+#elif USE_LOF
+		this->lof->Run();
+#elif USE_LOCI
+		this->loci->Run();
+#endif
 	}
 #elif 0
 	// Test 2
 	for (int i = 0; i <= 9; ++i)
 	{
 		test->GetValues()->push_back(new Datapoint(i, i == 7 || i == 9 ? 1 : 0));
-		loci->Run();
+#if USE_KNN
+		this->knn->Run();
+#elif USE_LOF
+		this->lof->Run();
+#elif USE_LOCI
+		this->loci->Run();
+#endif
 	}
-#elif 0
+#elif 1
 	// Test 3
 	test->GetValues()->push_back(new Datapoint(0, 0)); // 0
-	loci->Run();
 	test->GetValues()->push_back(new Datapoint(1, 0)); // 1
-	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0.5, 0.5)); // 2
-	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0, 1)); // 3
-	loci->Run();
 	test->GetValues()->push_back(new Datapoint(1, 1)); // 4
-	loci->Run();
 	test->GetValues()->push_back(new Datapoint(0.25, 1.5)); // 5
-	loci->Run();
+#if USE_KNN
+	this->knn->Run();
+#elif USE_LOF
+	this->lof->Run();
+#elif USE_LOCI
+	this->loci->Run();
+#endif
 	test->GetValues()->push_back(new Datapoint(0.75, 1.5)); // 6
-	loci->Run();
+#if USE_KNN
+	this->knn->Run();
+#elif USE_LOF
+	this->lof->Run();
+#elif USE_LOCI
+	this->loci->Run();
+#endif
 	test->GetValues()->push_back(new Datapoint(0, 2)); // 7
-	loci->Run();
+#if USE_KNN
+	this->knn->Run();
+#elif USE_LOF
+	this->lof->Run();
+#elif USE_LOCI
+	this->loci->Run();
+#endif
 	test->GetValues()->push_back(new Datapoint(1, 2)); // 8
-	loci->Run();
-	test->GetValues()->push_back(new Datapoint(3, 3)); // 9
-	loci->Run();
+#if USE_KNN
+	this->knn->Run();
+#elif USE_LOF
+	this->lof->Run();
+#elif USE_LOCI
+	this->loci->Run();
+#endif
+	test->GetValues()->push_back(new Datapoint(8, 1)); // 9
+#if USE_KNN
+	this->knn->Run();
+#elif USE_LOF
+	this->lof->Run();
+#elif USE_LOCI
+	this->loci->Run();
+#endif
+
 #endif
 }
 
 /// <summary>Build the data charts by combining all variables.</summary>
 void AnomalyDetector::BuildCharts()
 {
+#if FILTER_POINTS
+	// Add datacharts tracking the amount of variables
+	for (int i = 0; i < m_variables.size(); ++i)
+	{
+		DataChart* dc = new DataChart();
+		dc->SetPointers(VariablePointer((size_t*)&dc->valueCount, "ValueCount"), m_variables[i]);
+		m_datacharts.push_back(dc);
+	}
+#endif
+
 	// Build charts based on all combinations of variables
 	for (int i = 0; i < m_variables.size(); ++i)
 		for (int j = i + 1; j < m_variables.size(); ++j)
 			m_datacharts.push_back(new DataChart(m_variables[i], m_variables[j]));
+
 
 	// Add the data to the knn algorithm
 #if USE_KNN
@@ -122,10 +177,6 @@ void AnomalyDetector::LogDataTick()
 
 void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 {
-	// Do not log anomalies for the first window
-	if (ticks < WINDOW_SIZE)
-		return;
-
 	float anomalyScore = 0;
 	for (int i = 0; i < results.size(); ++i)
 	{
@@ -133,34 +184,44 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 			anomalyScore += results[i].certainty;
 	}
 
-	// Threshold based on percentage of possible combinations that report anomalies
-	float threshold = (m_variables.size() - 1) * 0.5f;
 	// If anomaly score is greater than threshold
-	if (anomalyScore >= threshold)
+	if (anomalyScore >= GetThreshold())
 	{
 		printf("ANOMALY DETECTED! | Tick: %i | Total score: %f\n", ticks, anomalyScore);
 		for (int i = 0; i < results.size(); ++i)
 			if (results[i].isAnomaly)
 				printf("|    Chart %i: %s | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), results[i].certainty);
 	}
-	else if (anomalyScore > 0.01f)
+	else if (anomalyScore > 0)
 		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
+
+	LogAnomalyScore(ticks, anomalyScore);
+}
+
+void AnomalyDetector::LogAnomalyScore(uint32_t tick, float score)
+{
+	m_anomalyScores.push_back(std::make_tuple(tick, score));
 }
 
 /// <summary>Serializes the entire data charts.</summary>
 void AnomalyDetector::Serialize()
 {
-	string spath = ".\\..\\_data\\seed_" + to_string(_random.seed);
-	const char* path = spath.c_str();
-	if (mkdir(path) == 0)
-		printf("Directory: \'%s\' was successfully created", path);
+	// Serialize the data
+#if ENABLE_ANOMALIES
+	string spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_anomalous";
+#else
+	string spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_baseline";
+#endif
+
+	if (mkdir(spath.c_str()) == 0)
+		printf("Directory: \'%s\' was successfully created", spath.c_str());
 
 	ofstream datafile;
 	for (int i = 0; i < m_datacharts.size(); ++i)
 	{
 		// Open the file and start writing stream
 		char src[60];
-		sprintf(src, "%s\\data_%i.dat", path, i);
+		sprintf(src, "%s\\data_%i.dat", spath.c_str(), i);
 		datafile.open(src, ofstream::trunc);
 
 		datafile << m_datacharts[i]->Serialize();
@@ -168,6 +229,38 @@ void AnomalyDetector::Serialize()
 		// Close the file when writing is done
 		datafile.close();
 	}
+
+	// Seriaize the anomalies
+#if ENABLE_ANOMALIES
+	spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_anomalous";
+#else
+	spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_baseline";
+#endif
+	if (mkdir(spath.c_str()) == 0)
+		printf("Directory: \'%s\' was successfully created", spath.c_str());
+
+	// Open the file and start writing stream
+	string src = spath + "\\anomaly_scores.dat";
+	datafile.open(src.c_str(), ofstream::trunc);
+
+	// Write the ticks and the anomaly scores
+	for (int i = 0; i < m_anomalyScores.size(); ++i)
+	{
+		int ticks = std::get<0>(m_anomalyScores.at(i));
+		float anomalyScore = std::get<1>(m_anomalyScores.at(i));
+		datafile << ticks << " " << anomalyScore << " ";
+
+		if (m_anomalyOccurrences.find(ticks) != m_anomalyOccurrences.end())
+		{
+			string anomalyMsg = m_anomalyOccurrences.at(ticks);
+			datafile << GetThreshold() << " " << anomalyMsg << endl;
+		}
+
+		datafile << endl;
+	}
+
+	// Close the file when writing is done
+	datafile.close();
 }
 
 /// <summary>Deserializes a folder of data containing datacharts.</summary>
@@ -211,7 +304,10 @@ bool AnomalyDetector::TriggerVariableIncrease(float chance, char* msg)
 #if ENABLE_ANOMALIES
 	bool canTrigger = randomValue < chance;
 	if (canTrigger)
+	{
 		printf("Variable Increase triggered. Tick: %i | message: %s\n", ticks, msg);
+		m_anomalyOccurrences.emplace(ticks, msg);
+	}
 	return canTrigger;
 #else
 	return false;
@@ -227,7 +323,10 @@ bool AnomalyDetector::TriggerVariableReset(float chance, char* msg)
 #if ENABLE_ANOMALIES
 	bool canTrigger = randomValue < chance;
 	if (canTrigger)
+	{
 		printf("Variable Reset triggered. Tick: %i | message: %s\n", ticks, msg);
+		m_anomalyOccurrences.emplace(ticks, msg);
+	}
 	return canTrigger;
 #else
 	return false;
@@ -243,7 +342,10 @@ bool AnomalyDetector::TriggerFunctionFailure(float chance, char* msg)
 #if ENABLE_ANOMALIES
 	bool canTrigger = randomValue < chance;
 	if (canTrigger)
+	{
 		printf("Funtion Failure triggered. Tick: %i | message: %s\n", ticks, msg);
+		m_anomalyOccurrences.emplace(ticks, msg);
+	}
 	return canTrigger;
 #else
 	return false;
@@ -279,8 +381,10 @@ void AnomalyDetector::Reset()
 	m_datacharts.clear();
 	chartsBuilt = false;
 
+#if !FILTER_POINTS
 	// Track your own ticks
 	TrackPointer((size_t*)&ticks, "Ticks");
+#endif
 }
 
 AnomalyDetector::~AnomalyDetector()

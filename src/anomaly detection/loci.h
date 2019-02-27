@@ -7,7 +7,7 @@ class LOCI : public Detector
 {
 public:
 	LOCI();
-	LOCI(uint16_t maxNeighbourRange);
+	LOCI(uint16_t* maxNeighbourRange);
 	~LOCI();
 protected:
 	Classification Classify(DataChart* d, Datapoint* p) override;
@@ -21,20 +21,7 @@ protected:
 	float GetSigma(DataChart *d, Datapoint *p);
 private:
 	float k = 0.5f, l = 3;
-	uint16_t maxNeighbourRange = 0;
-	uint16_t nbrRange_values[10]
-	{
-		5, // 1
-		5, // 2
-		5, // 3
-		5, // 4
-		5, // 5
-		5, // 6
-		5, // 7
-		5, // 8
-		5, // 9
-		5  // 10
-	};
+	uint16_t* nbrRange_values;
 	Datapoint lociDatapoints[WINDOW_SIZE];
 };
 

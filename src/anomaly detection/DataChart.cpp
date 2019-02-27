@@ -8,27 +8,39 @@ DataChart::DataChart(VariablePointer varA, VariablePointer varB)
 	values = new std::vector<Datapoint*>();
 }
 
+void DataChart::SetPointers(VariablePointer varA, VariablePointer varB)
+{
+	this->m_varA = varA;
+	this->m_varB = varB;
+}
+
 void DataChart::LogData()
 {
 	Vector2 position = Vector2(m_varA.GetValue(), m_varB.GetValue());
-
 	Datapoint* newDataPoint = new Datapoint(position.X, position.Y);
 
-	//// Only add unique values
-	//for (int i = 0; i < values->size(); ++i)
-	//	if (values->at(i)->position == newDataPoint->position)
-	//	{
-	//		values->at(i)->count++;
-	//		return;
-	//	}
+#if FILTER_POINTS
+	isDirty = false;
+	// Only add points if the previous one was different
+	if (values->size() > 0)
+	{
+		// Make sure the previous value is different
+		if (values->back()->position == newDataPoint->position)
+			return;
+
+		// If we're tracking the valueCount, only check the y-value
+		if (m_varA.GetPointers().at(0) == (size_t*)&valueCount)
+			if (values->back()->position.Y == newDataPoint->position.Y)
+				return;
+	}
+
+#endif
 
 	values->push_back(newDataPoint);
-
-	// Get the datarange
-	minX = fmin(position.X, minX);
-	maxX = fmax(position.X, maxX);
-	minY = fmin(position.Y, minY);
-	maxY = fmax(position.Y, maxY);
+#if FILTER_POINTS
+	valueCount = values->size();
+	isDirty = true;
+#endif
 }
 
 std::string DataChart::Serialize()

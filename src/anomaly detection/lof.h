@@ -6,7 +6,7 @@
 class LOF : public Detector
 {
 public:
-	LOF(uint16_t k);
+	LOF(uint16_t k_values[]);
 	void SetData(std::vector<DataChart*> _datacharts) override;
 	~LOF();
 protected:
@@ -18,20 +18,8 @@ protected:
 	void SetKNeighbours(DataChart* d, Datapoint *p);
 	void UpdateKNeighbours(DataChart* d, Datapoint* p, Datapoint* new_p);
 private:
-	uint16_t k;
-	uint16_t k_values[10]
-	{
-		5, // 1
-		5, // 2
-		5, // 3
-		5, // 4
-		5, // 5
-		5, // 6
-		5, // 7
-		5, // 8
-		5, // 9
-		5  // 10
-	};
+	uint16_t current_k;
+	uint16_t* k_values;
 	std::vector<float[WINDOW_SIZE]> lofValues;
 	std::vector<int> lofIndices;
 };

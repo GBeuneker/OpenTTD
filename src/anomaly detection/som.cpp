@@ -208,7 +208,7 @@ void SOM::UpdateMap(std::vector<Datapoint*> *nodes, Datapoint* datapoint, uint16
 /// <param name='totalIterations'>The total amount of iterations.</param>
 float SOM::GetRadius(uint16_t iteration, uint16_t totalIterations)
 {
-	return startRadius * exp(-2 * (float)iteration / totalIterations);
+	return startRadius * exp(-(float)iteration / totalIterations);
 }
 
 /// <summary>The current learning rate.</summary>
@@ -216,7 +216,7 @@ float SOM::GetRadius(uint16_t iteration, uint16_t totalIterations)
 /// <param name='totalIterations'>The total amount of iterations.</param>
 float SOM::GetLearningRate(uint16_t iteration, uint16_t totalIterations)
 {
-	return learningRate * exp(-2 * (float)iteration / totalIterations);
+	return learningRate * exp(-(float)iteration / totalIterations);
 }
 
 /// <summary>Gets the drop-off learning rate based on the distance of a point within the radius.</summary>
@@ -281,14 +281,14 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 
 	float distanceToEdge = DistToEdge(&nodes, p);
 
-	// Calculate the error radius of this window based on the average distances to the edge
-	float errorRadius = 0;
-	for (int i = 0; i < somDistances.at(chartIndex).size(); ++i)
-		errorRadius += somDistances.at(chartIndex)[i] / somDistances.at(chartIndex).size();
-
-	// If our point is outside the SOM, normalize using the errorRadius
-	if (result.isAnomaly)
+	// Only calculate anomaly score if we have observed more than one point
+	if (somDistances.at(chartIndex).size() > 0)
 	{
+		// Calculate the error radius of this window based on the average distances to the edge
+		float errorRadius = 0;
+		for (int i = 0; i < somDistances.at(chartIndex).size(); ++i)
+			errorRadius += somDistances.at(chartIndex)[i] / somDistances.at(chartIndex).size();
+
 		// Only give a certainty if there is a significant error radius (prevents rounding errors)
 		if (errorRadius > 0.01f)
 			result.certainty = std::clamp((distanceToEdge - errorRadius) / (2 * errorRadius), 0.0f, 1.0f);
@@ -494,6 +494,7 @@ void SOM::Serialize()
 		for (int j = 0; j < nodes.size(); ++j)
 			dc.GetValues()->push_back(new Datapoint(nodes[j]->position.X, nodes[j]->position.Y));
 
+		std::string spath = ".\\..\\_data\\SOM";
 		const char* path = spath.c_str();
 		if (mkdir(path) == 0)
 			printf("Directory: \'%s\' was successfully created", path);

@@ -17,7 +17,6 @@ protected:
 	bool ApplyCooldown(uint16_t chartIndex, bool isOutlier);
 	virtual Classification Classify(DataChart* d, Datapoint* p) { return Classification(); };
 	std::vector<DataChart*> datacharts;
-	float anomalyThreshold = 2.0;
-	const int cooldownSize = 5;
+	const int cooldownSize = 0;
 	std::vector<int> cooldownSteps;
 };

@@ -9,8 +9,6 @@ public:
 	Datapoint() {};
 	Datapoint(float x, float y) { this->position = Vector2(x, y); }
 	Vector2 position;
-	// How many points are at this position
-	int count = 1;
 	std::vector<Datapoint*> neighbours;
 	float distance;
 

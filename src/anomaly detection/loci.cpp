@@ -6,9 +6,9 @@ LOCI::LOCI()
 {
 }
 
-LOCI::LOCI(uint16_t maxNeighbourRange)
+LOCI::LOCI(uint16_t nbrValues[])
 {
-	this->maxNeighbourRange = maxNeighbourRange;
+	nbrRange_values = nbrValues;
 }
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
@@ -21,7 +21,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 	// Get a range-value from the pre-configured list
-	maxNeighbourRange = nbrRange_values[chartIndex];
+	uint16_t maxNeighbourRange = nbrRange_values[chartIndex];
 
 	// Determine rmin, rmax and the stepsize
 	int steps = 100;
@@ -49,21 +49,20 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 		float s_mdef = GetStandardDeviationMDEF(d, loci_p);
 
 		// Point is flagged as anomalous if the mdef is greater than the standard deviation
-		float threshold = l * s_mdef;
-		result.isAnomaly = mdef > threshold;
-		// The certainty is the amount of standard deviations removed
-		if (s_mdef <= 0)
-			result.certainty = 1;
-		else
-			result.certainty = fmin((mdef - threshold) / threshold, 1);
+		bool outlier = mdef > s_mdef;
 
-		// Break if for any range we have found an anomaly
-		if (result.isAnomaly)
-			break;
+		// Remember the highest certainty
+		if (outlier)
+		{
+			result.isAnomaly = true;
+			// The certainty is the amount of standard deviations removed. 100% certain at l standard deviations
+			float certainty = s_mdef > 0 ? fmin(mdef / (l * s_mdef), 1) : 1;
+			result.certainty = fmax(result.certainty, certainty);
+		}
 	}
 
-	//// Apply a cooldown to the result
-	//result.isAnomaly = ApplyCooldown(chartIndex, result.isAnomaly);
+	// Apply a cooldown to the result
+	result.isAnomaly = ApplyCooldown(chartIndex, result.isAnomaly);
 
 	return result;
 }
