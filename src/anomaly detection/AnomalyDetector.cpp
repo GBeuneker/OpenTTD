@@ -10,9 +10,9 @@ AnomalyDetector::AnomalyDetector()
 #if USE_KNN
 	this->knn = new KNN(new uint16_t[10]{ 10,5,20,5,10,20,10,15,5,20 });
 #elif USE_LOF
-	this->lof = new LOF(new uint16_t[10]{ 10,3,10,3,5,5,5,5,5,5 });
+	this->lof = new LOF(new uint16_t[10]{ 10,5,20,5,10,20,10,15,5,20 });
 #elif USE_LOCI
-	this->loci = new LOCI(new uint16_t[10]{ 10,3,10,3,5,5,5,5,5,5 });
+	this->loci = new LOCI(new uint16_t[10]{ 10,5,20,5,10,20,10,15,5,20 });
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 
@@ -261,6 +261,11 @@ void AnomalyDetector::Serialize()
 
 	// Close the file when writing is done
 	datafile.close();
+
+#if USE_SOM
+	// Seriaize the SOM maps
+	this->som->Serialize();
+#endif
 }
 
 /// <summary>Deserializes a folder of data containing datacharts.</summary>

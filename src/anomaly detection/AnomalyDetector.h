@@ -46,16 +46,7 @@ public:
 	bool TriggerVariableReset(float chance = 10, char* msg = "");
 	bool TriggerFunctionFailure(float chance = 10, char* msg = "");
 	void TrackPointer(size_t * var, char * name);
-	void Reset();
-private:
-	float GetThreshold() {
-#if FILTER_POINTS
-		// Variable size is actually increased by one due to the valueCount variable
-		return m_variables.size() * 0.5f;
-#endif
-		// Threshold is equal to half the amount of combinations possible for every variable
-		return (m_variables.size() - 1) * 0.5f;
-	};
+	uint32_t GetTicks() { return ticks; }
 	std::string GetBaseFolder()
 	{
 #if USE_KNN
@@ -68,6 +59,16 @@ private:
 		return ".\\..\\_data\\SOM\\";
 #endif
 	}
+	void Reset();
+private:
+	float GetThreshold() {
+#if FILTER_POINTS
+		// Variable size is actually increased by one due to the valueCount variable
+		return m_variables.size() * 0.5f;
+#endif
+		// Threshold is equal to half the amount of combinations possible for every variable
+		return (m_variables.size() - 1) * 0.5f;
+};
 	void DetectAnomaly(std::vector<Classification> results);
 	void LogAnomalyScore(uint32_t tick, float score);
 	static AnomalyDetector* instance;

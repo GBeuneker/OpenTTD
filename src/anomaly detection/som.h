@@ -1,5 +1,6 @@
 #pragma once
 #include "Detector.h"
+//#include "AnomalyDetector.h"
 #include "../core/random_func.hpp"
 #include <map>
 
@@ -18,10 +19,10 @@ protected:
 	// Initialization
 	void IntializeMap(DataChart * d, std::vector<Datapoint*>* nodes);
 	// Training
-	void UpdateMap(std::vector<Datapoint*>* nodes, Datapoint *datapoint, uint16_t i);
-	void Train(DataChart * d, std::vector<Datapoint*> *nodes, uint16_t iterations);
-	float GetRadius(uint16_t iteration, uint16_t totalIterations);
-	float GetLearningRate(uint16_t iteration, uint16_t totalIterations);
+	void UpdateMap(uint16_t chartIndex, Datapoint * datapoint);
+	void Train(uint16_t chartIndex);
+	float GetRadius(float startRadius, uint16_t iteration, uint16_t totalIterations);
+	float GetLearningRate(float startLearningRate, uint16_t iteration, uint16_t totalIterations);
 	float GetDistanceDecay(float distance, float radius);
 	void UpdatePosition(Datapoint* p, Vector2 targetPosition, float learningRate, float distanceDecay = 1);
 	// Classification
@@ -35,13 +36,13 @@ protected:
 	int Orientation(Vector2 p, Vector2 q, Vector2 r);
 	bool OnSegment(Vector2 p, Vector2 q, Vector2 r);
 private:
-	uint16_t maxIterations = WINDOW_SIZE;
+	uint16_t width, height;
+	float learningRate = 0.5f;
 
 	std::vector<std::vector<Datapoint*>*> somNodes;
 	std::vector<bool> initializedCharts;
-	uint16_t width, height;
-	float startRadius = 10, learningRate = 1, timeConstant;
-	uint16_t iteration = 1;
+	std::vector<uint16_t> chartIterations, maxChartIterations;
+	std::vector<float> startRadii;
 
 	std::vector<std::vector<float>> somDistances;
 	std::vector<int> somIndices;

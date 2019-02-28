@@ -24,7 +24,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 	uint16_t maxNeighbourRange = nbrRange_values[chartIndex];
 
 	// Determine rmin, rmax and the stepsize
-	int steps = 100;
+	int steps = 10;
 	float rMax = GetRadius(d, loci_p, maxNeighbourRange), rMin = 0;
 	float stepSize = (rMax - rMin) / (float)steps;
 

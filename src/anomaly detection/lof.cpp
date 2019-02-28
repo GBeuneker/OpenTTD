@@ -72,10 +72,10 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 		bool isOutlier = lofValue > (averageValue + stDev);
 		isOutlier = ApplyCooldown(chartIndex, isOutlier);
 
-		float threshold = averageValue + stDev;
-		result.isAnomaly = lofValue > threshold;
+		float deviation = lofValue - averageValue;
+		result.isAnomaly = deviation > stDev;
 		// The certainty is the amount of standard deviations removed from the average
-		result.certainty = stDev > 0 ? std::clamp(lofValue / (3 * stDev), 0.0f, 1.0f) : 1;
+		result.certainty = stDev > 0 ? std::clamp(deviation / (3 * stDev), 0.0f, 1.0f) : 1;
 	}
 
 	// Add the average to the list
