@@ -61,7 +61,7 @@ struct CompanyProperties {
 
 	CompanyManagerFace face;         ///< Face description of the president.
 
-	Money money, deltaMoney;		 ///< Money owned by the company.
+	Money money, deltaMoney, prev_money;		 ///< Money owned by the company.
 	byte money_fraction;             ///< Fraction of money of the company, too small to represent in #money.
 	Money current_loan;              ///< Amount of money borrowed from the bank.
 	int prev_roadAmount, prev_roadVehicleAmount, prev_railAmount, prev_railVehicleAmount;

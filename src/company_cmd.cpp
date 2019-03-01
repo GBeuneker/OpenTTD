@@ -732,12 +732,14 @@ void OnTick_Companies()
 		c->delta_roadVehicleAmount = roadVehicleAmount - c->prev_roadVehicleAmount;
 		c->delta_railAmount = railAmount - c->prev_railAmount;
 		c->delta_railVehicleAmount = railVehicleAmount - c->prev_railVehicleAmount;
+		c->deltaMoney = c->money - c->prev_money;
 
 		// Cache the previous values
 		c->prev_railAmount = railAmount;
 		c->prev_roadAmount = roadAmount;
 		c->prev_railVehicleAmount = railVehicleAmount;
 		c->prev_roadVehicleAmount = roadVehicleAmount;
+		c->prev_money = c->money;
 	}
 
 

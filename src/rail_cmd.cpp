@@ -580,8 +580,8 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 			MakeRailNormal(tile, _current_company, trackbit, railtype);
 			if (water_ground) SetRailGroundType(tile, RAIL_GROUND_WATER);
 			//TODO: Insert Anomaly
-			if (AnomalyDetector::GetInstance()->TriggerVariableIncrease(10, "Railway"))
-				Company::Get(_current_company)->infrastructure.rail[railtype] += 10;
+			if (AnomalyDetector::GetInstance()->TriggerVariableIncrease(1, "Railway"))
+				Company::Get(_current_company)->infrastructure.rail[railtype] += 20;
 
 			Company::Get(_current_company)->infrastructure.rail[railtype]++;
 			DirtyCompanyInfrastructureWindows(_current_company);
