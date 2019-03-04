@@ -8,11 +8,11 @@ AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
 #if USE_KNN
-	this->knn = new KNN(new uint16_t[10]{ 10,5,20,5,10,20,10,15,5,20 });
+	this->knn = new KNN(new uint16_t[10]{ 20,5,15,5,20,25,20,20,5,20 });
 #elif USE_LOF
-	this->lof = new LOF(new uint16_t[10]{ 10,5,20,5,10,20,10,15,5,20 });
+	this->lof = new LOF(new uint16_t[10]{ 30,5,25,5,35,35,30,30,5,30 });
 #elif USE_LOCI
-	this->loci = new LOCI(new uint16_t[10]{ 10,5,20,5,10,20,10,15,5,20 });
+	this->loci = new LOCI(new uint16_t[10]{ 20,5,15,5,20,25,20,20,5,20 });
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 
@@ -53,7 +53,7 @@ AnomalyDetector::AnomalyDetector()
 		this->loci->Run();
 #endif
 	}
-#elif 1
+#elif 0
 	// Test 3
 	test->GetValues()->push_back(new Datapoint(0, 0)); // 0
 	test->GetValues()->push_back(new Datapoint(1, 0)); // 1
@@ -163,7 +163,9 @@ void AnomalyDetector::LogDataTick()
 	results = som->Run();
 #endif
 
-	DetectAnomaly(results);
+	// Do not report anomalies during training time
+	if (ticks >= TRAINING_TIME)
+		DetectAnomaly(results);
 
 	if (ticks >= MAX_TICK_COUNT)
 	{
@@ -193,7 +195,12 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 				printf("|    Chart %i: %s | Value: %i | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), m_datacharts[i]->GetValues()->size(), results[i].certainty);
 	}
 	else if (anomalyScore > 0)
+	{
 		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
+		for (int i = 0; i < results.size(); ++i)
+			if (results[i].isAnomaly)
+				printf("|    Chart %i: %s | Value: %i | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), m_datacharts[i]->GetValues()->size(), results[i].certainty);
+	}
 
 	LogAnomalyScore(ticks, anomalyScore);
 }

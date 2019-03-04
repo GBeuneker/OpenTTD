@@ -55,14 +55,12 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 		if (outlier)
 		{
 			result.isAnomaly = true;
-			// The certainty is the amount of standard deviations removed. 100% certain at l standard deviations
-			float certainty = s_mdef > 0 ? fmin(mdef / (l * s_mdef), 1) : 1;
+			float deviation = l * s_mdef - mdef;
+			// The certainty increases exponentially the closer it is to l*s_mdef
+			float certainty = std::clamp(exp(-6 * deviation), 0.0f, 1.0f);
 			result.certainty = fmax(result.certainty, certainty);
 		}
 	}
-
-	// Apply a cooldown to the result
-	result.isAnomaly = ApplyCooldown(chartIndex, result.isAnomaly);
 
 	return result;
 }

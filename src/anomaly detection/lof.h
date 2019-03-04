@@ -20,7 +20,7 @@ protected:
 private:
 	uint16_t current_k;
 	uint16_t* k_values;
-	std::vector<float[WINDOW_SIZE]> lofValues;
+	std::vector<std::vector<float>> lofValues;
 	std::vector<int> lofIndices;
 };
 

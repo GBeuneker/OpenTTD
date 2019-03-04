@@ -15,7 +15,7 @@ protected:
 private:
 	uint16_t* k_values;
 	float distances[WINDOW_SIZE];
-	std::vector<float[WINDOW_SIZE]> kDistances;
+	std::vector<std::vector<float>> kDistances;
 	std::vector<int> kIndices;
 };
 

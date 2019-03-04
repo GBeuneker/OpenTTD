@@ -13,7 +13,7 @@ void LOF::SetData(std::vector<DataChart*> _datacharts)
 {
 	Detector::SetData(_datacharts);
 
-	lofValues = std::vector<float[WINDOW_SIZE]>(datacharts.size());
+	lofValues = std::vector<std::vector<float>>(datacharts.size());
 	lofIndices = std::vector<int>(datacharts.size());
 }
 
@@ -29,7 +29,8 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	// Get a k-value from the pre-configured list
 	current_k = k_values[chartIndex];
 
-	if (d->GetValues()->size() <= current_k)
+	// If there aren't enough values, return empty
+	if (d->GetValues()->size() <= 1)
 		return result;
 
 	// Get k-neighbours of p
@@ -52,27 +53,22 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	// Calculate LOF(p) = SUM(lrd(o) / lrd(p)) / |k-neighbours(p)|
 	float lofValue = GetLOF(d, lof_p);
 
-	// Get the maximum index of our lof-values (first k steps are skipped, plus the first time there are no lof-values yet)
-	int maxlofValueIndex = fmin(WINDOW_SIZE, d->GetValues()->size() - current_k - 1);
-	// Only calculate anomaly score if we have observed more than one point
-	if (maxlofValueIndex > 1)
+	// Only calculate anomaly score if we have observed more than a few points
+	if (lofValues.at(chartIndex).size() > 5)
 	{
 		// Calculate the average distance of this window
 		float averageValue = 0;
-		for (int i = 0; i < maxlofValueIndex; ++i)
-			averageValue += lofValues.at(chartIndex)[i] / maxlofValueIndex;
+		for (int i = 0; i < lofValues.at(chartIndex).size(); ++i)
+			averageValue += lofValues.at(chartIndex)[i] / lofValues.at(chartIndex).size();
 
 		// Calculate the standard deviation
 		float stDev = 0;
-		for (int i = 0; i < maxlofValueIndex; ++i)
-			stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2) / maxlofValueIndex;
+		for (int i = 0; i < lofValues.at(chartIndex).size(); ++i)
+			stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2) / lofValues.at(chartIndex).size();
 		stDev = sqrtf(stDev);
 
-		// We flag it as outlier if the distance is at least one stDev removed from the average
-		bool isOutlier = lofValue > (averageValue + stDev);
-		isOutlier = ApplyCooldown(chartIndex, isOutlier);
-
 		float deviation = lofValue - averageValue;
+		// We flag it as outlier if the deviation is at least one stDev removed from the average
 		result.isAnomaly = deviation > stDev;
 		// The certainty is the amount of standard deviations removed from the average
 		result.certainty = stDev > 0 ? std::clamp(deviation / (3 * stDev), 0.0f, 1.0f) : 1;
@@ -80,7 +76,10 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 
 	// Add the average to the list
 	int kIndex = lofIndices[chartIndex];
-	lofValues.at(chartIndex)[kIndex] = lofValue;
+	if (lofValues.at(chartIndex).size() < WINDOW_SIZE)
+		lofValues.at(chartIndex).push_back(lofValue);
+	else
+		lofValues.at(chartIndex).at(kIndex) = lofValue;
 	// Increase the index
 	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
 
@@ -173,7 +172,7 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 
 	// Search for the k-th distance
 	// Start distance at the k-th neighbour, since they're sorted this ensures we have at most k-1 neighbours whose distance is smaller
-	float dist = lofDatapoints.at(current_k - 1)->distance;
+	float dist = lofDatapoints.at((int)fmin(lofDatapoints.size() - 1, current_k - 1))->distance;
 	int nbrSize = lofDatapoints.size();
 
 	// Add all distances equal to the current distance

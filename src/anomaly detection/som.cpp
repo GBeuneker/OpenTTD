@@ -108,8 +108,8 @@ std::vector<Classification> SOM::Run()
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
 		Datapoint* p = datacharts[i]->GetLast();
-		// Initialize the SOM if we have seen at least one window and if the chart has enough values
-		if (!initializedCharts[i] && AnomalyDetector::GetInstance()->GetTicks() >= WINDOW_SIZE && datacharts[i]->GetValues()->size() >= 10)
+		// Initialize the SOM if we have seen at leaste passed the training time and if the chart has enough values
+		if (!initializedCharts[i] && AnomalyDetector::GetInstance()->GetTicks() >= TRAINING_TIME && datacharts[i]->GetValues()->size() >= 10)
 		{
 			// Initialize the map
 			IntializeMap(datacharts[i], somNodes[i]);
