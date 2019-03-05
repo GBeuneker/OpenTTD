@@ -108,7 +108,7 @@ std::vector<Classification> SOM::Run()
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
 		Datapoint* p = datacharts[i]->GetLast();
-		// Initialize the SOM if we have seen at leaste passed the training time and if the chart has enough values
+		// Initialize the SOM if we have seen at least passed the training time and if the chart has enough values
 		if (!initializedCharts[i] && AnomalyDetector::GetInstance()->GetTicks() >= TRAINING_TIME && datacharts[i]->GetValues()->size() >= 10)
 		{
 			// Initialize the map
@@ -184,8 +184,11 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 		for (int i = 0; i < somDistances.at(chartIndex).size(); ++i)
 			errorRadius += somDistances.at(chartIndex)[i] / somDistances.at(chartIndex).size();
 
+		float deviation = distanceToEdge - errorRadius;
+		// The certainty increases exponentially until a distance of 3x error radius
+		float deviationDistance = 1 - deviation / (3 * errorRadius);
 		// Only give a certainty if there is a significant error radius (prevents rounding errors)
-		result.certainty = errorRadius > 0.01f ? std::clamp(distanceToEdge / (3 * errorRadius), 0.0f, 1.0f) : 0;
+		result.certainty = errorRadius > 0.01f ? std::clamp(exp(-6 * deviationDistance), 0.0f, 1.0f) : 0;
 	}
 
 	// Add the average to the list

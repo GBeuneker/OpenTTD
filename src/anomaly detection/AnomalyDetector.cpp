@@ -194,7 +194,7 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 			if (results[i].isAnomaly)
 				printf("|    Chart %i: %s | Value: %i | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), m_datacharts[i]->GetValues()->size(), results[i].certainty);
 	}
-	else if (anomalyScore > 0)
+	else if (anomalyScore > 0.1f)
 	{
 		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 		for (int i = 0; i < results.size(); ++i)
