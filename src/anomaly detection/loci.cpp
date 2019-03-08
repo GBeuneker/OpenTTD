@@ -55,9 +55,9 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 		if (outlier)
 		{
 			result.isAnomaly = true;
-			float deviation = l * s_mdef - mdef;
+			float deviation = mdef / l * s_mdef;
 			// The certainty increases exponentially the closer it is to l*s_mdef
-			float certainty = std::clamp(exp(-5 * deviation), 0.0f, 1.0f);
+			float certainty = Sigmoid(deviation);
 			result.certainty = fmax(result.certainty, certainty);
 		}
 	}

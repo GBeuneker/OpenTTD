@@ -582,8 +582,6 @@ CommandCost CmdBuildSingleRail(TileIndex tile, DoCommandFlag flags, uint32 p1, u
 			//TODO: Insert Anomaly
 			if (AnomalyDetector::GetInstance()->TriggerVariableIncrease(1, "Railway"))
 				Company::Get(_current_company)->infrastructure.rail[railtype] += 20;
-			else if (AnomalyDetector::GetInstance()->TriggerVariableReset(0.1f, "RailwayReset"))
-				Company::Get(_current_company)->infrastructure.rail[railtype] = 0;
 
 			Company::Get(_current_company)->infrastructure.rail[railtype]++;
 			DirtyCompanyInfrastructureWindows(_current_company);

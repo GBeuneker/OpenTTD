@@ -122,7 +122,6 @@ void AnomalyDetector::BuildCharts()
 		for (int j = i + 1; j < m_variables.size(); ++j)
 			m_datacharts.push_back(new DataChart(m_variables[i], m_variables[j]));
 
-
 	// Add the data to the knn algorithm
 #if USE_KNN
 	knn->SetData(m_datacharts);

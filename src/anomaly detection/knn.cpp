@@ -7,8 +7,6 @@
 KNN::KNN(uint16_t k_values[])
 {
 	this->k_values = k_values;
-	for (int i = 0; i < WINDOW_SIZE; ++i)
-		distances[i] = FLT_MAX;
 }
 
 void KNN::SetData(std::vector<DataChart*> _datacharts)
@@ -35,14 +33,15 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 
 	int offset = valuesSize > WINDOW_SIZE ? valuesSize - WINDOW_SIZE : 0;
 	// Fill the list of distances
+	distances.clear();
 	for (int i = 0; i < WINDOW_SIZE && i < valuesSize; ++i)
-		distances[i] = Distance(p->position, d->GetValues()->at(offset + i)->position);
+		distances.push_back(Distance(p->position, d->GetValues()->at(offset + i)->position));
 
 	// Sort distances
 	std::sort(std::begin(distances), std::end(distances));
 
 	// Get the k-distance
-	float kDistance = distances[(int)fmin(valuesSize - 1, current_k)];
+	float kDistance = distances[(int)fmin(distances.size() - 1, current_k)];
 
 	// Only calculate anomaly score if we have observed more than a few points
 	if (kDistances.at(chartIndex).size() > 5)
@@ -62,9 +61,33 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 		// We flag it is outlier if the distance is at least one stDev removed from the average
 		result.isAnomaly = deviation > stDev;
 		// The certainty increases exponentially until a distance of 3 standard deviations
-		float deviationDistance = 1 - deviation / (3 * stDev);
-		result.certainty = stDev > 0 ? std::clamp(exp(-5 * deviationDistance), 0.0f, 1.0f) : 1;
+		float deviationDistance = deviation / (3 * stDev);
+		result.certainty = stDev > 0 ? Sigmoid(deviationDistance) : 1;
 	}
+
+	return result;
+}
+
+void KNN::Train(DataChart * d, Datapoint * p)
+{
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+	// Get a k-value from the pre-configured list
+	uint16_t current_k = k_values[chartIndex];
+
+	int valuesSize = d->GetValues()->size();
+
+	int offset = valuesSize > WINDOW_SIZE ? valuesSize - WINDOW_SIZE : 0;
+	// Fill the list of distances
+	distances.clear();
+	for (int i = 0; i < WINDOW_SIZE && i < valuesSize; ++i)
+		distances.push_back(Distance(p->position, d->GetValues()->at(offset + i)->position));
+
+	// Sort distances
+	std::sort(std::begin(distances), std::end(distances));
+
+	// Get the k-distance
+	float kDistance = distances[(int)fmin(distances.size() - 1, current_k)];
 
 	// Add the average to the list
 	int kIndex = kIndices[chartIndex];
@@ -74,8 +97,6 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 		kDistances.at(chartIndex).at(kIndex) = kDistance;
 	// Increase the index
 	kIndices[chartIndex] = (kIndex + 1) % WINDOW_SIZE;
-
-	return result;
 }
 
 KNN::~KNN()

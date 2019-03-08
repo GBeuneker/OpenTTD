@@ -12,9 +12,10 @@ public:
 	~KNN();
 protected:
 	Classification Classify(DataChart* d, Datapoint* p) override;
+	void Train(DataChart* d, Datapoint* p) override;
 private:
 	uint16_t* k_values;
-	float distances[WINDOW_SIZE];
+	std::vector<float> distances;
 	std::vector<std::vector<float>> kDistances;
 	std::vector<int> kIndices;
 };

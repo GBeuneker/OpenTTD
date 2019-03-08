@@ -793,11 +793,8 @@ CommandCost CmdBuildRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 		if (c != NULL) {
 			if (IsTileType(tile, MP_TUNNELBRIDGE)) num_pieces *= TUNNELBRIDGE_TRACKBIT_FACTOR;
 			//TODO: Insert Anomaly
-			if (AnomalyDetector::GetInstance()->TriggerVariableIncrease(5, "roadPieces"))
+			if (AnomalyDetector::GetInstance()->TriggerVariableIncrease(1, "roadPieces"))
 				num_pieces += 20;
-			else if (AnomalyDetector::GetInstance()->TriggerVariableReset(1, "roadPiecesReset"))
-				c->infrastructure.road[rt] = 0;
-
 
 			c->infrastructure.road[rt] += num_pieces;
 			DirtyCompanyInfrastructureWindows(c->index);

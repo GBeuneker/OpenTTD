@@ -1,5 +1,5 @@
 #pragma once
-#define ENABLE_ANOMALIES 1
+#define ENABLE_ANOMALIES 0
 
 #define USE_KNN 1
 #define USE_LOF 0
@@ -11,3 +11,4 @@
 #define MAX_TICK_COUNT 20000
 
 #define FILTER_POINTS 1
+#define USE_SUBVALUES 1

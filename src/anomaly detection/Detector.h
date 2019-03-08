@@ -15,8 +15,9 @@ public:
 	virtual std::vector<Classification> Run();
 protected:
 	bool ApplyCooldown(uint16_t chartIndex, bool isOutlier);
-	float Sigmoid(float x, float slope = 10.0f, float midPoint = 0.5f);
+	float Sigmoid(float x, float slope = 15.0f, float midPoint = 0.75f);
 	virtual Classification Classify(DataChart* d, Datapoint* p) { return Classification(); };
+	virtual void Train(DataChart* d, Datapoint* p) {  };
 	std::vector<DataChart*> datacharts;
 	const int cooldownSize = 0;
 	std::vector<int> cooldownSteps;

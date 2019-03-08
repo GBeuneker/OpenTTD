@@ -146,11 +146,6 @@ void GroupStatistics::Clear()
 	//TODO: Insert anomaly
 	if (delta > 0 && AnomalyDetector::GetInstance()->TriggerVariableIncrease(10, "Vehicles"))
 		delta *= 20;
-	else if (delta > 0 && AnomalyDetector::GetInstance()->TriggerVariableReset(1, "VehiclesReset"))
-	{
-		stats_all.num_vehicle = 0;
-		stats.num_vehicle = 0;
-	}
 
 	stats_all.num_vehicle += delta;
 	stats.num_vehicle += delta;

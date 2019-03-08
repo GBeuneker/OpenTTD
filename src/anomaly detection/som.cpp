@@ -107,25 +107,43 @@ std::vector<Classification> SOM::Run()
 
 	for (int i = 0; i < datacharts.size(); ++i)
 	{
-		Datapoint* p = datacharts[i]->GetLast();
+		DataChart* d = datacharts[i];
+		Datapoint* p = d->GetLast();
 		// Initialize the SOM if we have seen at least passed the training time and if the chart has enough values
-		if (!initializedCharts[i] && AnomalyDetector::GetInstance()->GetTicks() >= TRAINING_TIME && datacharts[i]->GetValues()->size() >= 10)
+		if (!initializedCharts[i] && AnomalyDetector::GetInstance()->GetTicks() >= TRAINING_TIME && d->GetValues()->size() >= 10)
 		{
 			// Initialize the map
-			IntializeMap(datacharts[i], somNodes[i]);
+			IntializeMap(d, somNodes[i]);
 			initializedCharts[i] = true;
 
 			// Max iterations is the amount of iterations we have seen in the first window (minimum of 10)
-			maxChartIterations[i] = datacharts[i]->GetValues()->size();
+			maxChartIterations[i] = d->GetValues()->size();
 		}
 		//If the chart is initialized, update it with newer values
 		else if (initializedCharts[i])
 		{
+			// Train using the average of all points
+			Train(d, p);
+#if USE_SUBVALUES
+			Classification result;
+			std::vector<Datapoint*> subPoints = d->GetSubvalues(p);
+			// Get the result with the highest certainty
+			for (int i = 0; i < subPoints.size(); ++i)
+			{
+				Classification r = Classify(d, subPoints.at(i));
+				if (r.isAnomaly)
+				{
+					result.isAnomaly = true;
+					result.certainty = fmax(result.certainty, r.certainty);
+				}
+			}
+			results.push_back(result);
+#else
 			// Classify the datapoint and add it to the results
-			results.push_back(Classify(datacharts[i], p));
+			results.push_back(Classify(d, p));
+#endif
 			// Update the SOM map
 			UpdateMap(i, p);
-
 			if (chartIterations[i] < maxChartIterations[i])
 				chartIterations[i]++;
 		}
@@ -135,6 +153,41 @@ std::vector<Classification> SOM::Run()
 }
 
 #pragma region Classification
+
+/// <summary>Classifies whether a datapoint is anomalous.</summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The datapoint we would like to classify.</param>
+void SOM::Train(DataChart *d, Datapoint *p)
+{
+	Classification result;
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+
+	// Index cannot be larger than the nodes list
+	if (chartIndex >= somNodes.size())
+	{
+		printf("ERROR: index is larger than trainingset");
+		return;
+	}
+
+	// Get the right collection of trained nodes from the list
+	std::vector<Datapoint*> nodes = *somNodes[chartIndex];
+	// Convert the nodes to a convex hull
+	ConvexHull(&nodes);
+	//Sort Nodes to form a polygon
+	SortCounterClockwise(&nodes);
+	float distanceToEdge = DistToEdge(&nodes, p);
+
+	// Add the average to the list
+	int index = somIndices[chartIndex];
+	if (somDistances.at(chartIndex).size() <= index)
+		somDistances.at(chartIndex).push_back(distanceToEdge);
+	else
+		somDistances.at(chartIndex)[index] = distanceToEdge;
+
+	// Increase the index
+	somIndices[chartIndex] = (index + 1) % WINDOW_SIZE;
+}
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
@@ -159,17 +212,6 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 	//Sort Nodes to form a polygon
 	SortCounterClockwise(&nodes);
 
-	float minX = FLT_MAX, maxX = FLT_MIN;
-	float minY = FLT_MAX, maxY = FLT_MIN;
-	// Get the maximum possible distance between points in our SOM polygon
-	for (int i = 0; i < nodes.size(); ++i)
-	{
-		minX = fmin(nodes.at(i)->position.X, minX);
-		minY = fmin(nodes.at(i)->position.Y, minY);
-		maxX = fmax(nodes.at(i)->position.X, maxX);
-		maxY = fmax(nodes.at(i)->position.Y, maxY);
-	}
-
 	// Check if the point is inside the SOM
 	if (somDistances.at(chartIndex).size() > 0)
 		result.isAnomaly = !IsInSOMMap(&nodes, p);
@@ -190,16 +232,6 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 		// Only give a certainty if there is a significant error radius (prevents rounding errors)
 		result.certainty = errorRadius > 0.01f ? std::clamp(exp(-6 * deviationDistance), 0.0f, 1.0f) : 0;
 	}
-
-	// Add the average to the list
-	int index = somIndices[chartIndex];
-	if (somDistances.at(chartIndex).size() <= index)
-		somDistances.at(chartIndex).push_back(distanceToEdge);
-	else
-		somDistances.at(chartIndex)[index] = distanceToEdge;
-
-	// Increase the index
-	somIndices[chartIndex] = (index + 1) % WINDOW_SIZE;
 
 	return result;
 }
@@ -249,7 +281,7 @@ bool SOM::IsInSOMMap(std::vector<Datapoint*> *nodes, Datapoint *p)
 /// <param name='d'>The chart used for training.</param>
 /// <param name='nodes'>The nodes used for training the SOM.</param>
 /// <param name='iterations'>The amount of iterations used for training.</param>
-void SOM::Train(uint16_t chartIndex)
+void SOM::TrainMap(uint16_t chartIndex)
 {
 	std::vector<Datapoint*>* nodes = somNodes.at(chartIndex);
 	uint16_t maxIterations = maxChartIterations.at(chartIndex);

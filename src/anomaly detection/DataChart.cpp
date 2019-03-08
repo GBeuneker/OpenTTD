@@ -5,7 +5,7 @@ DataChart::DataChart(VariablePointer varA, VariablePointer varB)
 	this->m_varA = varA;
 	this->m_varB = varB;
 
-	values = new std::vector<Datapoint*>();
+	aggregatedValues = new std::vector<Datapoint*>();
 }
 
 void DataChart::SetPointers(VariablePointer varA, VariablePointer varB)
@@ -16,29 +16,54 @@ void DataChart::SetPointers(VariablePointer varA, VariablePointer varB)
 
 void DataChart::LogData()
 {
-	Vector2 position = Vector2(m_varA.GetValue(), m_varB.GetValue());
-	Datapoint* newDataPoint = new Datapoint(position.X, position.Y);
+	Vector2 avgVariableposition = Vector2(m_varA.GetAvgValue(), m_varB.GetAvgValue());
+	Datapoint* aggregatedDatapoint = new Datapoint(avgVariableposition.X, avgVariableposition.Y);
 
 #if FILTER_POINTS
 	isDirty = false;
 	// Only add points if the previous one was different
-	if (values->size() > 0)
+	if (aggregatedValues->size() > 0)
 	{
 		// Make sure the previous value is different
-		if (values->back()->position == newDataPoint->position)
+		if (aggregatedValues->back()->position == aggregatedDatapoint->position)
+		{
+			delete aggregatedDatapoint;
 			return;
+		}
 
 		// If we're tracking the valueCount, only check the y-value
 		if (m_varA.GetPointers().at(0) == (size_t*)&valueCount)
-			if (values->back()->position.Y == newDataPoint->position.Y)
+			if (aggregatedValues->back()->position.Y == aggregatedDatapoint->position.Y)
+			{
+				delete aggregatedDatapoint;
 				return;
+			}
 	}
 
 #endif
 
-	values->push_back(newDataPoint);
+	aggregatedValues->push_back(aggregatedDatapoint);
+
+#if USE_SUBVALUES
+	// Get the sub points
+	std::vector<Datapoint*> subPoints;
+
+	// Both pointer lists are the same size, match 1-1
+	if (m_varA.GetPointers().size() == m_varB.GetPointers().size())
+		for (int i = 0; i < m_varA.GetPointers().size(); ++i)
+			subPoints.push_back(new Datapoint(m_varA.GetValueAt(i), m_varB.GetValueAt(i)));
+
+	// Pointer lists are different sizes, make all possible combinations
+	else
+		for (int a = 0; a < m_varA.GetPointers().size(); ++a)
+			for (int b = 0; b < m_varB.GetPointers().size(); ++b)
+				subPoints.push_back(new Datapoint(m_varA.GetValueAt(a), m_varB.GetValueAt(b)));
+
+	// Map the index of the aggregatedValues to a list of subPoints in subvalues
+	subvalues.emplace(aggregatedDatapoint, subPoints);
+#endif
 #if FILTER_POINTS
-	valueCount = values->size();
+	valueCount = aggregatedValues->size();
 	isDirty = true;
 #endif
 }
@@ -51,15 +76,15 @@ std::string DataChart::Serialize()
 	stringstream << GetLabelString() << "\n";
 
 	// Loop through all the values
-	for (int i = 0; i < values->size(); ++i)
-		stringstream << values->at(i)->position.X << " " << values->at(i)->position.Y << "\n";
+	for (int i = 0; i < aggregatedValues->size(); ++i)
+		stringstream << aggregatedValues->at(i)->position.X << " " << aggregatedValues->at(i)->position.Y << "\n";
 
 	return stringstream.str();
 }
 
 void DataChart::DeSerialize(const char* path)
 {
-	values->clear();
+	aggregatedValues->clear();
 
 	std::ifstream infile(path);
 
@@ -73,7 +98,7 @@ void DataChart::DeSerialize(const char* path)
 		std::istringstream iss(line);
 		if (!(iss >> a >> b)) { break; }
 
-		values->push_back(new Datapoint(a, b));
+		aggregatedValues->push_back(new Datapoint(a, b));
 	}
 }
 
@@ -88,5 +113,5 @@ std::string DataChart::GetLabelString()
 
 DataChart::~DataChart()
 {
-	delete values;
+	delete aggregatedValues;
 }

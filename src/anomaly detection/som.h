@@ -18,13 +18,14 @@ public:
 protected:
 	// Initialization
 	void IntializeMap(DataChart * d, std::vector<Datapoint*>* nodes);
+	void TrainMap(uint16_t chartIndex);
 	// Training
 	void UpdateMap(uint16_t chartIndex, Datapoint * datapoint);
-	void Train(uint16_t chartIndex);
 	float GetRadius(float startRadius, uint16_t iteration, uint16_t totalIterations);
 	float GetLearningRate(float startLearningRate, uint16_t iteration, uint16_t totalIterations);
 	float GetDistanceDecay(float distance, float radius);
 	void UpdatePosition(Datapoint* p, Vector2 targetPosition, float learningRate, float distanceDecay = 1);
+	void Train(DataChart * d, Datapoint * p);
 	// Classification
 	Classification Classify(DataChart* d, Datapoint *p) override;
 	bool IsInSOMMap(std::vector<Datapoint*>* nodes, Datapoint * p);

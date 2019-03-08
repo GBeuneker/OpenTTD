@@ -10,6 +10,7 @@ public:
 	void SetData(std::vector<DataChart*> _datacharts) override;
 	~LOF();
 protected:
+	void Train(DataChart * d, Datapoint * lof_p);
 	Classification Classify(DataChart* d, Datapoint *p) override;
 	float GetLOF(DataChart * d, Datapoint * p);
 	void SetLRD(DataChart * d, Datapoint *p);

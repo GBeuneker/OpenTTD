@@ -20,6 +20,50 @@ void LOF::SetData(std::vector<DataChart*> _datacharts)
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
 /// <param name='p'>The datapoint we would like to classify.</param>
+void LOF::Train(DataChart * d, Datapoint* lof_p)
+{
+	// Find the index of the chart
+	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+	// Get a k-value from the pre-configured list
+	current_k = k_values[chartIndex];
+
+	// If there aren't enough values, return empty
+	if (d->GetValues()->size() <= 1)
+		return;
+
+	// Get k-neighbours of p
+	SetKNeighbours(d, lof_p);
+	SetKDistance(d, lof_p);
+
+	// Update the k-neighbours of every k-neighbour of p
+	for (int i = 0; i < lof_p->neighbours.size(); ++i)
+	{
+		SetKNeighbours(d, lof_p->neighbours.at(i));
+		SetKDistance(d, lof_p->neighbours.at(i));
+	}
+
+	// Calculate lrd(p) = |k-neighbours(p)| / SUM(reach-distances)
+	SetLRD(d, lof_p);
+	// Set the LRD for all the k-neighbours of p
+	for (int i = 0; i < lof_p->neighbours.size(); ++i)
+		SetLRD(d, lof_p->neighbours.at(i));
+
+	// Calculate LOF(p) = SUM(lrd(o) / lrd(p)) / |k-neighbours(p)|
+	float lofValue = GetLOF(d, lof_p);
+
+	// Add the average to the list
+	int kIndex = lofIndices[chartIndex];
+	if (lofValues.at(chartIndex).size() < WINDOW_SIZE)
+		lofValues.at(chartIndex).push_back(lofValue);
+	else
+		lofValues.at(chartIndex).at(kIndex) = lofValue;
+	// Increase the index
+	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
+}
+
+/// <summary>Classifies whether a datapoint is anomalous.</summary>
+/// <param name='d'>The collection of data we want to use for our classification.</param>
+/// <param name='p'>The datapoint we would like to classify.</param>
 Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 {
 	Classification result;
@@ -74,15 +118,6 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 		float deviationDistance = 1 - deviation / (3 * stDev);
 		result.certainty = stDev > 0 ? std::clamp(exp(-5 * deviationDistance), 0.0f, 1.0f) : 1;
 	}
-
-	// Add the average to the list
-	int kIndex = lofIndices[chartIndex];
-	if (lofValues.at(chartIndex).size() < WINDOW_SIZE)
-		lofValues.at(chartIndex).push_back(lofValue);
-	else
-		lofValues.at(chartIndex).at(kIndex) = lofValue;
-	// Increase the index
-	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
 
 	return result;
 }

@@ -49,6 +49,8 @@ std::vector<Classification> Detector::Run()
 	{
 		DataChart* d = datacharts[i];
 		Datapoint* p = d->GetLast();
+
+		// Classify using the individual variables
 #if FILTER_POINTS
 		if (!d->isDirty)
 		{
@@ -56,7 +58,25 @@ std::vector<Classification> Detector::Run()
 			continue;
 		}
 #endif
+		// Train using the average of all points
+		Train(d, p);
+#if USE_SUBVALUES
+		Classification result;
+		std::vector<Datapoint*> subPoints = d->GetSubvalues(p);
+		// Get the result with the highest certainty
+		for (int i = 0; i < subPoints.size(); ++i)
+		{
+			Classification r = Classify(d, subPoints.at(i));
+			if (r.isAnomaly)
+			{
+				result.isAnomaly = true;
+				result.certainty = fmax(result.certainty, r.certainty);
+			}
+		}
+		results.push_back(result);
+#else
 		results.push_back(Classify(d, p));
+#endif
 	}
 
 	return results;
