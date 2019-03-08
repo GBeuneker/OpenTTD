@@ -36,6 +36,11 @@ bool Detector::ApplyCooldown(uint16_t chartIndex, bool isOutlier)
 	return false;
 }
 
+float Detector::Sigmoid(float x, float slope, float midPoint)
+{
+	return 1 / (1 + exp(-slope * (x - midPoint)));
+}
+
 std::vector<Classification> Detector::Run()
 {
 	std::vector<Classification> results;
