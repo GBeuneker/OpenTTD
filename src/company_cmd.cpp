@@ -75,9 +75,9 @@ INSTANTIATE_POOL_METHODS(Company)
 	if (_game_mode != GM_MENU && this->is_ai)
 	{
 		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_roadAmount, "deltaRoads");
-		//AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_roadVehicleAmount, "deltaRoadVehicles");
-		//AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_railAmount, "deltaRailways");
-		//AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_railVehicleAmount, "deltaRailVehicles");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_roadVehicleAmount, "deltaRoadVehicles");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_railAmount, "deltaRailways");
+		AnomalyDetector::GetInstance()->TrackPointer((size_t*)&delta_railVehicleAmount, "deltaRailVehicles");
 	}
 }
 

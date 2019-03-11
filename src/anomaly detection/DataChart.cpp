@@ -59,7 +59,7 @@ void DataChart::LogData()
 	}
 
 	// None of the variables were dirty, so return
-	if (count == 0)
+	if (aggregatedValues->size() > 0 && count == 0)
 		return;
 
 	avgVariableposition /= (float)count;
