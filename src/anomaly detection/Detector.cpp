@@ -66,6 +66,11 @@ std::vector<Classification> Detector::Run()
 		// Get the result with the highest certainty
 		for (int i = 0; i < subPoints.size(); ++i)
 		{
+#if FILTER_POINTS
+			// Skip any points which are not marked as dirty
+			if (!subPoints.at(i)->isDirty)
+				continue;
+#endif
 			Classification r = Classify(d, subPoints.at(i));
 			if (r.isAnomaly)
 			{

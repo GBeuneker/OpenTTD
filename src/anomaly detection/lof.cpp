@@ -115,8 +115,8 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 		// We flag it as outlier if the deviation is at least one stDev removed from the average
 		result.isAnomaly = deviation > stDev;
 		// The certainty increases exponentially until a distance of 3 standard deviations
-		float deviationDistance = 1 - deviation / (3 * stDev);
-		result.certainty = stDev > 0 ? std::clamp(exp(-5 * deviationDistance), 0.0f, 1.0f) : 1;
+		float deviationDistance = deviation / (3 * stDev);
+		result.certainty = stDev > 0 ? Sigmoid(deviationDistance) : 1;
 	}
 
 	return result;

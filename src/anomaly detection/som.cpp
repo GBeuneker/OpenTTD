@@ -122,6 +122,8 @@ std::vector<Classification> SOM::Run()
 		//If the chart is initialized, update it with newer values
 		else if (initializedCharts[i])
 		{
+			// Update the SOM map
+			UpdateMap(i, p);
 			// Train using the average of all points
 			Train(d, p);
 #if USE_SUBVALUES
@@ -142,8 +144,6 @@ std::vector<Classification> SOM::Run()
 			// Classify the datapoint and add it to the results
 			results.push_back(Classify(d, p));
 #endif
-			// Update the SOM map
-			UpdateMap(i, p);
 			if (chartIterations[i] < maxChartIterations[i])
 				chartIterations[i]++;
 		}
@@ -228,9 +228,9 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 
 		float deviation = distanceToEdge - errorRadius;
 		// The certainty increases exponentially until a distance of 3x error radius
-		float deviationDistance = 1 - deviation / (3 * errorRadius);
+		float deviationDistance = deviation / (3 * errorRadius);
 		// Only give a certainty if there is a significant error radius (prevents rounding errors)
-		result.certainty = errorRadius > 0.01f ? std::clamp(exp(-6 * deviationDistance), 0.0f, 1.0f) : 0;
+		result.certainty = errorRadius > 0.01f ? Sigmoid(deviationDistance) : 0;
 	}
 
 	return result;

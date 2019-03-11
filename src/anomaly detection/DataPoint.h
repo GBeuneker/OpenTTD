@@ -12,6 +12,10 @@ public:
 	std::vector<Datapoint*> neighbours;
 	float distance;
 
+#if USE_SUBVALUES
+	bool isDirty = false;
+#endif
+
 #if USE_LOF
 	float kDistance = FLT_MAX;
 	float lrd = -1;
