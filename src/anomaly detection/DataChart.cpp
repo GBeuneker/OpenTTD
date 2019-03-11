@@ -60,9 +60,14 @@ void DataChart::LogData()
 
 	// None of the variables were dirty, so return
 	if (aggregatedValues->size() > 0 && count == 0)
+	{
+		isDirty = false;
 		return;
+	}
 
-	avgVariableposition /= (float)count;
+	// Only divide if there was a count
+	if (count > 0)
+		avgVariableposition /= (float)count;
 
 	Datapoint* aggregatedDatapoint = new Datapoint(avgVariableposition.X, avgVariableposition.Y);
 #else
