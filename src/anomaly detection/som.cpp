@@ -122,6 +122,13 @@ std::vector<Classification> SOM::Run()
 		//If the chart is initialized, update it with newer values
 		else if (initializedCharts[i])
 		{
+#if FILTER_POINTS
+			if (!d->isDirty)
+			{
+				results.push_back(Classification());
+				continue;
+			}
+#endif
 			// Update the SOM map
 			UpdateMap(i, p);
 			// Train using the average of all points
@@ -132,6 +139,11 @@ std::vector<Classification> SOM::Run()
 			// Get the result with the highest certainty
 			for (int i = 0; i < subPoints.size(); ++i)
 			{
+#if FILTER_POINTS
+				// Skip any points which are not marked as dirty
+				if (!subPoints.at(i)->isDirty)
+					continue;
+#endif
 				Classification r = Classify(d, subPoints.at(i));
 				if (r.isAnomaly)
 				{
@@ -226,9 +238,8 @@ Classification SOM::Classify(DataChart *d, Datapoint *p)
 		for (int i = 0; i < somDistances.at(chartIndex).size(); ++i)
 			errorRadius += somDistances.at(chartIndex)[i] / somDistances.at(chartIndex).size();
 
-		float deviation = distanceToEdge - errorRadius;
 		// The certainty increases exponentially until a distance of 3x error radius
-		float deviationDistance = deviation / (3 * errorRadius);
+		float deviationDistance = distanceToEdge / (3 * errorRadius);
 		// Only give a certainty if there is a significant error radius (prevents rounding errors)
 		result.certainty = errorRadius > 0.01f ? Sigmoid(deviationDistance) : 0;
 	}

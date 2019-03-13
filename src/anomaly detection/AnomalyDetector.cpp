@@ -8,11 +8,11 @@ AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
 #if USE_KNN
-	this->knn = new KNN(new uint16_t[10]{ 20,5,15,5,20,25,20,20,5,20 });
+	this->knn = new KNN(new uint16_t[10]{ 25,4,53,7,29,74,35,58,10,58 });
 #elif USE_LOF
-	this->lof = new LOF(new uint16_t[10]{ 30,5,25,5,35,35,30,30,5,30 });
+	this->lof = new LOF(new uint16_t[10]{ 41,8,27,14,46,75,55,87,21,87 });
 #elif USE_LOCI
-	this->loci = new LOCI(new uint16_t[10]{ 20,5,15,5,20,25,20,20,5,20 });
+	this->loci = new LOCI(new uint16_t[10]{ 41,8,108,14,46,149,55,116,21,117 });
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 
@@ -191,14 +191,14 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 		printf("ANOMALY DETECTED! | Tick: %i | Total score: %f\n", ticks, anomalyScore);
 		for (int i = 0; i < results.size(); ++i)
 			if (results[i].isAnomaly)
-				printf("|    Chart %i: %s | Value: %i | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), m_datacharts[i]->GetValues()->size(), results[i].certainty);
+				printf("|    Chart %i: %s | Value: %i | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), m_datacharts[i]->GetValues()->size() - 1, results[i].certainty);
 	}
 	else if (anomalyScore > 0.1f)
 	{
 		printf("No amomalies | Tick: %i | Score: %f\n", ticks, anomalyScore);
 		for (int i = 0; i < results.size(); ++i)
 			if (results[i].isAnomaly)
-				printf("|    Chart %i: %s | Value: %i | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), m_datacharts[i]->GetValues()->size(), results[i].certainty);
+				printf("|    Chart %i: %s | Value: %i | Score: %f\n", i, m_datacharts[i]->GetLabelString().c_str(), m_datacharts[i]->GetValues()->size() - 1, results[i].certainty);
 	}
 
 	LogAnomalyScore(ticks, anomalyScore);
