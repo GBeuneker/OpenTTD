@@ -565,7 +565,7 @@ void SOM::Serialize()
 			dc.GetValues()->push_back(new Datapoint(nodes[j]->position.X, nodes[j]->position.Y));
 
 #if ENABLE_ANOMALIES
-		std::string spath = AnomalyDetector::GetInstance()->GetBaseFolder() + "seed_" + std::to_string(_random.seed) + "_anomalous";
+		std::string spath = AnomalyDetector::GetInstance()->GetBaseFolder() + AnomalyDetector::GetInstance()->GetDataPath();
 #else
 		std::string spath = AnomalyDetector::GetInstance()->GetBaseFolder() + "seed_" + std::to_string(_random.seed) + "_baseline";
 #endif

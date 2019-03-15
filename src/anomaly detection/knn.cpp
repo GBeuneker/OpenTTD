@@ -26,6 +26,10 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+	// Only calculate anomaly score if we have observed more than a few points
+	if (kDistances.at(chartIndex).size() <= 3)
+		return result;
+
 	// Get a k-value from the pre-configured list
 	uint16_t current_k = k_values[chartIndex];
 
@@ -43,27 +47,23 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 	// Get the k-distance
 	float kDistance = distances[(int)fmin(distances.size() - 1, current_k)];
 
-	// Only calculate anomaly score if we have observed more than a few points
-	if (kDistances.at(chartIndex).size() > 5)
-	{
-		// Calculate the average distance of this window
-		float averageDist = 0;
-		for (int i = 0; i < kDistances.at(chartIndex).size(); ++i)
-			averageDist += kDistances.at(chartIndex)[i] / kDistances.at(chartIndex).size();
+	// Calculate the average distance of this window
+	float averageDist = 0;
+	for (int i = 0; i < kDistances.at(chartIndex).size(); ++i)
+		averageDist += kDistances.at(chartIndex)[i] / kDistances.at(chartIndex).size();
 
-		// Calculate the standard deviation
-		float stDev = 0;
-		for (int i = 0; i < kDistances.at(chartIndex).size(); ++i)
-			stDev += pow(kDistances.at(chartIndex)[i] - averageDist, 2) / kDistances.at(chartIndex).size();
-		stDev = sqrtf(stDev);
+	// Calculate the standard deviation
+	float stDev = 0;
+	for (int i = 0; i < kDistances.at(chartIndex).size(); ++i)
+		stDev += pow(kDistances.at(chartIndex)[i] - averageDist, 2) / kDistances.at(chartIndex).size();
+	stDev = sqrtf(stDev);
 
-		float deviation = kDistance - averageDist;
-		// We flag it is outlier if the distance is at least one stDev removed from the average
-		result.isAnomaly = deviation > stDev;
-		// The certainty increases exponentially until a distance of 3 standard deviations
-		float deviationDistance = deviation / (3 * stDev);
-		result.certainty = stDev > 0 ? Sigmoid(deviationDistance) : 1;
-	}
+	float deviation = kDistance - averageDist;
+	// We flag it is outlier if the distance is at least one stDev removed from the average
+	result.isAnomaly = deviation > stDev;
+	// The certainty increases exponentially until a distance of 3 standard deviations
+	float deviationDistance = deviation / (3 * stDev);
+	result.certainty = stDev > 0 ? Sigmoid(deviationDistance) : 1;
 
 	return result;
 }

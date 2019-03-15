@@ -47,7 +47,7 @@ public:
 	bool TriggerFunctionFailure(float chance = 10, char* msg = "");
 	void TrackPointer(size_t * var, char * name);
 	uint32_t GetTicks() { return ticks; }
-	std::string GetBaseFolder()
+	const std::string GetBaseFolder()
 	{
 #if USE_KNN
 		return ".\\..\\_data\\KNN\\";
@@ -58,6 +58,9 @@ public:
 #elif USE_SOM
 		return ".\\..\\_data\\SOM\\";
 #endif
+	}
+	const std::string GetDataPath() {
+		return "seed_" + std::to_string(_random.seed) + "_a_" + std::to_string(ANOMALY_PERCENTAGE) + "_t_" + std::to_string(ANOMALY_THRESHOLD) + "_w_" + std::to_string(WINDOW_SIZE);
 	}
 	void Reset();
 private:

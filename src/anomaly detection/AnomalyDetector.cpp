@@ -8,9 +8,9 @@ AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
 #if USE_KNN
-	this->knn = new KNN(new uint16_t[10]{ 25,4,53,7,29,74,35,58,10,58 });
+	this->knn = new KNN(new uint16_t[10]{ 20,6,18,3,23,37,22,23,8,20 });
 #elif USE_LOF
-	this->lof = new LOF(new uint16_t[10]{ 41,8,27,14,46,75,55,87,21,87 });
+	this->lof = new LOF(new uint16_t[10]{ 18,7,9,3,31,36,21,33,10,30 });
 #elif USE_LOCI
 	this->loci = new LOCI(new uint16_t[10]{ 41,8,108,14,46,149,55,116,21,117 });
 #elif USE_SOM
@@ -214,7 +214,7 @@ void AnomalyDetector::Serialize()
 {
 	// Serialize the data
 #if ENABLE_ANOMALIES
-	string spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_anomalous";
+	string spath = GetBaseFolder() + GetDataPath();
 #else
 	string spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_baseline";
 #endif
@@ -226,7 +226,7 @@ void AnomalyDetector::Serialize()
 	for (int i = 0; i < m_datacharts.size(); ++i)
 	{
 		// Open the file and start writing stream
-		char src[60];
+		char src[255];
 		sprintf(src, "%s\\data_%i.dat", spath.c_str(), i);
 		datafile.open(src, ofstream::trunc);
 
@@ -236,18 +236,9 @@ void AnomalyDetector::Serialize()
 		datafile.close();
 	}
 
-	// Seriaize the anomalies
-#if ENABLE_ANOMALIES
-	spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_anomalous";
-#else
-	spath = GetBaseFolder() + "seed_" + to_string(_random.seed) + "_baseline";
-#endif
-	if (mkdir(spath.c_str()) == 0)
-		printf("Directory: \'%s\' was successfully created", spath.c_str());
-
 	// Open the file and start writing stream
 	string src = spath + "\\anomaly_scores.dat";
-	datafile.open(src.c_str(), ofstream::trunc);
+	datafile.open(src, ofstream::trunc);
 
 	// Write the ticks and the anomaly scores
 	for (int i = 0; i < m_anomalyScores.size(); ++i)

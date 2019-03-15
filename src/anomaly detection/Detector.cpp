@@ -58,8 +58,6 @@ std::vector<Classification> Detector::Run()
 			continue;
 		}
 #endif
-		// Train using the average of all points
-		Train(d, p);
 #if USE_SUBVALUES
 		Classification result;
 		std::vector<Datapoint*> subPoints = d->GetSubvalues(p);
@@ -82,6 +80,8 @@ std::vector<Classification> Detector::Run()
 #else
 		results.push_back(Classify(d, p));
 #endif
+		// Train using the average of all points
+		Train(d, p);
 	}
 
 	return results;

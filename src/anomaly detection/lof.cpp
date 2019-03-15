@@ -70,12 +70,12 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+	// Only calculate anomaly score if we have observed more than a few points
+	if (lofValues.at(chartIndex).size() <= 3)
+		return result;
+
 	// Get a k-value from the pre-configured list
 	current_k = k_values[chartIndex];
-
-	// If there aren't enough values, return empty
-	if (d->GetValues()->size() <= 1)
-		return result;
 
 	// Get k-neighbours of p
 	SetKNeighbours(d, lof_p);
@@ -97,27 +97,23 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	// Calculate LOF(p) = SUM(lrd(o) / lrd(p)) / |k-neighbours(p)|
 	float lofValue = GetLOF(d, lof_p);
 
-	// Only calculate anomaly score if we have observed more than a few points
-	if (lofValues.at(chartIndex).size() > 5)
-	{
-		// Calculate the average distance of this window
-		float averageValue = 0;
-		for (int i = 0; i < lofValues.at(chartIndex).size(); ++i)
-			averageValue += lofValues.at(chartIndex)[i] / lofValues.at(chartIndex).size();
+	// Calculate the average distance of this window
+	float averageValue = 0;
+	for (int i = 0; i < lofValues.at(chartIndex).size(); ++i)
+		averageValue += lofValues.at(chartIndex)[i] / lofValues.at(chartIndex).size();
 
-		// Calculate the standard deviation
-		float stDev = 0;
-		for (int i = 0; i < lofValues.at(chartIndex).size(); ++i)
-			stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2) / lofValues.at(chartIndex).size();
-		stDev = sqrtf(stDev);
+	// Calculate the standard deviation
+	float stDev = 0;
+	for (int i = 0; i < lofValues.at(chartIndex).size(); ++i)
+		stDev += pow(lofValues.at(chartIndex)[i] - averageValue, 2) / lofValues.at(chartIndex).size();
+	stDev = sqrtf(stDev);
 
-		float deviation = lofValue - averageValue;
-		// We flag it as outlier if the deviation is at least one stDev removed from the average
-		result.isAnomaly = deviation > stDev;
-		// The certainty increases exponentially until a distance of 3 standard deviations
-		float deviationDistance = deviation / (3 * stDev);
-		result.certainty = stDev > 0 ? Sigmoid(deviationDistance) : 1;
-	}
+	float deviation = lofValue - averageValue;
+	// We flag it as outlier if the deviation is at least one stDev removed from the average
+	result.isAnomaly = deviation > stDev;
+	// The certainty increases exponentially until a distance of 3 standard deviations
+	float deviationDistance = deviation / (3 * stDev);
+	result.certainty = stDev > 0 ? Sigmoid(deviationDistance) : 1;
 
 	return result;
 }
