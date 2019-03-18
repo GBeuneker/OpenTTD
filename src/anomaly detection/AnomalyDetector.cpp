@@ -8,11 +8,11 @@ AnomalyDetector::AnomalyDetector()
 {
 	ticks = 0;
 #if USE_KNN
-	this->knn = new KNN(new uint16_t[10]{ 20,6,18,3,23,37,22,23,8,20 });
+	this->knn = new KNN(new uint16_t[10]{ 44,9,131,15,50,175,58,140,23,141 });
 #elif USE_LOF
-	this->lof = new LOF(new uint16_t[10]{ 18,7,9,3,31,36,21,33,10,30 });
+	this->lof = new LOF(new uint16_t[10]{ 33,9,131,15,37,131,43,140,23,141 });
 #elif USE_LOCI
-	this->loci = new LOCI(new uint16_t[10]{ 41,8,108,14,46,149,55,116,21,117 });
+	this->loci = new LOCI(new uint16_t[10]{ 44,9,131,15,50,175,58,140,23,141 });
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 

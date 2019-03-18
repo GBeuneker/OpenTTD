@@ -575,7 +575,7 @@ void SOM::Serialize()
 
 		std::ofstream datafile;
 		// Open the file and start writing stream
-		char src[60];
+		char src[250];
 		sprintf(src, "%s\\som_%i.dat", path, i);
 		datafile.open(src, std::ofstream::trunc);
 
