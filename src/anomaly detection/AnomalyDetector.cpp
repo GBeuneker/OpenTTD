@@ -6,6 +6,8 @@ AnomalyDetector* AnomalyDetector::instance;
 
 AnomalyDetector::AnomalyDetector()
 {
+	AnalyzeData("");
+
 	ticks = 0;
 #if USE_KNN
 	this->knn = new KNN(new uint16_t[10]{ 44,9,131,15,50,175,58,140,23,141 });
@@ -202,6 +204,66 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 	}
 
 	LogAnomalyScore(ticks, anomalyScore);
+}
+
+void AnomalyDetector::AnalyzeData(const char* path)
+{
+	string spath = ".\\..\\_data\\" + (string)path;
+	const char* folderpath = spath.c_str();
+	if (mkdir(folderpath) == 0)
+	{
+		printf("ERROR: Path %s could not be found!", folderpath);
+		return;
+	}
+
+	for (const auto & entry : std::filesystem::recursive_directory_iterator(folderpath))
+	{
+		string spath = entry.path().string();
+		if (spath.find("anomaly_scores.dat") != std::string::npos)
+		{
+			const char* filepath = spath.c_str();
+
+			int tp = 0, fp = 0, fn = 0;
+			int prev_anomalyTick = 0;
+
+			std::ifstream infile(filepath);
+
+			std::string line;
+			//Skip first line
+			std::getline(infile, line);
+			// Read the rest
+			while (std::getline(infile, line))
+			{
+				int a;
+				float b, c;
+				std::istringstream iss(line);
+
+				if ((iss >> a >> b >> c))
+				{
+					// Check if anomaly line is not empty
+					prev_anomalyTick = a;
+					fn++;
+				}
+
+				if (b >= 2)
+				{
+					if (a - prev_anomalyTick <= 10)
+					{
+						tp++;
+						fn--;
+					}
+					else
+						fp++;
+				}
+			}
+
+			ofstream datafile;
+			string outputPath = spath.substr(0, spath.length() - ((string)"anomaly_scores.dat").length()) + "\\anomaly_output.dat";
+			datafile.open(outputPath, ofstream::trunc);
+			datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn;
+			datafile.close();
+		}
+	}
 }
 
 void AnomalyDetector::LogAnomalyScore(uint32_t tick, float score)
