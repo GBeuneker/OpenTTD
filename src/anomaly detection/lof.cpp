@@ -80,10 +80,10 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 		return result;
 
 #if USE_K_PERCENTAGE
-	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
+	current_k = K_PERCENTAGE * d->GetValues()->size();
 #else
 	// Get a k-value from the pre-configured list
-	uint16_t current_k = k_values[chartIndex];
+	current_k = k_values[chartIndex];
 #endif
 
 	// Get k-neighbours of p
