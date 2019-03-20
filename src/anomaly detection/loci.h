@@ -21,7 +21,6 @@ protected:
 	float GetSigma(DataChart *d, Datapoint *p);
 private:
 	float k = 0.5f, l = 3;
-	uint16_t* nbrRange_values;
 };
 
 #endif

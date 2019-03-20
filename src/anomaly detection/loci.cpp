@@ -6,11 +6,6 @@ LOCI::LOCI()
 {
 }
 
-LOCI::LOCI(uint16_t nbrValues[])
-{
-	nbrRange_values = nbrValues;
-}
-
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
 /// <param name='d'>The collection of data we want to use for our classification.</param>
 /// <param name='p'>The datapoint we would like to classify.</param>
@@ -20,13 +15,18 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
-	// Get a range-value from the pre-configured list
-	uint16_t maxNeighbourRange = nbrRange_values[chartIndex];
+	// Always get the max range
+	uint16_t maxNeighbourRange = INT_MAX;
 
 	// Determine rmin, rmax and the stepsize
 	int steps = 10;
 	float rMax = GetRadius(d, loci_p, maxNeighbourRange), rMin = 0;
 	float stepSize = (rMax - rMin) / (float)steps;
+
+	if (d->GetValues()->size() >= 65)
+	{
+		int a = 0;
+	}
 
 	// Set the neighbours and neighbourhood of p
 	SetRNeighbours(d, loci_p, &loci_p->neighbours, rMax);
@@ -48,14 +48,14 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 		// Get the standard deviation for this range r
 		float s_mdef = GetStandardDeviationMDEF(d, loci_p);
 
-		// Point is flagged as anomalous if the mdef is greater than the standard deviation
-		bool outlier = mdef > s_mdef;
+		// Point is flagged as anomalous if the mdef is greater than the threshold stated in the paper
+		bool outlier = mdef > l * s_mdef;
 
 		// Remember the highest certainty
 		if (outlier)
 		{
 			result.isAnomaly = true;
-			float deviation = mdef / (l * s_mdef);
+			float deviation = (mdef - l * s_mdef) / s_mdef;
 			// The certainty increases exponentially the closer it is to l*s_mdef
 			float certainty = Sigmoid(deviation);
 			result.certainty = fmax(result.certainty, certainty);

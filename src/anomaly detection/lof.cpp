@@ -24,8 +24,13 @@ void LOF::Train(DataChart * d, Datapoint* lof_p)
 {
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+
+#if USE_K_PERCENTAGE
+	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
+#else
 	// Get a k-value from the pre-configured list
-	current_k = k_values[chartIndex];
+	uint16_t current_k = k_values[chartIndex];
+#endif
 
 	// If there aren't enough values, return empty
 	if (d->GetValues()->size() <= 1)
@@ -74,8 +79,12 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	if (lofValues.at(chartIndex).size() <= 3)
 		return result;
 
+#if USE_K_PERCENTAGE
+	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
+#else
 	// Get a k-value from the pre-configured list
-	current_k = k_values[chartIndex];
+	uint16_t current_k = k_values[chartIndex];
+#endif
 
 	// Get k-neighbours of p
 	SetKNeighbours(d, lof_p);

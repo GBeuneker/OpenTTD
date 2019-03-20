@@ -73,7 +73,8 @@ private:
 		return (m_variables.size() - 1) * 0.5f;
 };
 	void DetectAnomaly(std::vector<Classification> results);
-	void AnalyzeData(const char * path);
+	void AnalyzeAllData();
+	void AnalyzeData(std::string spath);
 	void LogAnomalyScore(uint32_t tick, float score);
 	static AnomalyDetector* instance;
 	std::vector<VariablePointer> m_variables;

@@ -6,20 +6,18 @@ AnomalyDetector* AnomalyDetector::instance;
 
 AnomalyDetector::AnomalyDetector()
 {
-	AnalyzeData("");
-
 	ticks = 0;
 #if USE_KNN
 	this->knn = new KNN(new uint16_t[10]{ 44,9,131,15,50,175,58,140,23,141 });
 #elif USE_LOF
 	this->lof = new LOF(new uint16_t[10]{ 33,9,131,15,37,131,43,140,23,141 });
 #elif USE_LOCI
-	this->loci = new LOCI(new uint16_t[10]{ 44,9,131,15,50,175,58,140,23,141 });
+	this->loci = new LOCI();
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
-
 #endif
 
+#if 0
 	DataChart* test = new DataChart();
 	m_datacharts.push_back(test);
 #if USE_KNN
@@ -103,6 +101,7 @@ AnomalyDetector::AnomalyDetector()
 	this->loci->Run();
 #endif
 
+#endif
 #endif
 }
 
@@ -206,9 +205,9 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 	LogAnomalyScore(ticks, anomalyScore);
 }
 
-void AnomalyDetector::AnalyzeData(const char* path)
+void AnomalyDetector::AnalyzeAllData()
 {
-	string spath = ".\\..\\_data\\" + (string)path;
+	string spath = ".\\..\\_data\\";
 	const char* folderpath = spath.c_str();
 	if (mkdir(folderpath) == 0)
 	{
@@ -220,50 +219,58 @@ void AnomalyDetector::AnalyzeData(const char* path)
 	{
 		string spath = entry.path().string();
 		if (spath.find("anomaly_scores.dat") != std::string::npos)
+			AnalyzeData(spath);
+	}
+}
+
+void AnomalyDetector::AnalyzeData(string spath)
+{
+	if (spath.find("anomaly_scores.dat") == std::string::npos)
+	{
+		printf("ERROR: %s is not anomaly score data");
+		return;
+	}
+
+	int tp = 0, fp = 0, fn = 0;
+	int prev_anomalyTick = 0;
+
+	// Open the file
+	std::ifstream infile(spath);
+	std::string line;
+	// Read the file
+	while (std::getline(infile, line))
+	{
+		int a;
+		float b, c;
+		std::istringstream iss(line);
+
+		// Try and parse 3 columns
+		if (iss >> a >> b >> c)
 		{
-			const char* filepath = spath.c_str();
+			// Anomaly line is not empty
+			prev_anomalyTick = a;
+			fn++;
+		}
 
-			int tp = 0, fp = 0, fn = 0;
-			int prev_anomalyTick = 0;
-
-			std::ifstream infile(filepath);
-
-			std::string line;
-			//Skip first line
-			std::getline(infile, line);
-			// Read the rest
-			while (std::getline(infile, line))
+		// Check if anomaly was detected
+		if (b >= 2)
+		{
+			// Check if anomaly was detected within range of inserted anomaly
+			if (a - prev_anomalyTick <= 10)
 			{
-				int a;
-				float b, c;
-				std::istringstream iss(line);
-
-				if ((iss >> a >> b >> c))
-				{
-					// Check if anomaly line is not empty
-					prev_anomalyTick = a;
-					fn++;
-				}
-
-				if (b >= 2)
-				{
-					if (a - prev_anomalyTick <= 10)
-					{
-						tp++;
-						fn--;
-					}
-					else
-						fp++;
-				}
+				tp++;
+				fn--;
 			}
-
-			ofstream datafile;
-			string outputPath = spath.substr(0, spath.length() - ((string)"anomaly_scores.dat").length()) + "\\anomaly_output.dat";
-			datafile.open(outputPath, ofstream::trunc);
-			datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn;
-			datafile.close();
+			else
+				fp++;
 		}
 	}
+
+	ofstream datafile;
+	string outputPath = spath.substr(0, spath.length() - ((string)"anomaly_scores.dat").length()) + "\\anomaly_output.dat";
+	datafile.open(outputPath, ofstream::trunc);
+	datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn;
+	datafile.close();
 }
 
 void AnomalyDetector::LogAnomalyScore(uint32_t tick, float score)
@@ -320,6 +327,8 @@ void AnomalyDetector::Serialize()
 
 	// Close the file when writing is done
 	datafile.close();
+
+	AnalyzeData(src);
 
 #if USE_SOM
 	// Seriaize the SOM maps

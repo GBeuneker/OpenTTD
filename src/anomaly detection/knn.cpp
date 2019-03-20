@@ -30,8 +30,12 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 	if (kDistances.at(chartIndex).size() <= 3)
 		return result;
 
+#if USE_K_PERCENTAGE
+	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
+#else
 	// Get a k-value from the pre-configured list
 	uint16_t current_k = k_values[chartIndex];
+#endif
 
 	int valuesSize = d->GetValues()->size();
 
@@ -72,8 +76,13 @@ void KNN::Train(DataChart * d, Datapoint * p)
 {
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
+
+#if USE_K_PERCENTAGE
+	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
+#else
 	// Get a k-value from the pre-configured list
 	uint16_t current_k = k_values[chartIndex];
+#endif
 
 	int valuesSize = d->GetValues()->size();
 
