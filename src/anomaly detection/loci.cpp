@@ -16,7 +16,7 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 	// Always get the max range
-	uint16_t maxNeighbourRange = INT_MAX;
+	uint16_t maxNeighbourRange = d->GetValues()->size();
 
 	// Determine rmin, rmax and the stepsize
 	int steps = 10;

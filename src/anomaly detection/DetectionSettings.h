@@ -16,7 +16,7 @@
 #define FILTER_POINTS 1
 #define USE_SUBVALUES 1
 
-#define USE_K_PERCENTAGE 0
+#define USE_K_PERCENTAGE 1
 #if USE_K_PERCENTAGE
-#define K_PERCENTAGE 1.0f
+#define K_PERCENTAGE 0.75f
 #endif

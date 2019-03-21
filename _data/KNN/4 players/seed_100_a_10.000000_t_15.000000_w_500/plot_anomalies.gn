@@ -1,7 +1,0 @@
-set autoscale
-set offset graph 0, graph 0, graph 0.1, graph 0
-
-plot "anomaly_scores.dat" using 1:2 with lines title "anomaly score", \
-     "anomaly_scores.dat" using 1:3 with points pointtype 2 title "anomaly insertions"
-
-pause -1

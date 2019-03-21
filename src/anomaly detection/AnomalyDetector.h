@@ -60,7 +60,11 @@ public:
 #endif
 	}
 	const std::string GetDataPath() {
+#if USE_K_PERCENTAGE
+		return "seed_" + std::to_string(_random.seed) + "_a_" + std::to_string(ANOMALY_PERCENTAGE) + "_t_" + std::to_string(ANOMALY_THRESHOLD) + "_w_" + std::to_string(WINDOW_SIZE) + "_k_" + std::to_string(K_PERCENTAGE);
+#else
 		return "seed_" + std::to_string(_random.seed) + "_a_" + std::to_string(ANOMALY_PERCENTAGE) + "_t_" + std::to_string(ANOMALY_THRESHOLD) + "_w_" + std::to_string(WINDOW_SIZE);
+#endif
 	}
 	void Reset();
 private:
