@@ -85,7 +85,7 @@ private:
 	std::vector<DataChart*> m_datacharts;
 	std::vector<std::tuple<int, float>> m_anomalyScores;
 	std::map<int, std::string> m_anomalyOccurrences;
-	uint32_t ticks = 0;
+	uint32_t ticks = 0, events = 0;
 	bool chartsBuilt = false;
 
 	// Anomaly Detectors

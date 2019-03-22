@@ -31,7 +31,7 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 		return result;
 
 #if USE_K_PERCENTAGE
-	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
+	uint16_t current_k = K_PERCENTAGE * fmin(d->GetValues()->size(), WINDOW_SIZE);
 #else
 	// Get a k-value from the pre-configured list
 	uint16_t current_k = k_values[chartIndex];

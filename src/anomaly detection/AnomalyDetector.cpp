@@ -148,9 +148,19 @@ void AnomalyDetector::LogDataTick()
 	else if (ticks == 10)
 		BuildCharts();
 
+	bool eventTriggered = false;
 	// Log new values
 	for (int i = 0; i < m_datacharts.size(); ++i)
+	{
 		m_datacharts[i]->LogData();
+
+		// Check if one of the charts triggered an event
+		if (!eventTriggered && m_datacharts[i]->isDirty)
+			eventTriggered = true;
+	}
+
+	if (eventTriggered)
+		events++;
 
 	std::vector<Classification> results;
 #if USE_KNN
@@ -231,7 +241,7 @@ void AnomalyDetector::AnalyzeData(string spath)
 		return;
 	}
 
-	int tp = 0, fp = 0, fn = 0;
+	int tp = 0, fp = 0, fn = 0, tn = 0;
 	int prev_anomalyTick = 0;
 
 	// Open the file
@@ -265,11 +275,12 @@ void AnomalyDetector::AnalyzeData(string spath)
 				fp++;
 		}
 	}
+	tn = events - fp - fn - tp;
 
 	ofstream datafile;
 	string outputPath = spath.substr(0, spath.length() - ((string)"anomaly_scores.dat").length()) + "\\anomaly_output.dat";
 	datafile.open(outputPath, ofstream::trunc);
-	datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn;
+	datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn << " tn: " << tn;
 	datafile.close();
 }
 

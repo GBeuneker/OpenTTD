@@ -80,7 +80,7 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 		return result;
 
 #if USE_K_PERCENTAGE
-	current_k = K_PERCENTAGE * d->GetValues()->size();
+	current_k = K_PERCENTAGE * fmin(d->GetValues()->size(), WINDOW_SIZE);
 #else
 	// Get a k-value from the pre-configured list
 	current_k = k_values[chartIndex];

@@ -5,11 +5,11 @@
 #define ANOMALY_THRESHOLD 15.0f
 
 #define USE_KNN 0
-#define USE_LOF 1
+#define USE_LOF 0
 #define USE_LOCI 0
-#define USE_SOM 0
+#define USE_SOM 1
 
-#define WINDOW_SIZE 500
+#define WINDOW_SIZE 5000
 #define TRAINING_TIME 1000
 #define MAX_TICK_COUNT 27000
 
@@ -18,5 +18,5 @@
 
 #define USE_K_PERCENTAGE 1
 #if USE_K_PERCENTAGE
-#define K_PERCENTAGE 0.75f
+#define K_PERCENTAGE 0.5f
 #endif
