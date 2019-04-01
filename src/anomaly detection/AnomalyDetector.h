@@ -75,8 +75,9 @@ private:
 #endif
 		// Threshold is equal to half the amount of combinations possible for every variable
 		return (m_variables.size() - 1) * 0.5f;
-};
+	};
 	void DetectAnomaly(std::vector<Classification> results);
+	void AnalyzeCharts(std::vector<DataChart*> charts);
 	void AnalyzeAllData();
 	void AnalyzeData(std::string spath);
 	void LogAnomalyScore(uint32_t tick, float score);

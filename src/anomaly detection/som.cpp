@@ -89,7 +89,7 @@ void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes)
 			if (valueHeight > 0.001f)
 				yPos += (-0.5f*valueHeight + ((rand() % (int)(valueHeight * 1000)) / 1000.0f));
 
-			nodes->at(index) = new Datapoint(xPos, yPos);
+			nodes->at(index) = new Datapoint(xPos, yPos, AnomalyDetector::GetInstance()->GetTicks());
 		}
 
 	// Find the index of the chart
@@ -562,7 +562,7 @@ void SOM::Serialize()
 		DataChart dc;
 		// Add all values to a new datachart
 		for (int j = 0; j < nodes.size(); ++j)
-			dc.GetValues()->push_back(new Datapoint(nodes[j]->position.X, nodes[j]->position.Y));
+			dc.GetValues()->push_back(new Datapoint(nodes[j]->position.X, nodes[j]->position.Y, AnomalyDetector::GetInstance()->GetTicks()));
 
 #if ENABLE_ANOMALIES
 		std::string spath = AnomalyDetector::GetInstance()->GetBaseFolder() + AnomalyDetector::GetInstance()->GetDataPath();

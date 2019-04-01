@@ -7,10 +7,15 @@ struct Datapoint
 {
 public:
 	Datapoint() {};
-	Datapoint(float x, float y) { this->position = Vector2(x, y); }
+	Datapoint(float x, float y, int tick)
+	{
+		this->position = Vector2(x, y);
+		this->tick = tick;
+	}
 	Vector2 position;
 	std::vector<Datapoint*> neighbours;
 	float distance;
+	int tick;
 
 #if USE_SUBVALUES
 	bool isDirty = false;

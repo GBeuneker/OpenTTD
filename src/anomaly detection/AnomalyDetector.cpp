@@ -6,6 +6,7 @@ AnomalyDetector* AnomalyDetector::instance;
 
 AnomalyDetector::AnomalyDetector()
 {
+
 	ticks = 0;
 #if USE_KNN
 	this->knn = new KNN(new uint16_t[10]{ 44,9,131,15,50,175,58,140,23,141 });
@@ -16,6 +17,7 @@ AnomalyDetector::AnomalyDetector()
 #elif USE_SOM
 	this->som = new SOM(40, 40, 0.5);
 #endif
+	AnalyzeCharts(DeSerialize("KNN\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000"));
 
 #if 0
 	DataChart* test = new DataChart();
@@ -104,6 +106,27 @@ AnomalyDetector::AnomalyDetector()
 #endif
 #endif
 }
+#pragma region Variable Tracking
+
+/// <summary>Track the pointer of a variable for Anomaly Detection.</summary>
+/// <param name='var'>The pointer we would like to track.</param>
+/// <param name='name'>The name we can identify the variable with.</param>
+void AnomalyDetector::TrackPointer(size_t* var, char* name)
+{
+	bool foundElement = false;
+	for (int i = 0; i < m_variables.size(); ++i)
+	{
+		if (strcmp(m_variables.at(i).GetName(), name) == 0)
+		{
+			m_variables.at(i).AddPointer(var);
+			foundElement = true;
+			return;
+		}
+	}
+
+	if (!foundElement)
+		m_variables.push_back(VariablePointer(var, name));
+}
 
 /// <summary>Build the data charts by combining all variables.</summary>
 void AnomalyDetector::BuildCharts()
@@ -137,22 +160,29 @@ void AnomalyDetector::BuildCharts()
 	chartsBuilt = true;
 }
 
+#pragma endregion
+
+#pragma region Anomaly Detection
+
 /// <summary>Logs the data in our anomaly detection algorithms.</summary>
 void AnomalyDetector::LogDataTick()
 {
-	ticks++;
+	// Skip first 10 ticks
+	if (ticks < 10)
+	{
+		ticks++;
+		return;
+	}
 
 	// Build data charts on the first tick
-	if (ticks < 10)
-		return;
-	else if (ticks == 10)
+	if (ticks == 10)
 		BuildCharts();
 
 	bool eventTriggered = false;
 	// Log new values
 	for (int i = 0; i < m_datacharts.size(); ++i)
 	{
-		m_datacharts[i]->LogData();
+		m_datacharts[i]->LogData(ticks);
 
 		// Check if one of the charts triggered an event
 		if (!eventTriggered && m_datacharts[i]->isDirty)
@@ -185,6 +215,8 @@ void AnomalyDetector::LogDataTick()
 #endif
 		exit(0);
 	}
+
+	ticks++;
 }
 
 void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
@@ -214,6 +246,50 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 
 	LogAnomalyScore(ticks, anomalyScore);
 }
+
+void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts)
+{
+	std::vector<DataChart*> tempCharts;
+	for (int i = 0; i < charts.size(); ++i)
+		tempCharts.push_back(new DataChart());
+
+	knn->SetData(tempCharts);
+	std::vector<Classification> results;
+	// Go through the ticks backwards
+	for (int tick = 0; tick < MAX_TICK_COUNT; ++tick)
+	{
+		for (int i = 0; i < charts.size(); ++i)
+		{
+			if (charts.at(i)->GetValueAt(tick) != 0)
+				tempCharts.at(i)->LogData(tick);
+		}
+
+#if USE_KNN
+		results = knn->Run();
+#elif USE_LOF
+		results = lof->Run();
+#elif USE_LOCI
+		results = loci->Run();
+#elif USE_SOM
+		results = som->Run();
+#endif
+		float anomalyScore = 0;
+		for (int i = 0; i < results.size(); ++i)
+		{
+			if (results[i].isAnomaly)
+				anomalyScore += results[i].certainty;
+		}
+		LogAnomalyScore(tick, anomalyScore);
+	}
+
+	// Destroy the charts and free up memory
+	for (int i = 0; i < charts.size(); ++i)
+	{
+		delete charts.at(i);
+		delete tempCharts.at(i);
+	}
+}
+
 
 void AnomalyDetector::AnalyzeAllData()
 {
@@ -288,6 +364,10 @@ void AnomalyDetector::LogAnomalyScore(uint32_t tick, float score)
 {
 	m_anomalyScores.push_back(std::make_tuple(tick, score));
 }
+
+#pragma endregion
+
+#pragma region Serialization
 
 /// <summary>Serializes the entire data charts.</summary>
 void AnomalyDetector::Serialize()
@@ -364,7 +444,7 @@ std::vector<DataChart*> AnomalyDetector::DeSerialize(const char* folder)
 	for (const auto & entry : std::filesystem::directory_iterator(path))
 	{
 		string spath = entry.path().string();
-		if (spath.substr(spath.length() - 4, 4) == ".dat")
+		if (spath.find("data_") != std::string::npos)
 		{
 			const char* path = spath.c_str();
 
@@ -378,6 +458,10 @@ std::vector<DataChart*> AnomalyDetector::DeSerialize(const char* folder)
 
 	return answer;
 }
+
+#pragma endregion
+
+#pragma region Anomaly Triggers
 
 /// <summary>Determines whether a variable increase anomaly can be triggered.</summary>
 /// <param name='chance'>Chance the anomaly will be triggered (range: 0-100%)</param>
@@ -396,7 +480,7 @@ bool AnomalyDetector::TriggerVariableIncrease(float chance, char* msg)
 #else
 	return false;
 #endif
-}
+	}
 
 /// <summary>Determines whether a variable reset anomaly can be triggered.</summary>
 /// <param name='chance'>Chance the anomaly will be triggered (range: 0-100%)</param>
@@ -415,7 +499,7 @@ bool AnomalyDetector::TriggerVariableReset(float chance, char* msg)
 #else
 	return false;
 #endif
-}
+	}
 
 /// <summary>Determines whether a function failure anomaly can be triggered.</summary>
 /// <param name='chance'>Chance the anomaly will be triggered (range: 0-100%)</param>
@@ -434,27 +518,9 @@ bool AnomalyDetector::TriggerFunctionFailure(float chance, char* msg)
 #else
 	return false;
 #endif
-}
-
-/// <summary>Track the pointer of a variable for Anomaly Detection.</summary>
-/// <param name='var'>The pointer we would like to track.</param>
-/// <param name='name'>The name we can identify the variable with.</param>
-void AnomalyDetector::TrackPointer(size_t* var, char* name)
-{
-	bool foundElement = false;
-	for (int i = 0; i < m_variables.size(); ++i)
-	{
-		if (strcmp(m_variables.at(i).GetName(), name) == 0)
-		{
-			m_variables.at(i).AddPointer(var);
-			foundElement = true;
-			return;
-		}
 	}
 
-	if (!foundElement)
-		m_variables.push_back(VariablePointer(var, name));
-}
+#pragma endregion
 
 /// <summary>Resets all variables in the Anomaly Detector.</summary>
 void AnomalyDetector::Reset()
