@@ -217,11 +217,10 @@ void DataChart::DeSerialize(const char* path)
 	// Read the variable name values
 	std::getline(infile, line);
 	std::istringstream iss(line);
-	char *nameA, *nameB;
-	iss >> nameA >> nameB;
-	m_varA = VariablePointer(0, nameA);
-	m_varB = VariablePointer(0, nameB);
-
+	std::vector<std::string> results(std::istream_iterator<std::string>{iss},
+		std::istream_iterator<std::string>());
+	m_varA = VariablePointer(0, results.at(1));
+	m_varB = VariablePointer(0, results.at(2));
 
 	// Read the rest
 	while (std::getline(infile, line))

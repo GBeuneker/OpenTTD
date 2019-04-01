@@ -116,7 +116,7 @@ void AnomalyDetector::TrackPointer(size_t* var, char* name)
 	bool foundElement = false;
 	for (int i = 0; i < m_variables.size(); ++i)
 	{
-		if (strcmp(m_variables.at(i).GetName(), name) == 0)
+		if (strcmp(m_variables.at(i).GetName().c_str(), name) == 0)
 		{
 			m_variables.at(i).AddPointer(var);
 			foundElement = true;

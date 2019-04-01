@@ -3,7 +3,7 @@
 class VariablePointer {
 public:
 	VariablePointer() {};
-	VariablePointer(size_t* pointer, char* name)
+	VariablePointer(size_t* pointer, std::string name)
 	{
 		m_pointers.push_back(pointer);
 		m_name = name;
@@ -11,7 +11,7 @@ public:
 	~VariablePointer() {};
 	std::vector<size_t*> GetPointers() { return m_pointers; }
 	void AddPointer(size_t* pointer) { m_pointers.push_back(pointer); }
-	char* GetName() { return m_name; }
+	std::string GetName() { return m_name; }
 	int GetValueAt(uint16_t index)
 	{
 		return *m_pointers.at(index);
@@ -48,5 +48,5 @@ public:
 	}
 private:
 	std::vector<size_t*> m_pointers;
-	char* m_name = "";
+	std::string m_name = "";
 };
