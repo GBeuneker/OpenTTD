@@ -1,12 +1,10 @@
 #include "lof.h"
 
-#if USE_LOF
-
 /// <summary>Constructor for Local Outlier Factor.</summary>
 /// <param name='k'>The amount of neighbours we want to use.</param>
-LOF::LOF(uint16_t k_values[])
+LOF::LOF(float k_percentage)
 {
-	this->k_values = k_values;
+	this->k_percentage = k_percentage;
 }
 
 void LOF::SetData(std::vector<DataChart*> _datacharts)
@@ -25,12 +23,7 @@ void LOF::Train(DataChart * d, Datapoint* lof_p)
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
-#if USE_K_PERCENTAGE
-	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
-#else
-	// Get a k-value from the pre-configured list
-	uint16_t current_k = k_values[chartIndex];
-#endif
+	uint16_t current_k = k_percentage * d->GetValues()->size();
 
 	// If there aren't enough values, return empty
 	if (d->GetValues()->size() <= 1)
@@ -79,12 +72,7 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	if (lofValues.at(chartIndex).size() <= 3)
 		return result;
 
-#if USE_K_PERCENTAGE
-	current_k = K_PERCENTAGE * fmin(d->GetValues()->size(), WINDOW_SIZE);
-#else
-	// Get a k-value from the pre-configured list
-	current_k = k_values[chartIndex];
-#endif
+	current_k = k_percentage * fmin(d->GetValues()->size(), WINDOW_SIZE);
 
 	// Get k-neighbours of p
 	SetKNeighbours(d, lof_p);
@@ -272,5 +260,3 @@ void LOF::UpdateKNeighbours(DataChart *d, Datapoint * p, Datapoint* new_p)
 LOF::~LOF()
 {
 }
-
-#endif

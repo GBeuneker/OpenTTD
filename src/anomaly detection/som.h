@@ -4,8 +4,6 @@
 #include "../core/random_func.hpp"
 #include <map>
 
-#if USE_SOM
-
 class SOM : public Detector
 {
 public:
@@ -48,6 +46,4 @@ private:
 	std::vector<std::vector<float>> somDistances;
 	std::vector<int> somIndices;
 };
-
-#endif
 

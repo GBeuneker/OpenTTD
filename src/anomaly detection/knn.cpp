@@ -1,12 +1,10 @@
 #include "knn.h"
 
-#if USE_KNN
-
 /// <summary>Constructor for K-Nearest Neighbours.</summary>
 /// <param name='k'>The amount of neighbours we want to use.</param>
-KNN::KNN(uint16_t k_values[])
+KNN::KNN(float k_percentage)
 {
-	this->k_values = k_values;
+	this->k_percentage = k_percentage;
 }
 
 void KNN::SetData(std::vector<DataChart*> _datacharts)
@@ -30,12 +28,7 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 	if (kDistances.at(chartIndex).size() <= 3)
 		return result;
 
-#if USE_K_PERCENTAGE
-	uint16_t current_k = K_PERCENTAGE * fmin(d->GetValues()->size(), WINDOW_SIZE);
-#else
-	// Get a k-value from the pre-configured list
-	uint16_t current_k = k_values[chartIndex];
-#endif
+	uint16_t current_k = k_percentage * fmin(d->GetValues()->size(), WINDOW_SIZE);
 
 	int valuesSize = d->GetValues()->size();
 
@@ -77,12 +70,7 @@ void KNN::Train(DataChart * d, Datapoint * p)
 	// Find the index of the chart
 	int chartIndex = std::distance(datacharts.begin(), std::find(datacharts.begin(), datacharts.end(), d));
 
-#if USE_K_PERCENTAGE
-	uint16_t current_k = K_PERCENTAGE * d->GetValues()->size();
-#else
-	// Get a k-value from the pre-configured list
-	uint16_t current_k = k_values[chartIndex];
-#endif
+	uint16_t current_k = k_percentage * d->GetValues()->size();
 
 	int valuesSize = d->GetValues()->size();
 
@@ -111,5 +99,3 @@ void KNN::Train(DataChart * d, Datapoint * p)
 KNN::~KNN()
 {
 }
-
-#endif

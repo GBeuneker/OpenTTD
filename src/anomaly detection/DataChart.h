@@ -22,9 +22,15 @@ public:
 	std::string GetLabelString();
 	std::vector<Datapoint*>* GetValues() { return this->aggregatedValues; }
 #if USE_SUBVALUES
-	std::vector<Datapoint*> GetSubvalues(Datapoint* p) { return subvalues.at(p); }
+	std::vector<Datapoint*> GetSubvalues(Datapoint* p)
+	{
+		if (p != 0)
+			return subvalues.at(p);
+		else
+			return std::vector<Datapoint*>();
+	}
 #endif
-	Datapoint* GetLast() { return aggregatedValues->back(); }
+	Datapoint* GetLast() { return aggregatedValues->size() > 0 ? aggregatedValues->back() : 0; }
 	Datapoint* GetRandom() { return aggregatedValues->at(rand() % aggregatedValues->size()); }
 	Datapoint* GetValueAt(int _tick)
 	{

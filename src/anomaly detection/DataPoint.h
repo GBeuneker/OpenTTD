@@ -21,14 +21,11 @@ public:
 	bool isDirty = false;
 #endif
 
-#if USE_LOF
 	float kDistance = FLT_MAX;
 	float lrd = -1;
-#elif USE_LOCI
 	float prkNeighbourhood = -1;
 	std::vector<Datapoint*> rkNeighbours;
 	std::vector<Datapoint*> tmp_neighbours, tmp_rkNeighbours;
-#endif
 
 	virtual ~Datapoint() {};
 };

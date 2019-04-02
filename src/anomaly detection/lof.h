@@ -1,12 +1,11 @@
 #pragma once
 #include "Detector.h";
 
-#if USE_LOF
-
 class LOF : public Detector
 {
 public:
-	LOF(uint16_t k_values[]);
+	LOF() {};
+	LOF(float k_percentage);
 	void SetData(std::vector<DataChart*> _datacharts) override;
 	~LOF();
 protected:
@@ -20,10 +19,8 @@ protected:
 	void UpdateKNeighbours(DataChart* d, Datapoint* p, Datapoint* new_p);
 private:
 	uint16_t current_k;
-	uint16_t* k_values;
+	float k_percentage;
 	std::vector<std::vector<float>> lofValues;
 	std::vector<int> lofIndices;
 };
-
-#endif
 

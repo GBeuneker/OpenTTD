@@ -8,16 +8,8 @@
 #define MAX_TICK_COUNT 27000
 
 //=====DATA ANALYSIS PARAMATERS=====
-#define USE_KNN 1
-#define USE_LOF 0
-#define USE_LOCI 0
-#define USE_SOM 0
-
 #define ANOMALY_THRESHOLD 15.0f
 #define WINDOW_SIZE 5000
-#define USE_K_PERCENTAGE 1
-#if USE_K_PERCENTAGE
 #define K_PERCENTAGE 0.5f
-#endif
 
 #define TRAINING_TIME 1000

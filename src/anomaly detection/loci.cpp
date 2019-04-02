@@ -1,7 +1,5 @@
 #include "loci.h"
 
-#if USE_LOCI
-
 LOCI::LOCI()
 {
 }
@@ -231,5 +229,3 @@ void LOCI::UpdateRNeighbourhood(DataChart * d, Datapoint * p, float r, float k)
 LOCI::~LOCI()
 {
 }
-
-#endif

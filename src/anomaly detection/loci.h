@@ -1,8 +1,6 @@
 #pragma once
 #include "Detector.h"
 
-#if USE_LOCI
-
 class LOCI : public Detector
 {
 public:
@@ -22,6 +20,4 @@ protected:
 private:
 	float k = 0.5f, l = 3;
 };
-
-#endif
 

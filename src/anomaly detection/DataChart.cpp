@@ -17,6 +17,15 @@ void DataChart::SetPointers(VariablePointer varA, VariablePointer varB)
 
 void DataChart::LogData(int tick, Datapoint* aggregatedDatapoint, std::vector<Datapoint*> subValues)
 {
+	// A null value was passed, do not log
+	if (aggregatedDatapoint == 0)
+	{
+#if FILTER_POINTS
+		isDirty = false;
+#endif
+		return;
+	}
+
 #if FILTER_POINTS && USE_SUBVALUES
 	// Get the subvalues from the previous frame
 	std::vector<Datapoint*> prev_subvalues;
