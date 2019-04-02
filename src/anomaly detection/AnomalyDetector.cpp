@@ -8,21 +8,12 @@ AnomalyDetector::AnomalyDetector()
 {
 	m_ticks = 0;
 
-	if (algorithm == Algorithm::KNN)
-		this->knn = new KNN(k_percentage);
-	else if (algorithm == Algorithm::LOF)
-		this->lof = new LOF(k_percentage);
-	else if (algorithm == Algorithm::LOCI)
-		this->loci = new LOCI();
-	else if (algorithm == Algorithm::SOM)
-		this->som = new SOM(40, 40, 0.5);
+	this->knn = new KNN(k_percentage);
+	this->lof = new LOF(k_percentage);
+	this->loci = new LOCI();
+	this->som = new SOM(40, 40, 0.5);
 
-	std::vector<DataChart*> loadedCharts = DeSerializeCharts("seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	std::map<int, std::string> anomalyOccurances = DeserializeAnomalyOccurences("seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	AnalyzeCharts(loadedCharts, anomalyOccurances);
-
-	for (std::vector<DataChart*>::iterator it = loadedCharts.begin(); it != loadedCharts.end(); ++it)
-		delete (*it);
+	RunExperiments("LOCI\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
 }
 
 #pragma region Variable Tracking
@@ -67,13 +58,25 @@ void AnomalyDetector::BuildCharts()
 
 	// Add the data to the knn algorithm
 	if (algorithm == Algorithm::KNN)
+	{
 		knn->SetData(m_datacharts);
+		knn->SetParameters(threshold, windowSize);
+	}
 	else if (algorithm == Algorithm::LOF)
+	{
 		lof->SetData(m_datacharts);
+		lof->SetParameters(threshold, windowSize);
+	}
 	else if (algorithm == Algorithm::LOCI)
+	{
 		loci->SetData(m_datacharts);
+		loci->SetParameters(threshold, windowSize);
+	}
 	else if (algorithm == Algorithm::SOM)
+	{
 		som->SetData(m_datacharts);
+		som->SetParameters(threshold, windowSize);
+	}
 
 	chartsBuilt = true;
 }
@@ -81,6 +84,118 @@ void AnomalyDetector::BuildCharts()
 #pragma endregion
 
 #pragma region Anomaly Detection
+
+void AnomalyDetector::RunExperiments(const char* path)
+{
+	std::vector<DataChart*> loadedCharts = DeSerializeCharts(path);
+	std::map<int, std::string> anomalyOccurances = DeserializeAnomalyOccurences(path);
+	RunExperiments(loadedCharts, anomalyOccurances);
+
+	for (std::vector<DataChart*>::iterator it = loadedCharts.begin(); it != loadedCharts.end(); ++it)
+		delete (*it);
+}
+
+void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::map<int, std::string> anomalyOccurences)
+{
+	this->lof->SetParameters(15, 5000);
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	return;
+
+	this->knn->SetParameters(5, 5000);
+	this->lof->SetParameters(5, 5000);
+	this->loci->SetParameters(5, 5000);
+	this->som->SetParameters(5, 5000);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOCI;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::SOM;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+
+	this->knn->SetParameters(15, 5000);
+	this->lof->SetParameters(15, 5000);
+	this->loci->SetParameters(15, 5000);
+	this->som->SetParameters(15, 5000);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOCI;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::SOM;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+
+	this->knn->SetParameters(50, 5000);
+	this->lof->SetParameters(50, 5000);
+	this->loci->SetParameters(50, 5000);
+	this->som->SetParameters(50, 5000);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOCI;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::SOM;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+
+	this->knn->SetParameters(15, 20);
+	this->lof->SetParameters(15, 20);
+	this->loci->SetParameters(15, 20);
+	this->som->SetParameters(15, 20);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOCI;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::SOM;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+
+	this->knn->SetParameters(15, 75);
+	this->lof->SetParameters(15, 75);
+	this->loci->SetParameters(15, 75);
+	this->som->SetParameters(15, 75);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOCI;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::SOM;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+
+	k_percentage = 0.25f;
+	delete this->knn;
+	this->knn = new KNN(k_percentage);
+	delete this->lof;
+	this->lof = new LOF(k_percentage);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+
+	k_percentage = 0.50f;
+	delete this->knn;
+	this->knn = new KNN(k_percentage);
+	delete this->lof;
+	this->lof = new LOF(k_percentage);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+
+	k_percentage = 0.75f;
+	delete this->knn;
+	this->knn = new KNN(k_percentage);
+	delete this->lof;
+	this->lof = new LOF(k_percentage);
+	algorithm = Algorithm::KNN;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
+}
 
 /// <summary>Logs the data in our anomaly detection algorithms.</summary>
 void AnomalyDetector::LogDataTick()
@@ -190,7 +305,7 @@ void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int
 		{
 			Datapoint* aggregatedVaue = charts.at(i)->GetValueAt(tick);
 			tempCharts.at(i)->LogData(tick, aggregatedVaue, charts.at(i)->GetSubvalues(aggregatedVaue));
-			if (aggregatedVaue != 0)
+			if (tempCharts.at(i)->isDirty)
 				eventTriggered = true;
 		}
 		if (eventTriggered)

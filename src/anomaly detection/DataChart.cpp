@@ -15,10 +15,10 @@ void DataChart::SetPointers(VariablePointer varA, VariablePointer varB)
 	this->m_varB = varB;
 }
 
-void DataChart::LogData(int tick, Datapoint* aggregatedDatapoint, std::vector<Datapoint*> subValues)
+void DataChart::LogData(int tick, Datapoint* _aggregatedDatapoint, std::vector<Datapoint*> _subvalues)
 {
 	// A null value was passed, do not log
-	if (aggregatedDatapoint == 0)
+	if (_aggregatedDatapoint == 0)
 	{
 #if FILTER_POINTS
 		isDirty = false;
@@ -34,9 +34,9 @@ void DataChart::LogData(int tick, Datapoint* aggregatedDatapoint, std::vector<Da
 
 	int count = 0;
 	// Flag any points different from the previous frame as dirty
-	for (int i = 0; i < subValues.size() && i < prev_subvalues.size(); ++i)
+	for (int i = 0; i < _subvalues.size() && i < prev_subvalues.size(); ++i)
 	{
-		Datapoint* subpoint = subValues.at(i);
+		Datapoint* subpoint = _subvalues.at(i);
 		// If we're tracking the valueCount, just look at Y-position
 		if (m_varA.GetName() == "ValueCount" || m_varA.GetPointers().at(0) == (size_t*)&valueCount)
 			subpoint->isDirty = subpoint->position.Y != prev_subvalues.at(i)->position.Y;
@@ -46,7 +46,6 @@ void DataChart::LogData(int tick, Datapoint* aggregatedDatapoint, std::vector<Da
 
 		if (subpoint->isDirty)
 			count++;
-
 	}
 
 	// None of the variables were dirty, so return
@@ -63,27 +62,27 @@ void DataChart::LogData(int tick, Datapoint* aggregatedDatapoint, std::vector<Da
 	if (aggregatedValues->size() > 0)
 	{
 		// Make sure the previous value is different
-		if (aggregatedValues->back()->position == aggregatedDatapoint->position)
+		if (aggregatedValues->back()->position == _aggregatedDatapoint->position)
 		{
-			delete aggregatedDatapoint;
+			delete _aggregatedDatapoint;
 			return;
 		}
 
 		// If we're tracking the valueCount, only check the y-value
 		if (m_varA.GetPointers().at(0) == (size_t*)&valueCount)
-			if (aggregatedValues->back()->position.Y == aggregatedDatapoint->position.Y)
+			if (aggregatedValues->back()->position.Y == _aggregatedDatapoint->position.Y)
 			{
-				delete aggregatedDatapoint;
+				delete _aggregatedDatapoint;
 				return;
 			}
 	}
 #endif
 
-	aggregatedValues->push_back(aggregatedDatapoint);
-	tickToValue.emplace(tick, aggregatedDatapoint);
+	aggregatedValues->push_back(_aggregatedDatapoint);
+	tickToValue.emplace(tick, _aggregatedDatapoint);
 #if USE_SUBVALUES
 	// Map the index of the aggregatedValues to a list of subPoints in subvalues
-	subvalues.emplace(aggregatedDatapoint, subValues);
+	subvalues.emplace(_aggregatedDatapoint, _subvalues);
 #endif
 
 #if FILTER_POINTS

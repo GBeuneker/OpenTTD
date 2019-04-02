@@ -11,13 +11,19 @@ class Detector
 {
 public:
 	virtual void SetData(std::vector<DataChart*> _datacharts);
+	void SetParameters(float slope, int windowSize, float midPoint = 0.75f)
+	{
+		this->slope = slope;
+		this->windowSize = windowSize;
+		this->midPoint = midPoint;
+	}
+	void SetWindowSize(int windowSize) { this->windowSize = windowSize; }
 	virtual std::vector<Classification> Run();
 protected:
-	bool ApplyCooldown(uint16_t chartIndex, bool isOutlier);
-	float Sigmoid(float x, float slope = ANOMALY_THRESHOLD, float midPoint = 0.75f);
+	float Sigmoid(float x);
 	virtual Classification Classify(DataChart* d, Datapoint* p) { return Classification(); };
 	virtual void Train(DataChart* d, Datapoint* p) {  };
 	std::vector<DataChart*> datacharts;
-	const int cooldownSize = 0;
-	std::vector<int> cooldownSteps;
+	float slope, midPoint;
+	int windowSize;
 };

@@ -28,14 +28,14 @@ Classification KNN::Classify(DataChart* d, Datapoint* p)
 	if (kDistances.at(chartIndex).size() <= 3)
 		return result;
 
-	uint16_t current_k = k_percentage * fmin(d->GetValues()->size(), WINDOW_SIZE);
+	uint16_t current_k = k_percentage * fmin(d->GetValues()->size(), windowSize);
 
 	int valuesSize = d->GetValues()->size();
 
-	int offset = valuesSize > WINDOW_SIZE ? valuesSize - WINDOW_SIZE : 0;
+	int offset = valuesSize > windowSize ? valuesSize - windowSize : 0;
 	// Fill the list of distances
 	distances.clear();
-	for (int i = 0; i < WINDOW_SIZE && i < valuesSize; ++i)
+	for (int i = 0; i < windowSize && i < valuesSize; ++i)
 		distances.push_back(Distance(p->position, d->GetValues()->at(offset + i)->position));
 
 	// Sort distances
@@ -74,10 +74,10 @@ void KNN::Train(DataChart * d, Datapoint * p)
 
 	int valuesSize = d->GetValues()->size();
 
-	int offset = valuesSize > WINDOW_SIZE ? valuesSize - WINDOW_SIZE : 0;
+	int offset = valuesSize > windowSize ? valuesSize - windowSize : 0;
 	// Fill the list of distances
 	distances.clear();
-	for (int i = 0; i < WINDOW_SIZE && i < valuesSize; ++i)
+	for (int i = 0; i < windowSize && i < valuesSize; ++i)
 		distances.push_back(Distance(p->position, d->GetValues()->at(offset + i)->position));
 
 	// Sort distances
@@ -88,12 +88,12 @@ void KNN::Train(DataChart * d, Datapoint * p)
 
 	// Add the average to the list
 	int kIndex = kIndices[chartIndex];
-	if (kDistances.at(chartIndex).size() < WINDOW_SIZE)
+	if (kDistances.at(chartIndex).size() < windowSize)
 		kDistances.at(chartIndex).push_back(kDistance);
 	else
 		kDistances.at(chartIndex).at(kIndex) = kDistance;
 	// Increase the index
-	kIndices[chartIndex] = (kIndex + 1) % WINDOW_SIZE;
+	kIndices[chartIndex] = (kIndex + 1) % windowSize;
 }
 
 KNN::~KNN()

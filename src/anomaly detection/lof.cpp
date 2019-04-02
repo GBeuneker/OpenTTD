@@ -51,12 +51,12 @@ void LOF::Train(DataChart * d, Datapoint* lof_p)
 
 	// Add the average to the list
 	int kIndex = lofIndices[chartIndex];
-	if (lofValues.at(chartIndex).size() < WINDOW_SIZE)
+	if (lofValues.at(chartIndex).size() < windowSize)
 		lofValues.at(chartIndex).push_back(lofValue);
 	else
 		lofValues.at(chartIndex).at(kIndex) = lofValue;
 	// Increase the index
-	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % WINDOW_SIZE;
+	lofIndices[chartIndex] = (lofIndices[chartIndex] + 1) % windowSize;
 }
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
@@ -72,7 +72,7 @@ Classification LOF::Classify(DataChart * d, Datapoint* lof_p)
 	if (lofValues.at(chartIndex).size() <= 3)
 		return result;
 
-	current_k = k_percentage * fmin(d->GetValues()->size(), WINDOW_SIZE);
+	current_k = k_percentage * fmin(d->GetValues()->size(), windowSize);
 
 	// Get k-neighbours of p
 	SetKNeighbours(d, lof_p);
@@ -172,8 +172,8 @@ void LOF::SetKNeighbours(DataChart * d, Datapoint* p)
 {
 	std::vector<Datapoint*>* datapoints = d->GetValues();
 
-	int startIndex = datapoints->size() > WINDOW_SIZE ? datapoints->size() - WINDOW_SIZE : 0;
-	int endIndex = datapoints->size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : datapoints->size();
+	int startIndex = datapoints->size() > windowSize ? datapoints->size() - windowSize : 0;
+	int endIndex = datapoints->size() > windowSize ? startIndex + windowSize : datapoints->size();
 	// Calculate the distance to p for all the values
 	std::vector<Datapoint*> lofDatapoints;
 	for (int i = startIndex; i < endIndex; ++i)

@@ -41,6 +41,8 @@ public:
 	AnomalyDetector();
 	~AnomalyDetector();
 	void BuildCharts();
+	void RunExperiments(const char * path);
+	void RunExperiments(std::vector<DataChart*> loadedCharts, std::map<int, std::string> anomalyOccurences);
 	void LogDataTick();
 	void Serialize();
 	void Serialize(std::vector<DataChart*> datacharts, std::vector<std::tuple<int, float>> anomalyScores, std::map<int, std::string> anomalyOccurances, int events);
@@ -92,7 +94,7 @@ private:
 	int windowSize = WINDOW_SIZE;
 	float k_percentage = K_PERCENTAGE;
 
-	Algorithm algorithm = Algorithm::KNN;
+	Algorithm algorithm = Algorithm::LOF;
 
 	// Anomaly Detectors
 	KNN *knn;

@@ -68,8 +68,8 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 /// <param name='nbrAmount'>The amount of nearest neighbours we are looking for.</param>
 float LOCI::GetRadius(DataChart *d, Datapoint *p, uint16_t nbrAmount)
 {
-	int startIndex = d->GetValues()->size() > WINDOW_SIZE ? d->GetValues()->size() - WINDOW_SIZE : 0;
-	int endIndex = d->GetValues()->size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : d->GetValues()->size();
+	int startIndex = d->GetValues()->size() > windowSize ? d->GetValues()->size() - windowSize : 0;
+	int endIndex = d->GetValues()->size() > windowSize ? startIndex + windowSize : d->GetValues()->size();
 
 	float minX = FLT_MAX, maxX = FLT_MIN;
 	float minY = FLT_MAX, maxY = FLT_MIN;
@@ -137,8 +137,8 @@ float LOCI::GetSigma(DataChart * d, Datapoint * p)
 /// <param name='r'>The range we want to use.</param>
 void LOCI::SetRNeighbours(DataChart * d, Datapoint * p, std::vector<Datapoint*>* neighbours, float r)
 {
-	int startIndex = d->GetValues()->size() > WINDOW_SIZE ? d->GetValues()->size() - WINDOW_SIZE : 0;
-	int endIndex = d->GetValues()->size() > WINDOW_SIZE ? startIndex + WINDOW_SIZE : d->GetValues()->size();
+	int startIndex = d->GetValues()->size() > windowSize ? d->GetValues()->size() - windowSize : 0;
+	int endIndex = d->GetValues()->size() > windowSize ? startIndex + windowSize : d->GetValues()->size();
 
 	neighbours->clear();
 	// Calculate the distance to p for all the values

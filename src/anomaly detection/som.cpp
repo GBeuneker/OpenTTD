@@ -35,7 +35,7 @@ void SOM::SetData(std::vector<DataChart*> _datacharts)
 	{
 		somNodes.push_back(new std::vector<Datapoint*>(width * height));
 		initializedCharts.push_back(false);
-		maxChartIterations.push_back(WINDOW_SIZE);
+		maxChartIterations.push_back(windowSize);
 		chartIterations.push_back(0);
 		startRadii.push_back(0);
 	}
@@ -196,7 +196,7 @@ void SOM::Train(DataChart *d, Datapoint *p)
 		somDistances.at(chartIndex)[index] = distanceToEdge;
 
 	// Increase the index
-	somIndices[chartIndex] = (index + 1) % WINDOW_SIZE;
+	somIndices[chartIndex] = (index + 1) % windowSize;
 }
 
 /// <summary>Classifies whether a datapoint is anomalous.</summary>
