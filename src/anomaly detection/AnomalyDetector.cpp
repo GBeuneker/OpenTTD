@@ -13,7 +13,15 @@ AnomalyDetector::AnomalyDetector()
 	this->loci = new LOCI();
 	this->som = new SOM(40, 40, 0.5);
 
+#if RUN_EXPERIMENTS
 	RunExperiments("BASE\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
+	exit(0);
+#endif
+
+#if COMBINE_DATA
+	CombineFolder("Combine", CombineMode::INTERSECTION);
+	exit(0);
+#endif
 }
 
 #pragma region Variable Tracking
@@ -83,12 +91,15 @@ void AnomalyDetector::BuildCharts()
 
 #pragma endregion
 
-#pragma region Anomaly Detection
+#pragma region Data Analysis
 
 void AnomalyDetector::RunExperiments(const char* path)
 {
+	printf("Running experiments with base: %s...\n", path);
+
 	std::vector<DataChart*> loadedCharts = DeSerializeCharts(path);
 	std::map<int, std::string> anomalyOccurances = DeserializeAnomalyOccurences(path);
+	_random.SetSeed(DeserializeSeed(path));
 	RunExperiments(loadedCharts, anomalyOccurances);
 
 	for (std::vector<DataChart*>::iterator it = loadedCharts.begin(); it != loadedCharts.end(); ++it)
@@ -97,13 +108,6 @@ void AnomalyDetector::RunExperiments(const char* path)
 
 void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::map<int, std::string> anomalyOccurences)
 {
-	this->knn->SetParameters(15, 5000);
-	this->lof->SetParameters(15, 5000);
-	this->loci->SetParameters(15, 5000);
-	this->som->SetParameters(15, 5000);
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-	return;
-
 	this->knn->SetParameters(5, 5000);
 	this->lof->SetParameters(5, 5000);
 	this->loci->SetParameters(5, 5000);
@@ -200,6 +204,243 @@ void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 }
 
+void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int, std::string> anomalyOccurences)
+{
+	printf("Analyzing chart: Algorithm: %i | Anom: %f | Thres: %f | Window: %i | K\%: %f\n", algorithm, ANOMALY_PERCENTAGE, threshold, windowSize, k_percentage);
+
+	// Initialize the charts 
+	std::vector<DataChart*> tempCharts;
+	for (int i = 0; i < charts.size(); ++i)
+	{
+		DataChart* newChart = new DataChart();
+		newChart->SetPointers(charts.at(i)->GetPointerA(), charts.at(i)->GetPointerB());
+		tempCharts.push_back(newChart);
+	}
+
+	if (algorithm == Algorithm::KNN)
+		knn->SetData(tempCharts);
+	else if (algorithm == Algorithm::LOF)
+		lof->SetData(tempCharts);
+	else if (algorithm == Algorithm::LOCI)
+		loci->SetData(tempCharts);
+	else if (algorithm == Algorithm::SOM)
+		som->SetData(tempCharts);
+
+	std::vector<Classification> results;
+	std::vector<std::tuple<int, float>> anomalyScores;
+	int events = 0;
+	// Go through the ticks backwards
+	for (int tick = 0; tick < MAX_TICK_COUNT; ++tick)
+	{
+		this->m_ticks = tick;
+		bool eventTriggered = false;
+		for (int i = 0; i < charts.size(); ++i)
+		{
+			Datapoint* aggregatedVaue = charts.at(i)->GetValueAt(tick);
+			tempCharts.at(i)->LogData(tick, aggregatedVaue, charts.at(i)->GetSubvalues(aggregatedVaue));
+			if (tempCharts.at(i)->isDirty)
+				eventTriggered = true;
+		}
+		if (eventTriggered)
+			events++;
+
+		if (algorithm == Algorithm::KNN)
+			results = knn->Run(tick);
+		else if (algorithm == Algorithm::LOF)
+			results = lof->Run(tick);
+		else if (algorithm == Algorithm::LOCI)
+			results = loci->Run(tick);
+		else if (algorithm == Algorithm::SOM)
+			results = som->Run(tick);
+
+		if (tick >= TRAINING_TIME)
+		{
+			float anomalyScore = 0;
+			for (int i = 0; i < results.size(); ++i)
+			{
+				if (results[i].isAnomaly)
+					anomalyScore += results[i].certainty;
+			}
+			anomalyScores.push_back(std::make_tuple(tick, anomalyScore));
+		}
+	}
+
+	Serialize(tempCharts, anomalyScores, anomalyOccurences, events);
+
+	for (std::vector<DataChart*>::iterator it = tempCharts.begin(); it != tempCharts.end(); ++it)
+		delete(*it);
+}
+
+void AnomalyDetector::AnalyzeAllData()
+{
+	string spath = ".\\..\\_data\\";
+	const char* folderpath = spath.c_str();
+	if (mkdir(folderpath) == 0)
+	{
+		printf("ERROR: Path %s could not be found!", folderpath);
+		return;
+	}
+
+	for (const auto & entry : std::filesystem::recursive_directory_iterator(folderpath))
+	{
+		string spath = entry.path().string();
+		if (spath.find("anomaly_scores.dat") != std::string::npos)
+			AnalyzeData(spath, m_events);
+	}
+}
+
+void AnomalyDetector::AnalyzeData(string spath, int events)
+{
+	if (spath.find("anomaly_scores") == std::string::npos)
+	{
+		printf("ERROR: %s is not anomaly score data\n");
+		return;
+	}
+
+	int tp = 0, fp = 0, fn = 0, tn = 0;
+	int prev_anomalyTick = 0;
+
+	// Open the file
+	std::ifstream infile(spath);
+	std::string line;
+	// Read the file
+	while (std::getline(infile, line))
+	{
+		int a;
+		float b, c;
+		std::istringstream iss(line);
+
+		// Try and parse 3 columns
+		if (iss >> a >> b >> c)
+		{
+			// Anomaly line is not empty
+			prev_anomalyTick = a;
+			fn++;
+		}
+
+		// Check if anomaly was detected
+		if (b >= 2)
+		{
+			// Check if anomaly was detected within range of inserted anomaly
+			if (a - prev_anomalyTick <= 10)
+			{
+				tp++;
+				fn--;
+			}
+			else
+				fp++;
+		}
+	}
+	tn = events - fp - fn - tp;
+
+	ofstream datafile;
+	string outputPath = spath.substr(0, spath.find("anomaly_scores")) + "\\anomaly_output.dat";
+	datafile.open(outputPath, ofstream::trunc);
+	datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn << " tn: " << tn;
+	datafile.close();
+}
+
+void AnomalyDetector::CombineFolder(const char* path, CombineMode _mode)
+{
+	string spath = ".\\..\\_data\\" + (string)path;
+	const char* folderpath = spath.c_str();
+	if (mkdir(folderpath) == 0)
+	{
+		printf("ERROR: Path %s could not be found!", folderpath);
+		return;
+	}
+
+	std::vector<std::vector<std::tuple<int, float>>> anomalyScoresList;
+	std::map<int, std::string> anomalyOccurances = DeserializeAnomalyOccurences(path);
+	float threshold = 0;
+	int events = 0;
+
+	for (const auto & entry : std::filesystem::recursive_directory_iterator(folderpath))
+	{
+		string entryPath = entry.path().string();
+		// Subtract the root folder from the path
+		string subPath = entryPath.substr(entryPath.find(spath) + spath.size() + 1, entryPath.size());
+		// Check if we're in the root folder
+		if (subPath.find("\\") == std::string::npos)
+			continue;
+
+		if (entryPath.find("anomaly_scores") != std::string::npos)
+		{
+			anomalyScoresList.push_back(DeserializeAnomalScores(entryPath.c_str()));
+			if (anomalyOccurances.size() == 0)
+				anomalyOccurances = DeserializeAnomalyOccurences(entryPath.c_str());
+			if (threshold == 0)
+				threshold = DeserializeThreshold(entryPath.c_str());
+		}
+		if (events == 0 && entryPath.find("anomaly_output") != std::string::npos)
+			events = DeserializeEvents(entryPath.c_str());
+	}
+	std::vector<std::tuple<int, float>> combinedAnomalyScores = CombineData(anomalyScoresList, _mode);
+
+	// Open the file and start writing stream
+	ofstream datafile;
+	string src = spath + "\\anomaly_scores_combined.dat";
+	datafile.open(src, ofstream::trunc);
+
+	// Write the ticks and the anomaly scores
+	for (int i = 0; i < combinedAnomalyScores.size(); ++i)
+	{
+		int ticks = std::get<0>(combinedAnomalyScores.at(i));
+		float anomalyScore = std::get<1>(combinedAnomalyScores.at(i));
+		datafile << ticks << " " << anomalyScore << " ";
+		if (anomalyOccurances.find(ticks) != anomalyOccurances.end())
+		{
+			string anomalyMsg = anomalyOccurances.at(ticks);
+			datafile << GetThreshold(10) << " " << anomalyMsg << endl;
+		}
+
+		datafile << endl;
+
+	}
+
+	// Close the file when writing is done
+	datafile.close();
+
+	AnalyzeData(src, events);
+}
+
+std::vector<std::tuple<int, float>> AnomalyDetector::CombineData(std::vector<std::vector<std::tuple<int, float>>> _anomalyScoresList, CombineMode _mode)
+{
+	std::vector<std::tuple<int, float>> answer;
+
+	if (_anomalyScoresList.size() == 0)
+		return answer;
+
+	// Loop over all the tick values in the anomaly scores
+	for (int listIndex = 0; listIndex < _anomalyScoresList.at(0).size(); ++listIndex)
+	{
+		float combinedScore = 0;
+		int tick = -1;
+		// Compare the values of all the anomaly scores lists
+		for (int i = 0; i < _anomalyScoresList.size(); ++i)
+		{
+			// Get the tick and the score
+			if (tick == -1)
+				tick = std::get<0>(_anomalyScoresList.at(i).at(listIndex));
+			float score = std::get<1>(_anomalyScoresList.at(i).at(listIndex));
+
+			// Combine the values based on the mode
+			if (_mode == CombineMode::INTERSECTION)
+				combinedScore = min(combinedScore, score);
+			else if (_mode == CombineMode::UNION)
+				combinedScore = max(combinedScore, score);
+
+		}
+		answer.push_back(std::make_tuple(tick, combinedScore));
+	}
+
+	return answer;
+}
+
+#pragma endregion
+
+#pragma region Anomaly Detection
+
 /// <summary>Logs the data in our anomaly detection algorithms.</summary>
 void AnomalyDetector::LogDataTick()
 {
@@ -281,142 +522,6 @@ void AnomalyDetector::DetectAnomaly(std::vector<Classification> results)
 	LogAnomalyScore(m_ticks, anomalyScore);
 }
 
-void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int, std::string> anomalyOccurences)
-{
-	// Initialize the charts 
-	std::vector<DataChart*> tempCharts;
-	for (int i = 0; i < charts.size(); ++i)
-	{
-		DataChart* newChart = new DataChart();
-		newChart->SetPointers(charts.at(i)->GetPointerA(), charts.at(i)->GetPointerB());
-		tempCharts.push_back(newChart);
-	}
-
-	if (algorithm == Algorithm::KNN)
-		knn->SetData(tempCharts);
-	else if (algorithm == Algorithm::LOF)
-		lof->SetData(tempCharts);
-	else if (algorithm == Algorithm::LOCI)
-		loci->SetData(tempCharts);
-	else if (algorithm == Algorithm::SOM)
-		som->SetData(tempCharts);
-
-	std::vector<Classification> results;
-	std::vector<std::tuple<int, float>> anomalyScores;
-	int events = 0;
-	// Go through the ticks backwards
-	for (int tick = 0; tick < MAX_TICK_COUNT; ++tick)
-	{
-		this->m_ticks = tick;
-		bool eventTriggered = false;
-		for (int i = 0; i < charts.size(); ++i)
-		{
-			Datapoint* aggregatedVaue = charts.at(i)->GetValueAt(tick);
-			tempCharts.at(i)->LogData(tick, aggregatedVaue, charts.at(i)->GetSubvalues(aggregatedVaue));
-			if (tempCharts.at(i)->isDirty)
-				eventTriggered = true;
-		}
-		if (eventTriggered)
-			events++;
-
-		if (algorithm == Algorithm::KNN)
-			results = knn->Run(tick);
-		else if (algorithm == Algorithm::LOF)
-			results = lof->Run(tick);
-		else if (algorithm == Algorithm::LOCI)
-			results = loci->Run(tick);
-		else if (algorithm == Algorithm::SOM)
-			results = som->Run(tick);
-
-		if (tick >= TRAINING_TIME)
-		{
-			float anomalyScore = 0;
-			for (int i = 0; i < results.size(); ++i)
-			{
-				if (results[i].isAnomaly)
-					anomalyScore += results[i].certainty;
-			}
-			anomalyScores.push_back(std::make_tuple(tick, anomalyScore));
-		}
-	}
-
-	Serialize(tempCharts, anomalyScores, anomalyOccurences, events);
-
-	// Destroy the charts and free up memory
-	for (std::vector<DataChart*>::iterator it = tempCharts.begin(); it != tempCharts.end(); ++it)
-		delete(*it);
-}
-
-
-void AnomalyDetector::AnalyzeAllData()
-{
-	string spath = ".\\..\\_data\\";
-	const char* folderpath = spath.c_str();
-	if (mkdir(folderpath) == 0)
-	{
-		printf("ERROR: Path %s could not be found!", folderpath);
-		return;
-	}
-
-	for (const auto & entry : std::filesystem::recursive_directory_iterator(folderpath))
-	{
-		string spath = entry.path().string();
-		if (spath.find("anomaly_scores.dat") != std::string::npos)
-			AnalyzeData(spath, m_events);
-	}
-}
-
-void AnomalyDetector::AnalyzeData(string spath, int events)
-{
-	if (spath.find("anomaly_scores.dat") == std::string::npos)
-	{
-		printf("ERROR: %s is not anomaly score data");
-		return;
-	}
-
-	int tp = 0, fp = 0, fn = 0, tn = 0;
-	int prev_anomalyTick = 0;
-
-	// Open the file
-	std::ifstream infile(spath);
-	std::string line;
-	// Read the file
-	while (std::getline(infile, line))
-	{
-		int a;
-		float b, c;
-		std::istringstream iss(line);
-
-		// Try and parse 3 columns
-		if (iss >> a >> b >> c)
-		{
-			// Anomaly line is not empty
-			prev_anomalyTick = a;
-			fn++;
-		}
-
-		// Check if anomaly was detected
-		if (b >= 2)
-		{
-			// Check if anomaly was detected within range of inserted anomaly
-			if (a - prev_anomalyTick <= 10)
-			{
-				tp++;
-				fn--;
-			}
-			else
-				fp++;
-		}
-	}
-	tn = events - fp - fn - tp;
-
-	ofstream datafile;
-	string outputPath = spath.substr(0, spath.length() - ((string)"anomaly_scores.dat").length()) + "\\anomaly_output.dat";
-	datafile.open(outputPath, ofstream::trunc);
-	datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn << " tn: " << tn;
-	datafile.close();
-}
-
 void AnomalyDetector::LogAnomalyScore(uint32_t tick, float score)
 {
 	m_anomalyScores.push_back(std::make_tuple(tick, score));
@@ -442,7 +547,7 @@ void AnomalyDetector::Serialize(std::vector<DataChart*> datacharts, std::vector<
 #endif
 
 	if (mkdir(spath.c_str()) == 0)
-		printf("Directory: \'%s\' was successfully created", spath.c_str());
+		printf("Directory: \'%s\' was successfully created\n", spath.c_str());
 
 	ofstream datafile;
 	for (int i = 0; i < datacharts.size(); ++i)
@@ -498,7 +603,7 @@ std::vector<DataChart*> AnomalyDetector::DeSerializeCharts(const char* folder)
 	const char* path = spath.c_str();
 	if (mkdir(path) == 0)
 	{
-		printf("ERROR: Path %s could not be found!", path);
+		printf("ERROR: Path %s could not be found!\n", path);
 		return answer;
 	}
 
@@ -520,46 +625,122 @@ std::vector<DataChart*> AnomalyDetector::DeSerializeCharts(const char* folder)
 	return answer;
 }
 
-std::map<int, std::string> AnomalyDetector::DeserializeAnomalyOccurences(const char* folder)
+std::map<int, std::string> AnomalyDetector::DeserializeAnomalyOccurences(const char* path)
 {
 	std::map<int, std::string> answer;
+	string spath = ".\\..\\_data\\" + (string)path;
 
-	string spath = ".\\..\\_data\\" + (string)folder;
-	const char* path = spath.c_str();
-	if (mkdir(path) == 0)
+	if (spath.find("anomaly_scores") != std::string::npos)
 	{
-		printf("ERROR: Path %s could not be found!", path);
-		return answer;
-	}
+		std::ifstream infile(path);
+		std::string line;
 
-	for (const auto & entry : std::filesystem::directory_iterator(path))
-	{
-		string spath = entry.path().string();
-		if (spath.find("anomaly_scores") != std::string::npos)
+		// Read the file
+		while (std::getline(infile, line))
 		{
-			const char* path = spath.c_str();
+			int a;
+			float b, c;
+			string d;
+			std::istringstream iss(line);
 
-			std::ifstream infile(path);
-
-			std::string line;
-
-			// Read the file
-			while (std::getline(infile, line))
-			{
-				int a;
-				float b, c;
-				string d;
-				std::istringstream iss(line);
-
-				// Try and parse 4 columns
-				if (iss >> a >> b >> c >> d)
-					// Enlist an anomaly occurance with its name
-					answer.emplace(a, d);
-			}
+			// Try and parse 4 columns
+			if (iss >> a >> b >> c >> d)
+				// Enlist an anomaly occurance with its name
+				answer.emplace(a, d);
 		}
 	}
 
 	return answer;
+}
+
+std::vector<tuple<int, float>> AnomalyDetector::DeserializeAnomalScores(const char* path)
+{
+	std::vector<tuple<int, float>> answer;
+	string spath = (string)path;
+
+	if (spath.find("anomaly_scores") != std::string::npos)
+	{
+		std::ifstream infile(path);
+		std::string line;
+
+		// Read the file
+		while (std::getline(infile, line))
+		{
+			int a;
+			float b;
+			std::istringstream iss(line);
+
+			// Parse the columns
+			if (iss >> a >> b)
+				answer.push_back(std::make_tuple(a, b));
+		}
+	}
+
+	return answer;
+}
+
+float AnomalyDetector::DeserializeThreshold(const char* path)
+{
+	if (mkdir(path) == 0)
+	{
+		printf("ERROR: Path %s could not be found!\n", path);
+		return 0;
+	}
+
+	std::ifstream infile(path);
+	std::string line;
+
+	// Read the file
+	while (std::getline(infile, line))
+	{
+		int a;
+		float b, c;
+		std::istringstream iss(line);
+
+		// Parse the columns
+		if (iss >> a >> b >> c)
+			return c;
+	}
+
+	return 0;
+}
+
+int AnomalyDetector::DeserializeEvents(const char* path)
+{
+	if (((string)path).find("anomaly_output") == std::string::npos)
+	{
+		printf("ERROR: Path %s is not an anomaly_output!\n", path);
+		return 0;
+	}
+
+	std::ifstream infile(path);
+	std::string line;
+	std::getline(infile, line);
+	std::istringstream iss(line);
+	string a1, b1, c1, d1;
+	int a2, b2, c2, d2;
+
+	iss >> a1 >> a2 >> b1 >> b2 >> c1 >> c2 >> d1 >> d2;
+
+	return a2 + b2 + c2 + d2;
+}
+
+uint32_t AnomalyDetector::DeserializeSeed(const char* path)
+{
+	string spath = (string)path;
+	size_t pos = spath.find("seed_") + 5;
+
+	string s_answer = "";
+	while (pos != std::string::npos)
+	{
+		char character = spath.at(pos);
+		if (character == '_')
+			break;
+		s_answer += character;
+		pos++;
+	}
+
+	return std::stoi(s_answer);
 }
 
 #pragma endregion
