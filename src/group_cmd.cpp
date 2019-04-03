@@ -145,7 +145,7 @@ void GroupStatistics::Clear()
 
 	//TODO: Insert anomaly
 	if (delta > 0 && AnomalyDetector::GetInstance()->TriggerVariableIncrease(10, "Vehicles"))
-		delta += ANOMALY_PERCENTAGE;
+		delta += AnomalyDetector::GetInstance()->GetAnomalyPercentage();
 
 	stats_all.num_vehicle += delta;
 	stats.num_vehicle += delta;

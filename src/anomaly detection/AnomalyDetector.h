@@ -30,7 +30,7 @@ struct AnomalyScore
 class AnomalyDetector
 {
 public:
-	enum class Algorithm { KNN, LOF, LOCI, SOM };
+	enum class Algorithm { KNN, LOF, LOCI, SOM, NONE };
 
 	static AnomalyDetector* GetInstance()
 	{
@@ -52,7 +52,7 @@ public:
 	bool TriggerVariableReset(float chance = 10, char* msg = "");
 	bool TriggerFunctionFailure(float chance = 10, char* msg = "");
 	void TrackPointer(size_t * var, char * name);
-	uint32_t GetTicks() { return m_ticks; }
+	float GetAnomalyPercentage() { return anomaly_percentage; }
 	const std::string GetBaseFolder()
 	{
 
@@ -64,9 +64,11 @@ public:
 			return ".\\..\\_data\\LOCI\\";
 		else if (algorithm == Algorithm::SOM)
 			return ".\\..\\_data\\SOM\\";
+		else
+			return  ".\\..\\_data\\BASE\\";
 	}
 	const std::string GetDataPath() {
-		return "seed_" + std::to_string(_random.seed) + "_a_" + std::to_string(ANOMALY_PERCENTAGE) + "_t_" + std::to_string(threshold) + "_w_" + std::to_string(windowSize) + "_k_" + std::to_string(k_percentage);
+		return "seed_" + std::to_string(_random.seed) + "_a_" + std::to_string(anomaly_percentage) + "_t_" + std::to_string(threshold) + "_w_" + std::to_string(windowSize) + "_k_" + std::to_string(k_percentage);
 	}
 	void Reset();
 private:
@@ -93,8 +95,9 @@ private:
 	float threshold = ANOMALY_THRESHOLD;
 	int windowSize = WINDOW_SIZE;
 	float k_percentage = K_PERCENTAGE;
+	float anomaly_percentage = ANOMALY_PERCENTAGE;
 
-	Algorithm algorithm = Algorithm::LOF;
+	Algorithm algorithm = Algorithm::SOM;
 
 	// Anomaly Detectors
 	KNN *knn;

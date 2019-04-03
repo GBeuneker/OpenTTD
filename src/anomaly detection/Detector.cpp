@@ -11,7 +11,7 @@ float Detector::Sigmoid(float x)
 	return 1 / (1 + exp(-this->slope * (x - this->midPoint)));
 }
 
-std::vector<Classification> Detector::Run()
+std::vector<Classification> Detector::Run(int _tick)
 {
 	std::vector<Classification> results;
 
@@ -28,7 +28,7 @@ std::vector<Classification> Detector::Run()
 			continue;
 		}
 #endif
-#if USE_SUBVALUES
+#if USE_SUBPOINTS
 		Classification result;
 		std::vector<Datapoint*> subPoints = d->GetSubvalues(p);
 		// Get the result with the highest certainty

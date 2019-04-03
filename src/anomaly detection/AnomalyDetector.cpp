@@ -13,7 +13,7 @@ AnomalyDetector::AnomalyDetector()
 	this->loci = new LOCI();
 	this->som = new SOM(40, 40, 0.5);
 
-	RunExperiments("LOCI\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
 }
 
 #pragma region Variable Tracking
@@ -97,7 +97,10 @@ void AnomalyDetector::RunExperiments(const char* path)
 
 void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::map<int, std::string> anomalyOccurences)
 {
+	this->knn->SetParameters(15, 5000);
 	this->lof->SetParameters(15, 5000);
+	this->loci->SetParameters(15, 5000);
+	this->som->SetParameters(15, 5000);
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 	return;
 
@@ -227,13 +230,13 @@ void AnomalyDetector::LogDataTick()
 
 	std::vector<Classification> results;
 	if (algorithm == Algorithm::KNN)
-		results = knn->Run();
+		results = knn->Run(m_ticks);
 	else if (algorithm == Algorithm::LOF)
-		results = lof->Run();
+		results = lof->Run(m_ticks);
 	else if (algorithm == Algorithm::LOCI)
-		results = loci->Run();
+		results = loci->Run(m_ticks);
 	else if (algorithm == Algorithm::SOM)
-		results = som->Run();
+		results = som->Run(m_ticks);
 
 	// Do not report anomalies during training time
 	if (m_ticks >= TRAINING_TIME)
@@ -283,7 +286,11 @@ void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int
 	// Initialize the charts 
 	std::vector<DataChart*> tempCharts;
 	for (int i = 0; i < charts.size(); ++i)
-		tempCharts.push_back(new DataChart());
+	{
+		DataChart* newChart = new DataChart();
+		newChart->SetPointers(charts.at(i)->GetPointerA(), charts.at(i)->GetPointerB());
+		tempCharts.push_back(newChart);
+	}
 
 	if (algorithm == Algorithm::KNN)
 		knn->SetData(tempCharts);
@@ -300,6 +307,7 @@ void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int
 	// Go through the ticks backwards
 	for (int tick = 0; tick < MAX_TICK_COUNT; ++tick)
 	{
+		this->m_ticks = tick;
 		bool eventTriggered = false;
 		for (int i = 0; i < charts.size(); ++i)
 		{
@@ -312,13 +320,13 @@ void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int
 			events++;
 
 		if (algorithm == Algorithm::KNN)
-			results = knn->Run();
+			results = knn->Run(tick);
 		else if (algorithm == Algorithm::LOF)
-			results = lof->Run();
+			results = lof->Run(tick);
 		else if (algorithm == Algorithm::LOCI)
-			results = loci->Run();
+			results = loci->Run(tick);
 		else if (algorithm == Algorithm::SOM)
-			results = som->Run();
+			results = som->Run(tick);
 
 		if (tick >= TRAINING_TIME)
 		{
@@ -475,10 +483,9 @@ void AnomalyDetector::Serialize(std::vector<DataChart*> datacharts, std::vector<
 
 	AnalyzeData(src, events);
 
-#if USE_SOM
-	// Seriaize the SOM maps
-	this->som->Serialize();
-#endif
+	if (algorithm == Algorithm::SOM)
+		// Seriaize the SOM maps
+		this->som->Serialize();
 }
 
 /// <summary>Deserializes a folder of data containing datacharts.</summary>

@@ -5,7 +5,6 @@ class LOCI : public Detector
 {
 public:
 	LOCI();
-	LOCI(uint16_t* maxNeighbourRange);
 	~LOCI();
 protected:
 	Classification Classify(DataChart* d, Datapoint* p) override;

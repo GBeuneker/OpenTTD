@@ -48,7 +48,7 @@ void SOM::SetData(std::vector<DataChart*> _datacharts)
 /// <summary>Initializes the SOM.</summary>
 /// <param name='d'>The chart used for initialization.</param>
 /// <param name='nodes'>The collection of SOM nodes we would like to initialize</param>
-void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes)
+void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes, int _tick)
 {
 	// Initialize the min and max x,y values
 	float minValue_x = FLT_MAX, minValue_y = FLT_MAX;
@@ -87,7 +87,7 @@ void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes)
 			if (valueHeight > 0.001f)
 				yPos += (-0.5f*valueHeight + ((rand() % (int)(valueHeight * 1000)) / 1000.0f));
 
-			nodes->at(index) = new Datapoint(xPos, yPos, AnomalyDetector::GetInstance()->GetTicks());
+			nodes->at(index) = new Datapoint(xPos, yPos, _tick);
 		}
 
 	// Find the index of the chart
@@ -99,7 +99,7 @@ void SOM::IntializeMap(DataChart *d, std::vector<Datapoint*> *nodes)
 #pragma endregion
 
 /// <summary>Run the SOM and test the datapoints against the trained SOM maps.</summary>
-std::vector<Classification> SOM::Run()
+std::vector<Classification> SOM::Run(int _tick)
 {
 	std::vector<Classification> results;
 
@@ -108,10 +108,10 @@ std::vector<Classification> SOM::Run()
 		DataChart* d = datacharts[i];
 		Datapoint* p = d->GetLast();
 		// Initialize the SOM if we have seen at least passed the training time and if the chart has enough values
-		if (!initializedCharts[i] && AnomalyDetector::GetInstance()->GetTicks() >= TRAINING_TIME && d->GetValues()->size() >= 10)
+		if (!initializedCharts[i] && _tick >= TRAINING_TIME && d->GetValues()->size() >= 10)
 		{
 			// Initialize the map
-			IntializeMap(d, somNodes[i]);
+			IntializeMap(d, somNodes[i], _tick);
 			initializedCharts[i] = true;
 
 			// Max iterations is the amount of iterations we have seen in the first window (minimum of 10)
@@ -131,7 +131,7 @@ std::vector<Classification> SOM::Run()
 			UpdateMap(i, p);
 			// Train using the average of all points
 			Train(d, p);
-#if USE_SUBVALUES
+#if USE_SUBPOINTS
 			Classification result;
 			std::vector<Datapoint*> subPoints = d->GetSubvalues(p);
 			// Get the result with the highest certainty
@@ -560,7 +560,7 @@ void SOM::Serialize()
 		DataChart dc;
 		// Add all values to a new datachart
 		for (int j = 0; j < nodes.size(); ++j)
-			dc.GetValues()->push_back(new Datapoint(nodes[j]->position.X, nodes[j]->position.Y, AnomalyDetector::GetInstance()->GetTicks()));
+			dc.GetValues()->push_back(new Datapoint(nodes[j]->position.X, nodes[j]->position.Y, MAX_TICK_COUNT));
 
 #if ENABLE_ANOMALIES
 		std::string spath = AnomalyDetector::GetInstance()->GetBaseFolder() + AnomalyDetector::GetInstance()->GetDataPath();

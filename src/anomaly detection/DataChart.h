@@ -15,13 +15,15 @@ public:
 	DataChart() { aggregatedValues = new std::vector<Datapoint*>(); };
 	DataChart(VariablePointer varA, VariablePointer varB);
 	void SetPointers(VariablePointer varA, VariablePointer varB);
+	VariablePointer GetPointerA() { return m_varA; }
+	VariablePointer GetPointerB() { return m_varB; }
 	void LogData(int tick, Datapoint * aggregatedValue, std::vector<Datapoint*> subPoints);
 	void LogData(int tick);
 	std::string Serialize();
 	void DeSerialize(const char* path);
 	std::string GetLabelString();
 	std::vector<Datapoint*>* GetValues() { return this->aggregatedValues; }
-#if USE_SUBVALUES
+#if USE_SUBPOINTS
 	std::vector<Datapoint*> GetSubvalues(Datapoint* p)
 	{
 		if (p != 0)
@@ -48,7 +50,7 @@ private:
 	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
 	std::vector<Datapoint*>* aggregatedValues;
 	std::map<int, Datapoint*> tickToValue;
-#if USE_SUBVALUES
+#if USE_SUBPOINTS
 	std::map<Datapoint*, std::vector<Datapoint*>> subvalues;
 #endif
 };

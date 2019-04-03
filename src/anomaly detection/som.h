@@ -10,12 +10,12 @@ public:
 	SOM() {};
 	SOM(uint16_t width, uint16_t height, float learningRate);
 	void SetData(std::vector<DataChart*> _datacharts) override;
-	std::vector<Classification> Run() override;
+	std::vector<Classification> Run(int _tick) override;
 	void Serialize();
 	~SOM();
 protected:
 	// Initialization
-	void IntializeMap(DataChart * d, std::vector<Datapoint*>* nodes);
+	void IntializeMap(DataChart * d, std::vector<Datapoint*>* nodes, int _tick);
 	void TrainMap(uint16_t chartIndex);
 	// Training
 	void UpdateMap(uint16_t chartIndex, Datapoint * datapoint);

@@ -17,7 +17,7 @@ public:
 	float distance;
 	int tick;
 
-#if USE_SUBVALUES
+#if USE_SUBPOINTS
 	bool isDirty = false;
 #endif
 

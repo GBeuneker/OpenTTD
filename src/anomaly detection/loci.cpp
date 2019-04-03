@@ -21,11 +21,6 @@ Classification LOCI::Classify(DataChart * d, Datapoint* loci_p)
 	float rMax = GetRadius(d, loci_p, maxNeighbourRange), rMin = 0;
 	float stepSize = (rMax - rMin) / (float)steps;
 
-	if (d->GetValues()->size() >= 65)
-	{
-		int a = 0;
-	}
-
 	// Set the neighbours and neighbourhood of p
 	SetRNeighbours(d, loci_p, &loci_p->neighbours, rMax);
 	loci_p->tmp_neighbours = loci_p->neighbours;

@@ -18,7 +18,7 @@ public:
 		this->midPoint = midPoint;
 	}
 	void SetWindowSize(int windowSize) { this->windowSize = windowSize; }
-	virtual std::vector<Classification> Run();
+	virtual std::vector<Classification> Run(int _tick);
 protected:
 	float Sigmoid(float x);
 	virtual Classification Classify(DataChart* d, Datapoint* p) { return Classification(); };
