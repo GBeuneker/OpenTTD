@@ -35,7 +35,7 @@ public:
 	static AnomalyDetector* GetInstance()
 	{
 		if (!AnomalyDetector::instance)
-			AnomalyDetector::instance = new AnomalyDetector;
+			AnomalyDetector::instance = new AnomalyDetector();
 		return AnomalyDetector::instance;
 	}
 	AnomalyDetector();
@@ -49,9 +49,10 @@ public:
 	std::vector<DataChart*> DeSerializeCharts(const char* folder);
 	std::map<int, std::string> DeserializeAnomalyOccurences(const char * folder);
 	std::vector<std::tuple<int, float>> DeserializeAnomalScores(const char * folder);
-	float DeserializeThreshold(const char * path);
+	float DeserializeAnomalyThreshold(const char * path);
 	int DeserializeEvents(const char * path);
 	uint32_t DeserializeSeed(const char * path);
+	float DeserializeAnomalyPercentage(const char * path);
 	bool TriggerVariableIncrease(float chance = 10, char* msg = "");
 	bool TriggerVariableReset(float chance = 10, char* msg = "");
 	bool TriggerFunctionFailure(float chance = 10, char* msg = "");
@@ -71,7 +72,7 @@ public:
 			return  ".\\..\\_data\\BASE\\";
 	}
 	const std::string GetDataPath() {
-		return "seed_" + std::to_string(_random.seed) + "_a_" + std::to_string(ANOMALY_PERCENTAGE) + "_t_" + std::to_string(threshold) + "_w_" + std::to_string(windowSize) + "_k_" + std::to_string(k_percentage);
+		return "seed_" + std::to_string(_random.seed) + "_a_" + std::to_string(anomalyPercentage) + "_t_" + std::to_string(threshold) + "_w_" + std::to_string(windowSize) + "_k_" + std::to_string(k_percentage);
 	}
 	void Reset();
 private:
@@ -101,6 +102,7 @@ private:
 	float threshold = ANOMALY_THRESHOLD;
 	int windowSize = WINDOW_SIZE;
 	float k_percentage = K_PERCENTAGE;
+	float anomalyPercentage = ANOMALY_PERCENTAGE;
 
 	// Current active algorithm
 	Algorithm algorithm = Algorithm::BASE;

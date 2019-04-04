@@ -149,7 +149,10 @@ std::vector<Classification> SOM::Run(int _tick)
 					result.certainty = fmax(result.certainty, r.certainty);
 				}
 			}
-			results.push_back(result);
+			if (subPoints.size() > 0)
+				results.push_back(result);
+			else
+				results.push_back(Classify(d, p));
 #else
 			// Classify the datapoint and add it to the results
 			results.push_back(Classify(d, p));

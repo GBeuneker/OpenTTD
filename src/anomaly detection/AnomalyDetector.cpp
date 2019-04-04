@@ -6,6 +6,8 @@ AnomalyDetector* AnomalyDetector::instance;
 
 AnomalyDetector::AnomalyDetector()
 {
+	instance = this;
+
 	m_ticks = 0;
 
 	this->knn = new KNN(k_percentage);
@@ -14,7 +16,12 @@ AnomalyDetector::AnomalyDetector()
 	this->som = new SOM(40, 40, 0.5);
 
 #if RUN_EXPERIMENTS
-	RunExperiments("BASE\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v4\\seed_100_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v4\\seed_200_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v4\\seed_100_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v4\\seed_200_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v4\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v4\\seed_200_a_10.000000_t_15.000000_w_5000_k_0.500000");
 	exit(0);
 #endif
 
@@ -93,25 +100,31 @@ void AnomalyDetector::BuildCharts()
 
 #pragma region Data Analysis
 
-void AnomalyDetector::RunExperiments(const char* path)
+void AnomalyDetector::RunExperiments(const char* folder)
 {
-	printf("Running experiments with base: %s...\n", path);
+	printf("Running experiments with base: %s...\n", folder);
 
-	std::vector<DataChart*> loadedCharts = DeSerializeCharts(path);
-	std::map<int, std::string> anomalyOccurances = DeserializeAnomalyOccurences(path);
-	_random.SetSeed(DeserializeSeed(path));
+	std::vector<DataChart*> loadedCharts = DeSerializeCharts(folder);
+	std::map<int, std::string> anomalyOccurances = DeserializeAnomalyOccurences(folder);
+	_random.SetSeed(DeserializeSeed(folder));
+	this->anomalyPercentage = DeserializeAnomalyPercentage(folder);
 	RunExperiments(loadedCharts, anomalyOccurances);
 
-	for (std::vector<DataChart*>::iterator it = loadedCharts.begin(); it != loadedCharts.end(); ++it)
-		delete (*it);
+	for (int i = 0; i < loadedCharts.size(); ++i)
+	{
+		loadedCharts.at(i)->DeleteAllData();
+		delete loadedCharts.at(i);
+	}
 }
 
 void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::map<int, std::string> anomalyOccurences)
 {
-	this->knn->SetParameters(5, 5000);
-	this->lof->SetParameters(5, 5000);
-	this->loci->SetParameters(5, 5000);
-	this->som->SetParameters(5, 5000);
+	this->threshold = 5;
+	this->windowSize = 5000;
+	this->knn->SetParameters(threshold, windowSize);
+	this->lof->SetParameters(threshold, windowSize);
+	this->loci->SetParameters(threshold, windowSize);
+	this->som->SetParameters(threshold, windowSize);
 	algorithm = Algorithm::KNN;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 	algorithm = Algorithm::LOF;
@@ -121,10 +134,12 @@ void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::
 	algorithm = Algorithm::SOM;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	this->knn->SetParameters(15, 5000);
-	this->lof->SetParameters(15, 5000);
-	this->loci->SetParameters(15, 5000);
-	this->som->SetParameters(15, 5000);
+	this->threshold = 15;
+	this->windowSize = 5000;
+	this->knn->SetParameters(threshold, windowSize);
+	this->lof->SetParameters(threshold, windowSize);
+	this->loci->SetParameters(threshold, windowSize);
+	this->som->SetParameters(threshold, windowSize);
 	algorithm = Algorithm::KNN;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 	algorithm = Algorithm::LOF;
@@ -134,10 +149,12 @@ void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::
 	algorithm = Algorithm::SOM;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	this->knn->SetParameters(50, 5000);
-	this->lof->SetParameters(50, 5000);
-	this->loci->SetParameters(50, 5000);
-	this->som->SetParameters(50, 5000);
+	this->threshold = 50;
+	this->windowSize = 5000;
+	this->knn->SetParameters(threshold, windowSize);
+	this->lof->SetParameters(threshold, windowSize);
+	this->loci->SetParameters(threshold, windowSize);
+	this->som->SetParameters(threshold, windowSize);
 	algorithm = Algorithm::KNN;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 	algorithm = Algorithm::LOF;
@@ -147,10 +164,12 @@ void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::
 	algorithm = Algorithm::SOM;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	this->knn->SetParameters(15, 20);
-	this->lof->SetParameters(15, 20);
-	this->loci->SetParameters(15, 20);
-	this->som->SetParameters(15, 20);
+	this->threshold = 15;
+	this->windowSize = 20;
+	this->knn->SetParameters(threshold, windowSize);
+	this->lof->SetParameters(threshold, windowSize);
+	this->loci->SetParameters(threshold, windowSize);
+	this->som->SetParameters(threshold, windowSize);
 	algorithm = Algorithm::KNN;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 	algorithm = Algorithm::LOF;
@@ -160,10 +179,12 @@ void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::
 	algorithm = Algorithm::SOM;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	this->knn->SetParameters(15, 75);
-	this->lof->SetParameters(15, 75);
-	this->loci->SetParameters(15, 75);
-	this->som->SetParameters(15, 75);
+	this->threshold = 15;
+	this->windowSize = 75;
+	this->knn->SetParameters(threshold, windowSize);
+	this->lof->SetParameters(threshold, windowSize);
+	this->loci->SetParameters(threshold, windowSize);
+	this->som->SetParameters(threshold, windowSize);
 	algorithm = Algorithm::KNN;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 	algorithm = Algorithm::LOF;
@@ -173,35 +194,35 @@ void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::
 	algorithm = Algorithm::SOM;
 	AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	k_percentage = 0.25f;
-	delete this->knn;
-	this->knn = new KNN(k_percentage);
-	delete this->lof;
-	this->lof = new LOF(k_percentage);
-	algorithm = Algorithm::KNN;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-	algorithm = Algorithm::LOF;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	//k_percentage = 0.25f;
+	//delete this->knn;
+	//this->knn = new KNN(k_percentage);
+	//delete this->lof;
+	//this->lof = new LOF(k_percentage);
+	//algorithm = Algorithm::KNN;
+	//AnalyzeCharts(loadedCharts, anomalyOccurences);
+	//algorithm = Algorithm::LOF;
+	//AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	k_percentage = 0.50f;
-	delete this->knn;
-	this->knn = new KNN(k_percentage);
-	delete this->lof;
-	this->lof = new LOF(k_percentage);
-	algorithm = Algorithm::KNN;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-	algorithm = Algorithm::LOF;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	//k_percentage = 0.50f;
+	//delete this->knn;
+	//this->knn = new KNN(k_percentage);
+	//delete this->lof;
+	//this->lof = new LOF(k_percentage);
+	//algorithm = Algorithm::KNN;
+	//AnalyzeCharts(loadedCharts, anomalyOccurences);
+	//algorithm = Algorithm::LOF;
+	//AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	k_percentage = 0.75f;
-	delete this->knn;
-	this->knn = new KNN(k_percentage);
-	delete this->lof;
-	this->lof = new LOF(k_percentage);
-	algorithm = Algorithm::KNN;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-	algorithm = Algorithm::LOF;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
+	//k_percentage = 0.75f;
+	//delete this->knn;
+	//this->knn = new KNN(k_percentage);
+	//delete this->lof;
+	//this->lof = new LOF(k_percentage);
+	//algorithm = Algorithm::KNN;
+	//AnalyzeCharts(loadedCharts, anomalyOccurences);
+	//algorithm = Algorithm::LOF;
+	//AnalyzeCharts(loadedCharts, anomalyOccurences);
 }
 
 void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int, std::string> anomalyOccurences)
@@ -230,14 +251,17 @@ void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int
 	std::vector<std::tuple<int, float>> anomalyScores;
 	int events = 0;
 	// Go through the ticks backwards
-	for (int tick = 0; tick < MAX_TICK_COUNT; ++tick)
+	for (int tick = 0; tick <= MAX_TICK_COUNT; ++tick)
 	{
-		this->m_ticks = tick;
 		bool eventTriggered = false;
 		for (int i = 0; i < charts.size(); ++i)
 		{
 			Datapoint* aggregatedVaue = charts.at(i)->GetValueAt(tick);
-			tempCharts.at(i)->LogData(tick, aggregatedVaue, charts.at(i)->GetSubvalues(aggregatedVaue));
+			std::vector<Datapoint*> subValues;
+#if USE_SUBPOINTS
+			subValues = charts.at(i)->GetSubvalues(aggregatedVaue);
+#endif
+			tempCharts.at(i)->LogData(tick, aggregatedVaue, subValues);
 			if (tempCharts.at(i)->isDirty)
 				eventTriggered = true;
 		}
@@ -267,6 +291,7 @@ void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int
 
 	Serialize(tempCharts, anomalyScores, anomalyOccurences, events);
 
+	// Delete all the charts
 	for (std::vector<DataChart*>::iterator it = tempCharts.begin(); it != tempCharts.end(); ++it)
 		delete(*it);
 }
@@ -370,7 +395,7 @@ void AnomalyDetector::CombineFolder(const char* path, CombineMode _mode)
 			if (anomalyOccurances.size() == 0)
 				anomalyOccurances = DeserializeAnomalyOccurences(entryPath.c_str());
 			if (threshold == 0)
-				threshold = DeserializeThreshold(entryPath.c_str());
+				threshold = DeserializeAnomalyThreshold(entryPath.c_str());
 		}
 		if (events == 0 && entryPath.find("anomaly_output") != std::string::npos)
 			events = DeserializeEvents(entryPath.c_str());
@@ -625,42 +650,49 @@ std::vector<DataChart*> AnomalyDetector::DeSerializeCharts(const char* folder)
 	return answer;
 }
 
-std::map<int, std::string> AnomalyDetector::DeserializeAnomalyOccurences(const char* path)
+std::map<int, std::string> AnomalyDetector::DeserializeAnomalyOccurences(const char* folder)
 {
 	std::map<int, std::string> answer;
-	string spath = ".\\..\\_data\\" + (string)path;
+	string sfolder = ".\\..\\_data\\" + (string)folder;
 
-	if (spath.find("anomaly_scores") != std::string::npos)
+	for (const auto & entry : std::filesystem::directory_iterator(sfolder))
 	{
-		std::ifstream infile(path);
-		std::string line;
-
-		// Read the file
-		while (std::getline(infile, line))
+		string entryPath = entry.path().string();
+		if (entryPath.find("anomaly_scores") != std::string::npos)
 		{
-			int a;
-			float b, c;
-			string d;
-			std::istringstream iss(line);
+			std::ifstream infile(entryPath);
+			std::string line;
 
-			// Try and parse 4 columns
-			if (iss >> a >> b >> c >> d)
-				// Enlist an anomaly occurance with its name
-				answer.emplace(a, d);
+			// Read the file
+			while (std::getline(infile, line))
+			{
+				int a;
+				float b, c;
+				string d;
+				std::istringstream iss(line);
+
+				// Try and parse 4 columns
+				if (iss >> a >> b >> c >> d)
+					// Enlist an anomaly occurance with its name
+					answer.emplace(a, d);
+			}
 		}
 	}
 
 	return answer;
 }
 
-std::vector<tuple<int, float>> AnomalyDetector::DeserializeAnomalScores(const char* path)
+std::vector<tuple<int, float>> AnomalyDetector::DeserializeAnomalScores(const char* folder)
 {
 	std::vector<tuple<int, float>> answer;
-	string spath = (string)path;
+	string sfolder = (string)folder;
 
-	if (spath.find("anomaly_scores") != std::string::npos)
+	for (const auto & entry : std::filesystem::directory_iterator(sfolder))
 	{
-		std::ifstream infile(path);
+		string entryPath = entry.path().string();
+	if (sfolder.find("anomaly_scores") != std::string::npos)
+	{
+		std::ifstream infile(folder);
 		std::string line;
 
 		// Read the file
@@ -675,11 +707,12 @@ std::vector<tuple<int, float>> AnomalyDetector::DeserializeAnomalScores(const ch
 				answer.push_back(std::make_tuple(a, b));
 		}
 	}
+	}
 
 	return answer;
 }
 
-float AnomalyDetector::DeserializeThreshold(const char* path)
+float AnomalyDetector::DeserializeAnomalyThreshold(const char* path)
 {
 	if (mkdir(path) == 0)
 	{
@@ -741,6 +774,24 @@ uint32_t AnomalyDetector::DeserializeSeed(const char* path)
 	}
 
 	return std::stoi(s_answer);
+}
+
+float AnomalyDetector::DeserializeAnomalyPercentage(const char* path)
+{
+	string spath = (string)path;
+	size_t pos = spath.find("a_") + 2;
+
+	string s_answer = "";
+	while (pos != std::string::npos)
+	{
+		char character = spath.at(pos);
+		if (character == '_')
+			break;
+		s_answer += character;
+		pos++;
+	}
+
+	return std::stof(s_answer);
 }
 
 #pragma endregion
@@ -811,6 +862,9 @@ void AnomalyDetector::Reset()
 {
 	m_variables.clear();
 	m_ticks = 0;
+
+	for (std::vector<DataChart*>::iterator it = m_datacharts.begin(); it != m_datacharts.end(); ++it)
+		delete(*it);
 
 	m_datacharts.clear();
 	chartsBuilt = false;

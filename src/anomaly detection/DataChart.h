@@ -12,7 +12,7 @@
 class DataChart
 {
 public:
-	DataChart() { aggregatedValues = new std::vector<Datapoint*>(); };
+	DataChart() { m_aggregatedPoints = new std::vector<Datapoint*>(); };
 	DataChart(VariablePointer varA, VariablePointer varB);
 	void SetPointers(VariablePointer varA, VariablePointer varB);
 	VariablePointer GetPointerA() { return m_varA; }
@@ -22,22 +22,23 @@ public:
 	std::string Serialize();
 	void DeSerialize(const char* path);
 	std::string GetLabelString();
-	std::vector<Datapoint*>* GetValues() { return this->aggregatedValues; }
+	void DeleteAllData();
+	std::vector<Datapoint*>* GetValues() { return this->m_aggregatedPoints; }
 #if USE_SUBPOINTS
 	std::vector<Datapoint*> GetSubvalues(Datapoint* p)
 	{
 		if (p != 0)
-			return subvalues.at(p);
+			return m_subPoints.at(p);
 		else
 			return std::vector<Datapoint*>();
 	}
 #endif
-	Datapoint* GetLast() { return aggregatedValues->size() > 0 ? aggregatedValues->back() : 0; }
-	Datapoint* GetRandom() { return aggregatedValues->at(rand() % aggregatedValues->size()); }
+	Datapoint* GetLast() { return m_aggregatedPoints->size() > 0 ? m_aggregatedPoints->back() : 0; }
+	Datapoint* GetRandom() { return m_aggregatedPoints->at(rand() % m_aggregatedPoints->size()); }
 	Datapoint* GetValueAt(int _tick)
 	{
-		if (tickToValue.find(_tick) != tickToValue.end())
-			return tickToValue.at(_tick);
+		if (m_tickToPoint.find(_tick) != m_tickToPoint.end())
+			return m_tickToPoint.at(_tick);
 		else
 			return 0;
 	}
@@ -48,10 +49,10 @@ public:
 	~DataChart();
 private:
 	VariablePointer m_varA = VariablePointer(0, "null"), m_varB = VariablePointer(0, "null");
-	std::vector<Datapoint*>* aggregatedValues;
-	std::map<int, Datapoint*> tickToValue;
+	std::vector<Datapoint*>* m_aggregatedPoints;
+	std::map<int, Datapoint*> m_tickToPoint;
 #if USE_SUBPOINTS
-	std::map<Datapoint*, std::vector<Datapoint*>> subvalues;
+	std::map<Datapoint*, std::vector<Datapoint*>> m_subPoints;
 #endif
 };
 

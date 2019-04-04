@@ -6,7 +6,7 @@ DataChart::DataChart(VariablePointer varA, VariablePointer varB)
 	this->m_varA = varA;
 	this->m_varB = varB;
 
-	aggregatedValues = new std::vector<Datapoint*>();
+	m_aggregatedPoints = new std::vector<Datapoint*>();
 }
 
 void DataChart::SetPointers(VariablePointer varA, VariablePointer varB)
@@ -28,35 +28,35 @@ void DataChart::LogData(int tick, Datapoint* _aggregatedDatapoint, std::vector<D
 
 #if USE_SUBPOINTS
 	// Get the subvalues from the previous frame
-	std::vector<Datapoint*> prev_subvalues;
-	if (aggregatedValues->size() > 0 && subvalues.find(aggregatedValues->back()) != subvalues.end())
-		prev_subvalues = subvalues.at(aggregatedValues->back());
+	std::vector<Datapoint*> prev_subPoints;
+	if (m_aggregatedPoints->size() > 0 && m_subPoints.find(m_aggregatedPoints->back()) != m_subPoints.end())
+		prev_subPoints = m_subPoints.at(m_aggregatedPoints->back());
 
 	int count = 0;
 	// Flag any points different from the previous frame as dirty
-	for (int i = 0; i < _subDatapoints.size() && i < prev_subvalues.size(); ++i)
+	for (int i = 0; i < _subDatapoints.size() && i < prev_subPoints.size(); ++i)
 	{
 		Datapoint* subpoint = _subDatapoints.at(i);
 		// If we're tracking the valueCount, just look at Y-position
 		if (m_varA.GetName() == "ValueCount" || m_varA.GetPointers().at(0) == (size_t*)&valueCount)
-			subpoint->isDirty = subpoint->position.Y != prev_subvalues.at(i)->position.Y;
+			subpoint->isDirty = subpoint->position.Y != prev_subPoints.at(i)->position.Y;
 		// Otherwise look at x,y position
 		else
-			subpoint->isDirty = subpoint->position != prev_subvalues.at(i)->position;
+			subpoint->isDirty = subpoint->position != prev_subPoints.at(i)->position;
 
 		if (subpoint->isDirty)
 			count++;
 	}
 
 	// None of the variables were dirty, so return
-	if (aggregatedValues->size() > 0 && count == 0)
+	if (m_aggregatedPoints->size() > 0 && _subDatapoints.size() > 0 && count == 0)
 		return;
 #endif
 	// Only add points if the previous one was different
-	if (aggregatedValues->size() > 0)
+	if (m_aggregatedPoints->size() > 0)
 	{
 		// Make sure the previous value is different
-		if (aggregatedValues->back()->position == _aggregatedDatapoint->position)
+		if (m_aggregatedPoints->back()->position == _aggregatedDatapoint->position)
 		{
 			delete _aggregatedDatapoint;
 			return;
@@ -64,7 +64,7 @@ void DataChart::LogData(int tick, Datapoint* _aggregatedDatapoint, std::vector<D
 
 		// If we're tracking the valueCount, only check the y-value
 		if (m_varA.GetName() == "ValueCount" || m_varA.GetPointers().at(0) == (size_t*)&valueCount)
-			if (aggregatedValues->back()->position.Y == _aggregatedDatapoint->position.Y)
+			if (m_aggregatedPoints->back()->position.Y == _aggregatedDatapoint->position.Y)
 			{
 				delete _aggregatedDatapoint;
 				return;
@@ -72,15 +72,15 @@ void DataChart::LogData(int tick, Datapoint* _aggregatedDatapoint, std::vector<D
 	}
 #endif
 
-	aggregatedValues->push_back(_aggregatedDatapoint);
-	tickToValue.emplace(tick, _aggregatedDatapoint);
+	m_aggregatedPoints->push_back(_aggregatedDatapoint);
+	m_tickToPoint.emplace(tick, _aggregatedDatapoint);
 #if USE_SUBPOINTS
-	// Map the index of the aggregatedValues to a list of subPoints in subvalues
-	subvalues.emplace(_aggregatedDatapoint, _subDatapoints);
+	// Map the index of the aggregatedPoints to a list of subPoints in subvalues
+	m_subPoints.emplace(_aggregatedDatapoint, _subDatapoints);
 #endif
 
 #if FILTER_POINTS
-	valueCount = aggregatedValues->size();
+	valueCount = m_aggregatedPoints->size();
 	isDirty = true;
 #endif
 }
@@ -99,39 +99,38 @@ void DataChart::LogData(int tick)
 		for (int a = 0; a < m_varA.GetPointers().size(); ++a)
 			for (int b = 0; b < m_varB.GetPointers().size(); ++b)
 				subPoints.push_back(new Datapoint(m_varA.GetValueAt(a), m_varB.GetValueAt(b), tick));
-
 #if FILTER_POINTS
-	Vector2 aggregatedValue = Vector2(0, 0);
+	Vector2 aggregatedPoint = Vector2(0, 0);
 
 	// Get the subvalues from the previous frame
-	std::vector<Datapoint*> prev_subvalues;
-	if (aggregatedValues->size() > 0 && subvalues.find(aggregatedValues->back()) != subvalues.end())
-		prev_subvalues = subvalues.at(aggregatedValues->back());
+	std::vector<Datapoint*> prev_subPoints;
+	if (m_aggregatedPoints->size() > 0 && m_subPoints.find(m_aggregatedPoints->back()) != m_subPoints.end())
+		prev_subPoints = m_subPoints.at(m_aggregatedPoints->back());
 
 	int count = 0;
 	// Calculate our aggregated point using only the dirty subpoints
-	for (int i = 0; i < subPoints.size() && i < prev_subvalues.size(); ++i)
+	for (int i = 0; i < subPoints.size() && i < prev_subPoints.size(); ++i)
 	{
 		Datapoint* subpoint = subPoints.at(i);
 		bool isDirty = false;
 		// If we're tracking the valueCount, just look at Y-position
 		if (m_varA.GetName() == "ValueCount" || m_varA.GetPointers().at(0) == (size_t*)&valueCount)
-			isDirty = subpoint->position.Y != prev_subvalues.at(i)->position.Y;
+			isDirty = subpoint->position.Y != prev_subPoints.at(i)->position.Y;
 		// Otherwise look at x,y position
 		else
-			isDirty = subpoint->position != prev_subvalues.at(i)->position;
+			isDirty = subpoint->position != prev_subPoints.at(i)->position;
 
 		if (isDirty)
 		{
-			aggregatedValue += subpoint->position;
+			aggregatedPoint += subpoint->position;
 			count++;
 		}
 	}
 
 	if (count > 0)
-		aggregatedValue /= (float)count;
+		aggregatedPoint /= (float)count;
 
-	Datapoint* aggregatedDatapoint = new Datapoint(aggregatedValue.X, aggregatedValue.Y, tick);
+	Datapoint* aggregatedDatapoint = new Datapoint(aggregatedPoint.X, aggregatedPoint.Y, tick);
 #else
 	Datapoint* aggregatedDatapoint = new Datapoint(m_varA.GetAvgValue(), m_varB.GetAvgValue(), tick);
 #endif
@@ -151,16 +150,18 @@ std::string DataChart::Serialize()
 	stringstream << GetLabelString() << "\n";
 
 	// Loop through all the values
-	for (int i = 0; i < aggregatedValues->size(); ++i)
+	for (int i = 0; i < m_aggregatedPoints->size(); ++i)
 	{
 		//Serialize the tick frame of this event
-		stringstream << aggregatedValues->at(i)->tick << " ";
+		stringstream << m_aggregatedPoints->at(i)->tick << " ";
 		// Serialize the aggregated values
-		stringstream << aggregatedValues->at(i)->position.X << " " << aggregatedValues->at(i)->position.Y << " ";
+		stringstream << m_aggregatedPoints->at(i)->position.X << " " << m_aggregatedPoints->at(i)->position.Y << " ";
+#if USE_SUBPOINTS
 		// Serialize the subvalues
-		std::vector<Datapoint*> currentSubvalues = subvalues[aggregatedValues->at(i)];
+		std::vector<Datapoint*> currentSubvalues = m_subPoints[m_aggregatedPoints->at(i)];
 		for (int j = 0; j < currentSubvalues.size(); ++j)
 			stringstream << currentSubvalues.at(j)->position.X << " " << currentSubvalues.at(j)->position.Y << " ";
+#endif
 
 		// End the line
 		stringstream << "\n";
@@ -171,7 +172,7 @@ std::string DataChart::Serialize()
 
 void DataChart::DeSerialize(const char* path)
 {
-	aggregatedValues->clear();
+	m_aggregatedPoints->clear();
 
 	std::ifstream infile(path);
 
@@ -195,9 +196,10 @@ void DataChart::DeSerialize(const char* path)
 		float valA = std::stof(results[1]);
 		float valB = std::stof(results[2]);
 		Datapoint* aggregatedValue = new Datapoint(valA, valB, tick);
-		aggregatedValues->push_back(aggregatedValue);
-		tickToValue.emplace(tick, aggregatedValue);
+		m_aggregatedPoints->push_back(aggregatedValue);
+		m_tickToPoint.emplace(tick, aggregatedValue);
 
+#if USE_SUBPOINTS
 		std::vector<Datapoint*> subValueList;
 
 		for (int i = 3; i < results.size(); i += 2)
@@ -206,7 +208,8 @@ void DataChart::DeSerialize(const char* path)
 			float subB = std::stof(results[i + 1]);
 			subValueList.push_back(new Datapoint(subA, subB, tick));
 		}
-		subvalues.emplace(aggregatedValue, subValueList);
+		m_subPoints.emplace(aggregatedValue, subValueList);
+#endif
 	}
 }
 
@@ -219,7 +222,22 @@ std::string DataChart::GetLabelString()
 	return stringstream.str();
 }
 
+void DataChart::DeleteAllData()
+{
+#if USE_SUBPOINTS
+	// Delete all the sub points
+	for (std::map<Datapoint*, std::vector<Datapoint*>>::iterator sub = m_subPoints.begin(); sub != m_subPoints.end(); ++sub)
+		for (std::vector<Datapoint*>::iterator value = m_subPoints.at(sub->first).begin(); value != m_subPoints.at(sub->first).end(); ++value)
+			delete(*value);
+#endif
+
+	// Delete all the aggregated values and subvalues
+	for (std::vector<Datapoint*>::iterator value = m_aggregatedPoints->begin(); value != m_aggregatedPoints->end(); ++value)
+		delete(*value);
+}
+
 DataChart::~DataChart()
 {
-	delete aggregatedValues;
+	// Delete the aggregatedPoints list
+	delete m_aggregatedPoints;
 }
