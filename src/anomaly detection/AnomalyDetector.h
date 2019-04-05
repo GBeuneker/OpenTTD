@@ -106,7 +106,7 @@ private:
 	float k_percentage = K_PERCENTAGE;
 	float anomalyPercentage = ANOMALY_PERCENTAGE;
 
-	std::vector<const char*> runs{ "newgame 100", "newgame 101", "newgame 102", "newgame 103", "newgame 104", "newgame 105", "newgame 106", "newgame 107", "newgame 108", "newgame 109" };
+	std::vector<const char*> runs{ "newgame 101", "newgame 102", "newgame 103", "newgame 104", "newgame 105", "newgame 106", "newgame 107", "newgame 108", "newgame 109" };
 	uint16_t currentRun = 0;
 
 	// Current active algorithm

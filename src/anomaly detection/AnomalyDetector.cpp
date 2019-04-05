@@ -867,7 +867,10 @@ void AnomalyDetector::Reset()
 	m_ticks = 0;
 
 	for (std::vector<DataChart*>::iterator it = m_datacharts.begin(); it != m_datacharts.end(); ++it)
+	{
+		(*it)->DeleteAllData();
 		delete(*it);
+	}
 
 	m_datacharts.clear();
 	chartsBuilt = false;
