@@ -227,13 +227,19 @@ void DataChart::DeleteAllData()
 #if USE_SUBPOINTS
 	// Delete all the sub points
 	for (std::map<Datapoint*, std::vector<Datapoint*>>::iterator sub = m_subPoints.begin(); sub != m_subPoints.end(); ++sub)
+	{
 		for (std::vector<Datapoint*>::iterator value = m_subPoints.at(sub->first).begin(); value != m_subPoints.at(sub->first).end(); ++value)
 			delete(*value);
+		m_subPoints.at(sub->first).clear();
+		m_subPoints.at(sub->first).shrink_to_fit();
+	}
 #endif
 
-	// Delete all the aggregated values and subvalues
+	// Delete all the aggregated values
 	for (std::vector<Datapoint*>::iterator value = m_aggregatedPoints->begin(); value != m_aggregatedPoints->end(); ++value)
 		delete(*value);
+	m_aggregatedPoints->clear();
+	m_aggregatedPoints->shrink_to_fit();
 }
 
 DataChart::~DataChart()

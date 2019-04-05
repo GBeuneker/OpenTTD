@@ -865,6 +865,7 @@ void AnomalyDetector::Reset()
 {
 	m_variables.clear();
 	m_ticks = 0;
+	m_events = 0;
 
 	for (std::vector<DataChart*>::iterator it = m_datacharts.begin(); it != m_datacharts.end(); ++it)
 	{
@@ -873,6 +874,7 @@ void AnomalyDetector::Reset()
 	}
 
 	m_datacharts.clear();
+	m_datacharts.shrink_to_fit();
 	chartsBuilt = false;
 
 #if !FILTER_POINTS

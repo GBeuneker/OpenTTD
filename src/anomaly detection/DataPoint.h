@@ -27,5 +27,5 @@ public:
 	std::vector<Datapoint*> rkNeighbours;
 	std::vector<Datapoint*> tmp_neighbours, tmp_rkNeighbours;
 
-	virtual ~Datapoint() {};
+	~Datapoint() { };
 };
