@@ -16,12 +16,12 @@ AnomalyDetector::AnomalyDetector()
 	this->som = new SOM(40, 40, 0.5);
 
 #if RUN_EXPERIMENTS
-	RunExperiments("BASE\\1v4\\seed_100_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v4\\seed_200_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v4\\seed_100_a_2.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v4\\seed_200_a_2.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v4\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v4\\seed_200_a_10.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v10\\seed_100_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v10\\seed_200_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v10\\seed_100_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v10\\seed_200_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v10\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
+	RunExperiments("BASE\\1v10\\seed_200_a_10.000000_t_15.000000_w_5000_k_0.500000");
 	exit(0);
 #endif
 
@@ -451,9 +451,9 @@ std::vector<std::tuple<int, float>> AnomalyDetector::CombineData(std::vector<std
 
 			// Combine the values based on the mode
 			if (_mode == CombineMode::INTERSECTION)
-				combinedScore = min(combinedScore, score);
+				combinedScore = fmin(combinedScore, score);
 			else if (_mode == CombineMode::UNION)
-				combinedScore = max(combinedScore, score);
+				combinedScore = fmax(combinedScore, score);
 
 		}
 		answer.push_back(std::make_tuple(tick, combinedScore));
@@ -513,7 +513,10 @@ void AnomalyDetector::LogDataTick()
 		Serialize();
 		if (algorithm == Algorithm::SOM)
 			this->som->Serialize();
-		exit(0);
+		if (currentRun < runs.size())
+			IConsoleCmdExec(this->runs[currentRun++]);
+		else
+			exit(0);
 	}
 
 	m_ticks++;
@@ -690,23 +693,23 @@ std::vector<tuple<int, float>> AnomalyDetector::DeserializeAnomalScores(const ch
 	for (const auto & entry : std::filesystem::directory_iterator(sfolder))
 	{
 		string entryPath = entry.path().string();
-	if (sfolder.find("anomaly_scores") != std::string::npos)
-	{
-		std::ifstream infile(folder);
-		std::string line;
-
-		// Read the file
-		while (std::getline(infile, line))
+		if (sfolder.find("anomaly_scores") != std::string::npos)
 		{
-			int a;
-			float b;
-			std::istringstream iss(line);
+			std::ifstream infile(folder);
+			std::string line;
 
-			// Parse the columns
-			if (iss >> a >> b)
-				answer.push_back(std::make_tuple(a, b));
+			// Read the file
+			while (std::getline(infile, line))
+			{
+				int a;
+				float b;
+				std::istringstream iss(line);
+
+				// Parse the columns
+				if (iss >> a >> b)
+					answer.push_back(std::make_tuple(a, b));
+			}
 		}
-	}
 	}
 
 	return answer;

@@ -60,7 +60,7 @@ void InitializeGame(uint size_x, uint size_y, bool reset_date, bool reset_settin
 	AllocateMap(size_x, size_y);
 
 	_pause_mode = PM_UNPAUSED;
-	_fast_forward = 0;
+	_fast_forward = 1;
 	_tick_counter = 0;
 	_cur_tileloop_tile = 1;
 	_thd.redsq = INVALID_TILE;
