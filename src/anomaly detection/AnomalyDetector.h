@@ -83,7 +83,7 @@ private:
 		// Let chartAmount = L
 		// Formula: 0.5 * n(n-1) = L => n² - n - 2L = 0 => (ABC-formula) n = (1 +/- sqrt(1+4*2L)) / 2
 		float variableAmount = (1 + sqrtf(1 + 4 * 2 * chartAmount)) / 2;
-		return variableAmount * 0.5f;
+		return (variableAmount - 1)* 0.5f;
 	};
 	void DetectAnomaly(std::vector<Classification> results);
 	void AnalyzeCharts(std::vector<DataChart*> charts, std::map<int, std::string> anomalyOccurences);
