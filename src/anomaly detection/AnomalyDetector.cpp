@@ -16,35 +16,35 @@ AnomalyDetector::AnomalyDetector()
 	this->som = new SOM(40, 40, 0.5);
 
 #if RUN_EXPERIMENTS
-	RunExperiments("BASE\\1v10\\seed_100_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_100_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_100_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_100_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_100_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_101_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_101_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_101_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_101_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_101_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_102_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_102_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_102_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_102_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_102_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_103_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_103_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_103_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_103_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_103_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_104_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_104_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_104_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_104_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_104_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_105_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_105_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_105_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_105_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_105_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_106_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_106_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_106_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_106_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_106_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_107_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_107_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_107_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_107_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_107_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_108_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_108_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_108_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_108_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_108_a_10.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_109_a_1.000000_t_15.000000_w_5000_k_0.500000");
-	RunExperiments("BASE\\1v10\\seed_109_a_2.000000_t_15.000000_w_5000_k_0.500000");
+	//RunExperiments("BASE\\1v10\\seed_109_a_1.000000_t_15.000000_w_5000_k_0.500000");
+	//////RunExperiments("BASE\\1v10\\seed_109_a_2.000000_t_15.000000_w_5000_k_0.500000");
 	RunExperiments("BASE\\1v10\\seed_109_a_10.000000_t_15.000000_w_5000_k_0.500000");
 	exit(0);
 #endif
@@ -143,22 +143,7 @@ void AnomalyDetector::RunExperiments(const char* folder)
 
 void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::map<int, std::string> anomalyOccurences)
 {
-	this->threshold = 15;
-	this->windowSize = 5000;
-	this->knn->SetParameters(threshold, windowSize);
-	this->lof->SetParameters(threshold, windowSize);
-	this->loci->SetParameters(threshold, windowSize);
-	this->som->SetParameters(threshold, windowSize);
-	algorithm = Algorithm::KNN;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-	algorithm = Algorithm::LOF;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-	algorithm = Algorithm::LOCI;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-	algorithm = Algorithm::SOM;
-	AnalyzeCharts(loadedCharts, anomalyOccurences);
-
-	//this->threshold = 15;
+	//this->threshold = 5;
 	//this->windowSize = 5000;
 	//this->knn->SetParameters(threshold, windowSize);
 	//this->lof->SetParameters(threshold, windowSize);
@@ -218,35 +203,33 @@ void AnomalyDetector::RunExperiments(std::vector<DataChart*> loadedCharts, std::
 	//algorithm = Algorithm::SOM;
 	//AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	//k_percentage = 0.25f;
+	this->threshold = 15;
+	this->windowSize = 5000;
+	k_percentage = 0.25f;
 	//delete this->knn;
 	//this->knn = new KNN(k_percentage);
-	//delete this->lof;
-	//this->lof = new LOF(k_percentage);
+	//this->knn->SetParameters(threshold, windowSize);
+	delete this->lof;
+	this->lof = new LOF(k_percentage);
+	this->lof->SetParameters(threshold, windowSize);
 	//algorithm = Algorithm::KNN;
 	//AnalyzeCharts(loadedCharts, anomalyOccurences);
-	//algorithm = Algorithm::LOF;
-	//AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
 
-	//k_percentage = 0.50f;
+	this->threshold = 15;
+	this->windowSize = 5000;
+	k_percentage = 0.75f;
 	//delete this->knn;
 	//this->knn = new KNN(k_percentage);
-	//delete this->lof;
-	//this->lof = new LOF(k_percentage);
+	//this->knn->SetParameters(threshold, windowSize);
+	delete this->lof;
+	this->lof = new LOF(k_percentage);
+	this->lof->SetParameters(threshold, windowSize);
 	//algorithm = Algorithm::KNN;
 	//AnalyzeCharts(loadedCharts, anomalyOccurences);
-	//algorithm = Algorithm::LOF;
-	//AnalyzeCharts(loadedCharts, anomalyOccurences);
-
-	//k_percentage = 0.75f;
-	//delete this->knn;
-	//this->knn = new KNN(k_percentage);
-	//delete this->lof;
-	//this->lof = new LOF(k_percentage);
-	//algorithm = Algorithm::KNN;
-	//AnalyzeCharts(loadedCharts, anomalyOccurences);
-	//algorithm = Algorithm::LOF;
-	//AnalyzeCharts(loadedCharts, anomalyOccurences);
+	algorithm = Algorithm::LOF;
+	AnalyzeCharts(loadedCharts, anomalyOccurences);
 }
 
 void AnomalyDetector::AnalyzeCharts(std::vector<DataChart*> charts, std::map<int, std::string> anomalyOccurences)
