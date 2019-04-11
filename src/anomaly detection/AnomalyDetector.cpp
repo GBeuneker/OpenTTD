@@ -50,7 +50,7 @@ AnomalyDetector::AnomalyDetector()
 #endif
 
 #if COMBINE_DATA
-	CombineFolder("Combine", CombineMode::INTERSECTION);
+	CombineFolder("Combine", CombineMode::UNION);
 	exit(0);
 #endif
 }
@@ -383,7 +383,7 @@ void AnomalyDetector::CombineFolder(const char* path, CombineMode _mode)
 	}
 
 	std::vector<std::vector<std::tuple<int, float>>> anomalyScoresList;
-	std::map<int, std::string> anomalyOccurances = DeserializeAnomalyOccurences(path);
+	std::map<int, std::string> anomalyOccurances;
 	float threshold = 0;
 	int events = 0;
 
@@ -400,7 +400,10 @@ void AnomalyDetector::CombineFolder(const char* path, CombineMode _mode)
 		{
 			anomalyScoresList.push_back(DeserializeAnomalScores(entryPath.c_str()));
 			if (anomalyOccurances.size() == 0)
-				anomalyOccurances = DeserializeAnomalyOccurences(entryPath.c_str());
+			{
+				string entryFolder = entryPath.substr(0, entryPath.rfind("\\") + 1);
+				anomalyOccurances = DeserializeAnomalyOccurences(entryFolder.c_str());
+			}
 			if (threshold == 0)
 				threshold = DeserializeAnomalyThreshold(entryPath.c_str());
 		}
@@ -692,30 +695,26 @@ std::map<int, std::string> AnomalyDetector::DeserializeAnomalyOccurences(const c
 	return answer;
 }
 
-std::vector<tuple<int, float>> AnomalyDetector::DeserializeAnomalScores(const char* folder)
+std::vector<tuple<int, float>> AnomalyDetector::DeserializeAnomalScores(const char* path)
 {
 	std::vector<tuple<int, float>> answer;
-	string sfolder = (string)folder;
+	string spath = (string)path;
 
-	for (const auto & entry : std::filesystem::directory_iterator(sfolder))
+	if (spath.find("anomaly_scores") != std::string::npos)
 	{
-		string entryPath = entry.path().string();
-		if (sfolder.find("anomaly_scores") != std::string::npos)
+		std::ifstream infile(spath);
+		std::string line;
+
+		// Read the file
+		while (std::getline(infile, line))
 		{
-			std::ifstream infile(folder);
-			std::string line;
+			int a;
+			float b;
+			std::istringstream iss(line);
 
-			// Read the file
-			while (std::getline(infile, line))
-			{
-				int a;
-				float b;
-				std::istringstream iss(line);
-
-				// Parse the columns
-				if (iss >> a >> b)
-					answer.push_back(std::make_tuple(a, b));
-			}
+			// Parse the columns
+			if (iss >> a >> b)
+				answer.push_back(std::make_tuple(a, b));
 		}
 	}
 

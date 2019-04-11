@@ -1,7 +1,7 @@
 #pragma once
 //=====EXPERIMENT PARAMETERS=====
-#define RUN_EXPERIMENTS 1;
-#define COMBINE_DATA 0;
+#define RUN_EXPERIMENTS 0;
+#define COMBINE_DATA 1;
 
 //=====DATA COLLECTION PARAMETERS=====
 #define ANOMALY_PERCENTAGE 10.0f

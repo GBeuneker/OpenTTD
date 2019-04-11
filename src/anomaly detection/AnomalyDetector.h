@@ -50,7 +50,7 @@ public:
 	void Serialize(std::vector<DataChart*> datacharts, std::vector<std::tuple<int, float>> anomalyScores, std::map<int, std::string> anomalyOccurances, int events);
 	std::vector<DataChart*> DeSerializeCharts(const char* folder);
 	std::map<int, std::string> DeserializeAnomalyOccurences(const char * folder);
-	std::vector<std::tuple<int, float>> DeserializeAnomalScores(const char * folder);
+	std::vector<std::tuple<int, float>> DeserializeAnomalScores(const char * path);
 	float DeserializeAnomalyThreshold(const char * path);
 	int DeserializeEvents(const char * path);
 	uint32_t DeserializeSeed(const char * path);
