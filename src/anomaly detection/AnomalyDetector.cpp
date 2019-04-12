@@ -50,7 +50,16 @@ AnomalyDetector::AnomalyDetector()
 #endif
 
 #if COMBINE_DATA
-	CombineFolder("Combine", CombineMode::UNION);
+	CombineFolder("Combine\\Combine_seed_100", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_101", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_102", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_103", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_104", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_105", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_106", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_107", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_108", CombineMode::INTERSECTION);
+	CombineFolder("Combine\\Combine_seed_109", CombineMode::INTERSECTION);
 	exit(0);
 #endif
 }
@@ -366,7 +375,7 @@ void AnomalyDetector::AnalyzeData(string spath, int events)
 	tn = events - fp - fn - tp;
 
 	ofstream datafile;
-	string outputPath = spath.substr(0, spath.find("anomaly_scores")) + "\\anomaly_output.dat";
+	string outputPath = spath.replace(spath.find("anomaly_scores"), 14, "anomaly_output");
 	datafile.open(outputPath, ofstream::trunc);
 	datafile << "tp: " << tp << " fp: " << fp << " fn: " << fn << " tn: " << tn;
 	datafile.close();
@@ -383,10 +392,10 @@ void AnomalyDetector::CombineFolder(const char* path, CombineMode _mode)
 	}
 
 	std::vector<std::vector<std::tuple<int, float>>> anomalyScoresList;
+	std::vector<std::string> anomalyNames;
 	std::map<int, std::string> anomalyOccurances;
 	float threshold = 0;
 	int events = 0;
-
 	for (const auto & entry : std::filesystem::recursive_directory_iterator(folderpath))
 	{
 		string entryPath = entry.path().string();
@@ -399,6 +408,7 @@ void AnomalyDetector::CombineFolder(const char* path, CombineMode _mode)
 		if (entryPath.find("anomaly_scores") != std::string::npos)
 		{
 			anomalyScoresList.push_back(DeserializeAnomalScores(entryPath.c_str()));
+			anomalyNames.push_back("_" + entryPath.substr(entryPath.rfind("\\") - 3, 3) + "_");
 			if (anomalyOccurances.size() == 0)
 			{
 				string entryFolder = entryPath.substr(0, entryPath.rfind("\\") + 1);
@@ -410,33 +420,64 @@ void AnomalyDetector::CombineFolder(const char* path, CombineMode _mode)
 		if (events == 0 && entryPath.find("anomaly_output") != std::string::npos)
 			events = DeserializeEvents(entryPath.c_str());
 	}
-	std::vector<std::tuple<int, float>> combinedAnomalyScores = CombineData(anomalyScoresList, _mode);
 
-	// Open the file and start writing stream
-	ofstream datafile;
-	string src = spath + "\\anomaly_scores_combined.dat";
-	datafile.open(src, ofstream::trunc);
-
-	// Write the ticks and the anomaly scores
-	for (int i = 0; i < combinedAnomalyScores.size(); ++i)
+	std::vector<std::vector<int>> combinations
 	{
-		int ticks = std::get<0>(combinedAnomalyScores.at(i));
-		float anomalyScore = std::get<1>(combinedAnomalyScores.at(i));
-		datafile << ticks << " " << anomalyScore << " ";
-		if (anomalyOccurances.find(ticks) != anomalyOccurances.end())
+		std::vector<int>{0,1},
+		std::vector<int>{0,2},
+		std::vector<int>{0,3},
+		std::vector<int>{1,2},
+		std::vector<int>{1,3},
+		std::vector<int>{2,3},
+		std::vector<int>{0,1,2},
+		std::vector<int>{0,1,3},
+		std::vector<int>{0,2,3},
+		std::vector<int>{1,2,3},
+		std::vector<int>{0,1,2,3}
+	};
+
+	for (int i = 0; i < combinations.size(); ++i)
+	{
+		std::vector<std::vector<std::tuple<int, float>>> currentList;
+
+		std::vector<int>  indices = combinations.at(i);
+		string name = "";
+		for (int j = 0; j < indices.size(); ++j)
 		{
-			string anomalyMsg = anomalyOccurances.at(ticks);
-			datafile << GetThreshold(10) << " " << anomalyMsg << endl;
+			int index = indices.at(j);
+			currentList.push_back(anomalyScoresList.at(index));
+			name += anomalyNames.at(index);
 		}
 
-		datafile << endl;
+		// Combine the data
+		std::vector<std::tuple<int, float>> combinedAnomalyScores = CombineData(currentList, _mode);
 
+		// Open the file and start writing stream
+		ofstream datafile;
+		string src = spath + "\\" + name + "_" + "anomaly_scores_combined.dat";
+		datafile.open(src, ofstream::trunc);
+
+		// Write the ticks and the anomaly scores
+		for (int i = 0; i < combinedAnomalyScores.size(); ++i)
+		{
+			int ticks = std::get<0>(combinedAnomalyScores.at(i));
+			float anomalyScore = std::get<1>(combinedAnomalyScores.at(i));
+			datafile << ticks << " " << anomalyScore << " ";
+			if (anomalyOccurances.find(ticks) != anomalyOccurances.end())
+			{
+				string anomalyMsg = anomalyOccurances.at(ticks);
+				datafile << GetThreshold(10) << " " << anomalyMsg << endl;
+			}
+
+			datafile << endl;
+
+		}
+
+		// Close the file when writing is done
+		datafile.close();
+
+		AnalyzeData(src, events);
 	}
-
-	// Close the file when writing is done
-	datafile.close();
-
-	AnalyzeData(src, events);
 }
 
 std::vector<std::tuple<int, float>> AnomalyDetector::CombineData(std::vector<std::vector<std::tuple<int, float>>> _anomalyScoresList, CombineMode _mode)
@@ -458,6 +499,8 @@ std::vector<std::tuple<int, float>> AnomalyDetector::CombineData(std::vector<std
 			if (tick == -1)
 				tick = std::get<0>(_anomalyScoresList.at(i).at(listIndex));
 			float score = std::get<1>(_anomalyScoresList.at(i).at(listIndex));
+			if (combinedScore == 0)
+				combinedScore = score;
 
 			// Combine the values based on the mode
 			if (_mode == CombineMode::INTERSECTION)
@@ -879,7 +922,7 @@ void AnomalyDetector::Reset()
 	{
 		(*it)->DeleteAllData();
 		delete(*it);
-	}
+}
 
 	m_datacharts.clear();
 	m_datacharts.shrink_to_fit();
